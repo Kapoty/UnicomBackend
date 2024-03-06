@@ -23,7 +23,7 @@ import jakarta.validation.Valid;
 @RestController
 @Validated
 @RequestMapping(
-    value = "/grupos",
+    value = "/grupo",
     produces = MediaType.APPLICATION_JSON_VALUE
     )
 public class GrupoController {
@@ -44,7 +44,7 @@ public class GrupoController {
         return ResponseEntity.of(grupoRepository.findByGrupoId(grupoId));
     }
 
-    @GetMapping("/{grupoId}/empresas")
+    @GetMapping("/{grupoId}/empresa")
     public ResponseEntity<List<Empresa>> getMethodName(@Valid @PathVariable("grupoId") Integer grupoId) {
         return ResponseEntity.of(grupoService.getEmpresasByGrupoId(grupoId));
     }

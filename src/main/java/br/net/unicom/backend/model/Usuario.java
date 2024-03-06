@@ -15,6 +15,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -23,6 +25,9 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
+@Table(uniqueConstraints = {
+    @UniqueConstraint(columnNames = { "empresa_id", "matricula" })
+    })
 @Getter @Setter @NoArgsConstructor @ToString
 public class Usuario {
 
@@ -37,6 +42,7 @@ public class Usuario {
 
     @NotNull
     @Length(max = 120)
+    @JsonIgnore
     private String senha;
 
     @NotNull
@@ -45,6 +51,8 @@ public class Usuario {
 
     @NotNull
     private Boolean ativo;
+
+    private Integer matricula;
 
     @NotNull
     @Column(name = "empresa_id")
@@ -57,6 +65,7 @@ public class Usuario {
     private Empresa empresa;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "usuario")
+    @JsonIgnore
     @ToString.Exclude
     private List<UsuarioPapel> usuarioPapeis;
 

@@ -9,8 +9,8 @@ import br.net.unicom.backend.model.Papel;
 
 public interface PapelRepository extends JpaRepository<Papel, Long> {
 
+    List<Papel> findAll();
     Optional<Papel> findByPapelId(Integer papelId);
     List<Papel> findAllByEmpresaId(Integer empresaId);
-    Optional<Papel> findByPapelIdAndEmpresaId(Integer papelId, Integer empresaId);
 
 }

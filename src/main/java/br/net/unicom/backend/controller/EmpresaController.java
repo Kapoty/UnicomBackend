@@ -1,6 +1,5 @@
 package br.net.unicom.backend.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,10 +25,11 @@ import jakarta.validation.Valid;
 
 
 
+
 @RestController
 @Validated
 @RequestMapping(
-    value = "/empresas",
+    value = "/empresa",
     produces = MediaType.APPLICATION_JSON_VALUE
     )
 public class EmpresaController {
@@ -59,52 +59,24 @@ public class EmpresaController {
         return ResponseEntity.of(empresaRepository.findByEmpresaId(empresaId));
     }
 
-    @GetMapping("/{empresaId}/permissoes")
+    @GetMapping("/{empresaId}/permissao")
     public ResponseEntity<List<Permissao>> getPermissoesByEmpresaId(@Valid @PathVariable("empresaId") Integer empresaId) {
-        return ResponseEntity.of(empresaService.getPermissoesByEmpresaId(empresaId));
+        return ResponseEntity.ok(permissaoRepository.findAllByEmpresaId(empresaId));
     }
 
-    @GetMapping("/{empresaId}/papeis")
+    @GetMapping("/{empresaId}/papel")
     public ResponseEntity<List<Papel>> getPapeisByEmpresaId(@Valid @PathVariable("empresaId") Integer empresaId) {
         return ResponseEntity.ok(papelRepository.findAllByEmpresaId(empresaId));
     }
 
-    @GetMapping("/{empresaId}/papeis/{papelId}")
-    public ResponseEntity<Papel> getPapelByPapelIdAndEmpresaId(@Valid @PathVariable("empresaId") Integer empresaId, @Valid @PathVariable("papelId") Integer papelId) {
-        return ResponseEntity.of(papelRepository.findByPapelIdAndEmpresaId(papelId, empresaId));
-    }
-
-    @GetMapping("/{empresaId}/papeis/{papelId}/permissoes")
-    public ResponseEntity<List<Permissao>> getPermissoesByPapelIdAndEmpresaId(@Valid @PathVariable("empresaId") Integer empresaId, @Valid @PathVariable("papelId") Integer papelId) {
-        return ResponseEntity.ok(permissaoRepository.findAllByPapelIdAndEmpresaId(papelId, empresaId));
-    }
-
-    @GetMapping("/{empresaId}/usuarios")
+    @GetMapping("/{empresaId}/usuario")
     public ResponseEntity<List<Usuario>> getUsuariosByEmpresaId(@Valid @PathVariable("empresaId") Integer empresaId) {
         return ResponseEntity.ok(usuarioRepository.findAllByEmpresaId(empresaId));
     }
 
-    @GetMapping("/{empresaId}/usuarios/{usuarioId}")
-    public ResponseEntity<Usuario> getUsuarioByEmpresaIdAndUsuarioId(@Valid @PathVariable("empresaId") Integer empresaId, @Valid @PathVariable("usuarioId") Integer usuarioId) {
-        return ResponseEntity.of(usuarioRepository.findByEmpresaIdAndUsuarioId(empresaId, usuarioId));
-    }
-
-    @GetMapping("/{empresaId}/usuarios/{usuarioId}/permissoes")
-    public ResponseEntity<List<Permissao>> getPermissoesByEmpresaIdAndUsuarioId(@Valid @PathVariable("empresaId") Integer empresaId, @Valid @PathVariable("usuarioId") Integer usuarioId) {
-        return ResponseEntity.ok(permissaoRepository.findAllByEmpresaIdAndUsuarioId(empresaId, usuarioId));
-    }
-
-    @GetMapping("/test/")
-    public List<Permissao> getTest() {
-        /*List<Permissao> permissoes = new ArrayList<>();
-        usuarioRepository.findByUsuarioId(1)
-            .get()
-            .getUsuarioPapeis()
-            .forEach((papel) -> papel.getPapel()
-                                        .getPapelEmpresaPermissoes()
-                                        .forEach((pep) -> permissoes.add(pep.getEmpresaPermissao().getPermissao())));
-        return permissoes;*/
-        return permissaoRepository.findAllByUsuarioId(1);
-    }
+    /*@PostMapping("/{empresaId}/usuario")
+    public String createUsuarioByEmpresaId(@Valid @RequestBody CreateUsuarioRequest createUsuarioRequest) {
+        return "";
+    }*/
     
 }
