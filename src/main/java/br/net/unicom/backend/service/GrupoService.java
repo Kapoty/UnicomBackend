@@ -22,7 +22,7 @@ public class GrupoService {
         Optional<Grupo> grupo = grupoRepository.findByGrupoId(grupoId);
         Optional<List<Empresa>> empresas = Optional.empty();
         if (grupo.isPresent())
-            empresas = Optional.of(grupo.get().getEmpresas());
+            empresas = Optional.of(grupo.get().getEmpresaList());
         return empresas;
     }
 

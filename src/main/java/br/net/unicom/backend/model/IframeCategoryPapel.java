@@ -1,12 +1,9 @@
 package br.net.unicom.backend.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinColumns;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import lombok.Getter;
@@ -16,23 +13,19 @@ import lombok.ToString;
 
 @Entity
 @Getter @Setter @NoArgsConstructor @ToString
-public class PapelEmpresaPermissao {
+public class IframeCategoryPapel {
 
     @EmbeddedId
-    PapelEmpresaPermissaoKey papelEmpresaPermissaoId;
+    IframeCategoryPapelKey iframeCategoryPapelId;
     
     @ManyToOne
-    @MapsId("empresaPermissaoId")
-    @JoinColumns({
-        @JoinColumn(name="empresa_id"),
-        @JoinColumn(name="permissao_id")
-    })
-    EmpresaPermissao empresaPermissao;
+    @MapsId("iframeCategoryId")
+    @JoinColumn(name = "iframe_category_id")
+    IframeCategory iframeCategory;
 
     @ManyToOne
-    @JoinColumn(name = "papel_id", insertable = false, updatable = false)
-    @JsonIgnore
-    @ToString.Exclude
+    @MapsId("papelId")
+    @JoinColumn(name = "papel_id")
     Papel papel;
 
 }

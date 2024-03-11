@@ -14,6 +14,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import br.net.unicom.backend.model.UsuarioEmailDuplicateException;
+import br.net.unicom.backend.model.UsuarioMatriculaDuplicateException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 
@@ -29,7 +31,6 @@ public class ValidationExceptionHandler {
                 .stream()
                 .collect(Collectors.toMap(x -> ((FieldError)x).getField(), 
                  b -> b.getDefaultMessage(),(p,q) -> p, LinkedHashMap::new));
-        response.put("message", "bad request");
         response.put("errors", errorMap);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
@@ -40,7 +41,24 @@ public class ValidationExceptionHandler {
         Map<String, String> errorMap = e.getConstraintViolations()
                 .stream()
                 .collect(Collectors.toMap(x -> ((ConstraintViolation<?>)x).getPropertyPath().toString(), b -> b.getMessage(), (p, q) -> p, LinkedHashMap::new));
-        response.put("message", "bad request");
+        response.put("errors", errorMap);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UsuarioEmailDuplicateException.class)
+    public ResponseEntity<?> handleUsuarioEmailDuplicateException(UsuarioEmailDuplicateException e) {
+        Map<String, Object> response = new HashMap<>();
+        Map<String, String> errorMap = new HashMap<>();
+        errorMap.put("email", "email duplicado");
+        response.put("errors", errorMap);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UsuarioMatriculaDuplicateException.class)
+    public ResponseEntity<?> handleUsuarioMatriculaDuplicateException(UsuarioMatriculaDuplicateException e) {
+        Map<String, Object> response = new HashMap<>();
+        Map<String, String> errorMap = new HashMap<>();
+        errorMap.put("matricula", "matrícula duplicada");
         response.put("errors", errorMap);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }

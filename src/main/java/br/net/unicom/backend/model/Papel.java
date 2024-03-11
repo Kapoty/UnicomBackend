@@ -17,6 +17,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,7 +35,7 @@ public class Papel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer papelId;
 
-    @NotNull
+    @NotBlank
     @Length(max = 45)
     private String nome;
 
@@ -51,6 +52,6 @@ public class Papel {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "papel")
     @JsonIgnore
     @ToString.Exclude
-    private List<PapelEmpresaPermissao> papelEmpresaPermissoes;
+    private List<PapelEmpresaPermissao> papelEmpresaPermissaoList;
 
 }

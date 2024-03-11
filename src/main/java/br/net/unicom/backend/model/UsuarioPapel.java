@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
@@ -23,11 +24,14 @@ public class UsuarioPapel {
     @MapsId("usuarioId")
     @JoinColumn(name = "usuario_id")
     @JsonIgnore
+    @ToString.Exclude
     Usuario usuario;
 
     @ManyToOne
     @MapsId("papelId")
     @JoinColumn(name = "papel_id")
+    @JsonIgnore
+    @ToString.Exclude
     Papel papel;
 
 }

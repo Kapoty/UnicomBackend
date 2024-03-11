@@ -18,6 +18,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,16 +37,16 @@ public class Usuario {
     private Integer usuarioId;
 
     @Email
-    @NotNull
+    @NotBlank
     @Length(max = 256)
     private String email;
 
-    @NotNull
+    @NotBlank
     @Length(max = 120)
     @JsonIgnore
     private String senha;
 
-    @NotNull
+    @NotBlank
     @Length(max = 200)
     private String nome;
 
@@ -67,6 +68,6 @@ public class Usuario {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "usuario")
     @JsonIgnore
     @ToString.Exclude
-    private List<UsuarioPapel> usuarioPapeis;
+    private List<UsuarioPapel> usuarioPapelList;
 
 }

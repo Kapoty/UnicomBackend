@@ -36,17 +36,19 @@ public class PapelController {
     @Autowired
     PapelRepository papelRepository;
 
-    @PreAuthorize("hasAuthority('Iframe.Read.All')")
+    @PreAuthorize("hasAuthority('Papel.Read.All')")
     @GetMapping("")
     public ResponseEntity<List<Papel>> getAll() {
         return new ResponseEntity<List<Papel>>(papelRepository.findAll(), HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAuthority('Papel.Read.All')")
     @GetMapping("/{papelId}")
     public ResponseEntity<Papel> getPapelByPapelId(@Valid @PathVariable("papelId") Integer papelId) {
         return ResponseEntity.of(papelRepository.findByPapelId(papelId));
     }
 
+    @PreAuthorize("hasAuthority('Papel.Read.All')")
     @GetMapping("/{papelId}/permissao")
     public ResponseEntity<List<Permissao>> getPermissoesByPapelId(@Valid @PathVariable("papelId") Integer papelId) {
         return ResponseEntity.ok(permissaoRepository.findAllByPapelId(papelId));

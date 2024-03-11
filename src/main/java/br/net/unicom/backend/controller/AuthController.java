@@ -83,10 +83,10 @@ public class AuthController {
                                 permissoes));
     }
 
-    @GetMapping("/encode")
+    /*@GetMapping("/encode")
     public ResponseEntity<String> getMethodName(@RequestParam("senha") String senha) {
         return ResponseEntity.ok(encoder.encode(senha));
-    }
+    }*/
     
 
 }

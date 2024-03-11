@@ -32,6 +32,6 @@ public class Grupo {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "grupo")
     @JsonIgnore
-    private List<Empresa> empresas;
+    private List<Empresa> empresaList;
 
 }

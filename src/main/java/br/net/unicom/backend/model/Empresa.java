@@ -15,6 +15,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,11 +30,11 @@ public class Empresa {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer empresaId;
 
-    @NotNull
+    @NotBlank
     @Length(max = 100)
     private String nome;
 
-    @NotNull
+    @NotBlank
     @Length(max = 18)
     private String cnpj;
 
@@ -50,11 +51,11 @@ public class Empresa {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "empresa")
     @JsonIgnore
     @ToString.Exclude
-    private List<EmpresaPermissao> empresaPermissoes;
+    private List<EmpresaPermissao> empresaPermissaoList;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "empresa")
     @JsonIgnore
     @ToString.Exclude
-    private List<Papel> papeis;
+    private List<Papel> papelList;
 
 }
