@@ -1,5 +1,7 @@
 package br.net.unicom.backend.payload.request;
 
+import java.util.List;
+
 import org.hibernate.validator.constraints.Length;
 
 import jakarta.validation.constraints.Email;
@@ -31,5 +33,8 @@ public class PostUsuarioRequest {
     private Boolean ativo;
 
     private Integer matricula;
+
+    @NotNull
+    private List<Integer> papelIdList;
 
 }

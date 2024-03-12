@@ -1,5 +1,7 @@
 package br.net.unicom.backend.security;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -15,7 +17,8 @@ public class CorsConfiguration {
 			public void addCorsMappings(CorsRegistry registry) {
 				registry.addMapping("/**")
                 .allowedOrigins("http://127.0.0.1:8000")
-                .allowedOrigins("http://127.0.0.1:8080");
+				.allowedOrigins("http://127.0.0.1:8080")
+				.allowedMethods("*");
 			}
 		};
 	}

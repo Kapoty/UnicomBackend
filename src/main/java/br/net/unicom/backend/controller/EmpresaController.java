@@ -104,5 +104,12 @@ public class EmpresaController {
                         ).collect(Collectors.toList())
             );
     }
+
+    @PreAuthorize("hasAuthority('Usuario.Read.All')")
+    @GetMapping("/me/papel")
+    public ResponseEntity<List<Papel>> getPapelListByEmpresaMe() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(papelRepository.findAllByEmpresaId(userDetails.getEmpresaId()));
+    }
     
 }

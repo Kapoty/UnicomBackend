@@ -1,5 +1,6 @@
 package br.net.unicom.backend.payload.request;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.hibernate.validator.constraints.Length;
@@ -25,5 +26,7 @@ public class PatchUsuarioRequest {
     private Optional<@NotNull Boolean> ativo;
 
     private Optional<Integer> matricula;
+
+    private Optional<@NotNull List<Integer>> papelIdList;
 
 }

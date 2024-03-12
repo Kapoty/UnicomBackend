@@ -3,6 +3,7 @@ package br.net.unicom.backend.exception;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -61,5 +62,17 @@ public class ValidationExceptionHandler {
         errorMap.put("matricula", "matrícula duplicada");
         response.put("errors", errorMap);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NoSuchElementException.class)
+    public ResponseEntity<?> handleNoSuchElementException(NoSuchElementException e) {
+
+        throw e;
+
+        /*Map<String, Object> response = new HashMap<>();
+        Map<String, String> errorMap = new HashMap<>();
+        errorMap.put("elemento", "elemento não encontrado");
+        response.put("errors", errorMap);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);*/
     }
 }

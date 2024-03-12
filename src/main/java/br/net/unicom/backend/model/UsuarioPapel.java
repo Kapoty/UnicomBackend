@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
@@ -33,5 +32,11 @@ public class UsuarioPapel {
     @JsonIgnore
     @ToString.Exclude
     Papel papel;
+
+    public UsuarioPapel(Usuario usuario, Papel papel) {
+        this.usuario = usuario;
+        this.papel = papel;
+        this.usuarioPapelId = new UsuarioPapelKey(usuario.getUsuarioId(), papel.getPapelId());
+    }
 
 }

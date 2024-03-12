@@ -30,12 +30,16 @@ import br.net.unicom.backend.model.Permissao;
 import br.net.unicom.backend.model.Usuario;
 import br.net.unicom.backend.model.UsuarioEmailDuplicateException;
 import br.net.unicom.backend.model.UsuarioMatriculaDuplicateException;
+import br.net.unicom.backend.model.UsuarioPapel;
 import br.net.unicom.backend.payload.request.PatchUsuarioRequest;
 import br.net.unicom.backend.payload.request.PostUsuarioRequest;
 import br.net.unicom.backend.payload.response.IframeCategoryResponse;
 import br.net.unicom.backend.payload.response.UsuarioMeResponse;
+import br.net.unicom.backend.payload.response.UsuarioResponse;
 import br.net.unicom.backend.repository.IframeCategoryRepository;
+import br.net.unicom.backend.repository.PapelRepository;
 import br.net.unicom.backend.repository.PermissaoRepository;
+import br.net.unicom.backend.repository.UsuarioPapelRepository;
 import br.net.unicom.backend.repository.UsuarioRepository;
 import br.net.unicom.backend.security.service.UserDetailsImpl;
 import jakarta.transaction.Transactional;
@@ -64,6 +68,12 @@ public class UsuarioController {
     IframeCategoryRepository iframeCategoryRepository;
 
     @Autowired
+    UsuarioPapelRepository usuarioPapelRepository;
+
+    @Autowired
+    PapelRepository papelRepository;
+
+    @Autowired
     ModelMapper modelMapper;
 
     @Autowired
@@ -72,22 +82,35 @@ public class UsuarioController {
     @Autowired
     PasswordEncoder encoder;
 
+
     @Autowired
 	private Validator validator;
 
-    @PreAuthorize("hasAuthority('Admin.Usuario.Read.All')")
+    @PreAuthorize("hasAuthority('Usuario.Read.All')")
     @GetMapping("")
     public ResponseEntity<List<Usuario>> getAll() {
         return new ResponseEntity<List<Usuario>>(usuarioRepository.findAll(), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAuthority('Admin.Usuario.Read.All')")
+    @PreAuthorize("hasAuthority('Usuario.Read.All')")
     @GetMapping("/{usuarioId}")
-    public ResponseEntity<Usuario> getUsuarioByEmpresaIdAndUsuarioId(@Valid @PathVariable("usuarioId") Integer usuarioId) {
-        return ResponseEntity.of(usuarioRepository.findByUsuarioId(usuarioId));
+    public ResponseEntity<UsuarioResponse> getUsuarioByEmpresaIdAndUsuarioId(@Valid @PathVariable("usuarioId") Integer usuarioId) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Usuario usuario = usuarioRepository.findByUsuarioIdAndEmpresaId(usuarioId, userDetails.getEmpresaId()).orElseThrow(NoSuchElementException::new);
+        UsuarioResponse usuarioResponse = new UsuarioResponse(
+                                usuario.getUsuarioId(),
+                                usuario.getEmail(),
+                                usuario.getNome(),
+                                usuario.getAtivo(),
+                                usuario.getMatricula(),
+                                usuario.getEmpresaId(),
+                                usuario.getEmpresa(),
+                                usuario.getUsuarioPapelList().stream().map(up -> up.getPapel()).collect(Collectors.toList())
+                            );
+        return ResponseEntity.ok(usuarioResponse);
     }
 
-    @PreAuthorize("hasAuthority('Admin.Usuario.Read.All')")
+    @PreAuthorize("hasAuthority('Usuario.Read.All')")
     @GetMapping("/{usuarioId}/permissao")
     public ResponseEntity<List<Permissao>> getPermissaoListByEmpresaIdAndUsuarioId(@Valid @PathVariable("usuarioId") Integer usuarioId) {
         return ResponseEntity.ok(permissaoRepository.findAllByUsuarioId(usuarioId));
@@ -148,21 +171,41 @@ public class UsuarioController {
         if (patchUsuarioRequest.getAtivo() != null)
             usuario.setAtivo(patchUsuarioRequest.getAtivo().get());
         if (patchUsuarioRequest.getMatricula() != null) {
-            Integer usuarioIdByByMatriculaAndEmpresaId = usuarioRepository.getUsuarioIdByMatriculaAndEmpresaId(patchUsuarioRequest.getMatricula().get(), usuario.getEmpresaId());
-            if (usuarioIdByByMatriculaAndEmpresaId == null || usuarioIdByByMatriculaAndEmpresaId == usuario.getUsuarioId())
-                usuario.setMatricula(patchUsuarioRequest.getMatricula().orElse(null));
-            else throw new UsuarioMatriculaDuplicateException();
+            if (patchUsuarioRequest.getMatricula().isEmpty())
+                usuario.setMatricula(null);
+            else {
+                Integer usuarioIdByMatriculaAndEmpresaId = usuarioRepository.getUsuarioIdByMatriculaAndEmpresaId(patchUsuarioRequest.getMatricula().get(), usuario.getEmpresaId());
+                if (usuarioIdByMatriculaAndEmpresaId == null || usuarioIdByMatriculaAndEmpresaId == usuario.getUsuarioId())
+                    usuario.setMatricula(patchUsuarioRequest.getMatricula().orElse(null));
+                else throw new UsuarioMatriculaDuplicateException();
+            }
+        }
+        if (patchUsuarioRequest.getPapelIdList() != null) {
+
+            for(UsuarioPapel usuarioPapel : usuario.getUsuarioPapelList()) {
+                if (!patchUsuarioRequest.getPapelIdList().get().contains(usuarioPapel.getPapel().getPapelId()))
+                    usuarioPapelRepository.delete(usuarioPapel);
+            }
+
+            List<UsuarioPapel> usuarioAddPapelList = new ArrayList<>();
+
+            for(Integer papelId : patchUsuarioRequest.getPapelIdList().get()) {
+                usuarioAddPapelList.add(new UsuarioPapel(usuario, papelRepository.findByPapelId(papelId).orElseThrow(NoSuchElementException::new)));
+            }
+    
+            usuario.setUsuarioPapelList(usuarioAddPapelList);
+            usuarioPapelRepository.saveAllAndFlush(usuarioAddPapelList);
         }
 
-        usuarioRepository.save(usuario);
+        usuario = usuarioRepository.saveAndFlush(usuario);
 
         return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasAuthority('Usuario.Write.All')")
-    @PostMapping("/{usuarioId}")
+    @PostMapping("/")
     @Transactional
-    public ResponseEntity<Usuario> postUsuarioByUsuarioId(@Valid @PathVariable Integer usuarioId, @Valid @RequestBody PostUsuarioRequest postUsuarioRequest) throws UsuarioEmailDuplicateException, UsuarioMatriculaDuplicateException {
+    public ResponseEntity<UsuarioResponse> postUsuarioByUsuarioId(@Valid @RequestBody PostUsuarioRequest postUsuarioRequest) throws UsuarioEmailDuplicateException, UsuarioMatriculaDuplicateException {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Usuario usuario = modelMapper.map(postUsuarioRequest, Usuario.class);
@@ -174,9 +217,31 @@ public class UsuarioController {
         if (usuarioRepository.getUsuarioIdByMatriculaAndEmpresaId(postUsuarioRequest.getMatricula(), usuario.getEmpresaId()) != null)
             throw new UsuarioMatriculaDuplicateException();
 
-        usuario = usuarioRepository.save(usuario);
+        List<UsuarioPapel> usuarioPapelList = new ArrayList<>();
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(usuario);
+        for(Integer papelId : postUsuarioRequest.getPapelIdList()) {
+            usuarioPapelList.add(new UsuarioPapel(usuario, papelRepository.findByPapelId(papelId).orElseThrow(NoSuchElementException::new)));
+        }
+
+        usuario.setUsuarioPapelList(usuarioPapelList);
+
+        usuario = usuarioRepository.saveAndFlush(usuario);
+
+        usuarioPapelRepository.saveAllAndFlush(usuarioPapelList);
+
+
+        UsuarioResponse usuarioResponse = new UsuarioResponse(
+            usuario.getUsuarioId(),
+            usuario.getEmail(),
+            usuario.getNome(),
+            usuario.getAtivo(),
+            usuario.getMatricula(),
+            usuario.getEmpresaId(),
+            usuario.getEmpresa(),
+            usuario.getUsuarioPapelList().stream().map(up -> up.getPapel()).collect(Collectors.toList())
+        );
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioResponse);
     }
 
 }
