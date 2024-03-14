@@ -1,5 +1,6 @@
 package br.net.unicom.backend.payload.request;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.hibernate.validator.constraints.Length;
@@ -36,5 +37,26 @@ public class PostUsuarioRequest {
 
     @NotNull
     private List<Integer> papelIdList;
+
+    private LocalDate dataNascimento;
+
+    @Length(min = 11, max = 11)
+    private String cpf;
+
+    @Length(min = 11, max = 11)
+    private String telefoneCelular;
+
+    @Length(min = 11, max = 11)
+    private String whatsapp;
+
+    private LocalDate dataContratacao;
+
+    private Integer cargoId;
+
+    private Integer contratoId;
+
+    private Integer departamentoId;
+
+    private Integer jornadaId;
 
 }

@@ -15,8 +15,13 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import br.net.unicom.backend.model.UsuarioEmailDuplicateException;
-import br.net.unicom.backend.model.UsuarioMatriculaDuplicateException;
+import br.net.unicom.backend.model.exception.RegistroPontoFullException;
+import br.net.unicom.backend.model.exception.RegistroPontoLockedException;
+import br.net.unicom.backend.model.exception.UsuarioEmailDuplicateException;
+import br.net.unicom.backend.model.exception.UsuarioMatriculaDuplicateException;
+import br.net.unicom.backend.model.exception.UsuarioNaoRegistraPontoHojeException;
+import br.net.unicom.backend.model.exception.UsuarioSemContratoException;
+import br.net.unicom.backend.model.exception.UsuarioSemJornadaException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 
@@ -66,13 +71,55 @@ public class ValidationExceptionHandler {
 
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<?> handleNoSuchElementException(NoSuchElementException e) {
-
-        throw e;
-
-        /*Map<String, Object> response = new HashMap<>();
+        Map<String, Object> response = new HashMap<>();
         Map<String, String> errorMap = new HashMap<>();
         errorMap.put("elemento", "elemento não encontrado");
         response.put("errors", errorMap);
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);*/
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UsuarioSemContratoException.class)
+    public ResponseEntity<?> handleUsuarioSemContratoException(UsuarioSemContratoException e) {
+        Map<String, Object> response = new HashMap<>();
+        Map<String, String> errorMap = new HashMap<>();
+        errorMap.put("contrato", "usuário sem contrato");
+        response.put("errors", errorMap);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UsuarioSemJornadaException.class)
+    public ResponseEntity<?> handleUsuarioSemJornadaException(UsuarioSemJornadaException e) {
+        Map<String, Object> response = new HashMap<>();
+        Map<String, String> errorMap = new HashMap<>();
+        errorMap.put("jornada", "usuário sem jornada");
+        response.put("errors", errorMap);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UsuarioNaoRegistraPontoHojeException.class)
+    public ResponseEntity<?> handleUsuarioNaoRegistraPontoHojeException(UsuarioNaoRegistraPontoHojeException e) {
+        Map<String, Object> response = new HashMap<>();
+        Map<String, String> errorMap = new HashMap<>();
+        errorMap.put("hoje", "usuário não registra ponto hoje");
+        response.put("errors", errorMap);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(RegistroPontoFullException.class)
+    public ResponseEntity<?> handleRegistroPontoFullException(RegistroPontoFullException e) {
+        Map<String, Object> response = new HashMap<>();
+        Map<String, String> errorMap = new HashMap<>();
+        errorMap.put("full", "registro já preenchido");
+        response.put("errors", errorMap);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(RegistroPontoLockedException.class)
+    public ResponseEntity<?> handleRegistroPontoLockedException(RegistroPontoLockedException e) {
+        Map<String, Object> response = new HashMap<>();
+        Map<String, String> errorMap = new HashMap<>();
+        errorMap.put("locked", "usuário deve aguardar antes de registrar ponto novamente");
+        response.put("errors", errorMap);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 }

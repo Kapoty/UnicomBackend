@@ -1,5 +1,6 @@
 package br.net.unicom.backend.model;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.hibernate.validator.constraints.Length;
@@ -56,6 +57,25 @@ public class Usuario {
     private Integer matricula;
 
     @NotNull
+    private Boolean fotoPerfil = false;
+
+    @NotNull
+    private Integer fotoPerfilVersao = 0;
+
+    private LocalDate dataNascimento;
+
+    @Length(min = 11, max = 11)
+    private String cpf;
+
+    @Length(min = 11, max = 11)
+    private String telefoneCelular;
+
+    @Length(min = 11, max = 11)
+    private String whatsapp;
+
+    private LocalDate dataContratacao;
+
+    @NotNull
     @Column(name = "empresa_id")
     private Integer empresaId;
 
@@ -69,5 +89,33 @@ public class Usuario {
     @JsonIgnore
     @ToString.Exclude
     private List<UsuarioPapel> usuarioPapelList;
+
+    @Column(name = "cargo_id")
+    private Integer cargoId;
+
+    @ManyToOne
+    @JoinColumn(name = "cargo_id", insertable = false, updatable = false)
+    private Cargo cargo;
+
+    @Column(name = "contrato_id")
+    private Integer contratoId;
+
+    @ManyToOne
+    @JoinColumn(name = "contrato_id", insertable = false, updatable = false)
+    private Contrato contrato;
+
+    @Column(name = "departamento_id")
+    private Integer departamentoId;
+
+    @ManyToOne
+    @JoinColumn(name = "departamento_id", insertable = false, updatable = false)
+    private Departamento departamento;
+
+    @Column(name = "jornada_id")
+    private Integer jornadaId;
+
+    @ManyToOne
+    @JoinColumn(name = "jornada_id", insertable = false, updatable = false)
+    private Jornada jornada;
 
 }

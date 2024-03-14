@@ -2,6 +2,8 @@ package br.net.unicom.backend.payload.response;
 
 import java.util.List;
 
+import br.net.unicom.backend.model.Cargo;
+import br.net.unicom.backend.model.Departamento;
 import br.net.unicom.backend.model.Empresa;
 import br.net.unicom.backend.model.Papel;
 import lombok.AllArgsConstructor;
@@ -30,5 +32,13 @@ public class UsuarioMeResponse {
     private List<Papel> papelList;;
 
     private List<String> permissaoList;
+
+    private Boolean fotoPerfil;
+
+    private Integer fotoPerfilVersao;
+
+    private Departamento departamento;
+
+    private Cargo cargo;
 
 }

@@ -1,5 +1,6 @@
 package br.net.unicom.backend.payload.request;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,6 +9,7 @@ import org.hibernate.validator.constraints.Length;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,5 +30,23 @@ public class PatchUsuarioRequest {
     private Optional<Integer> matricula;
 
     private Optional<@NotNull List<Integer>> papelIdList;
+
+    private Optional<LocalDate> dataNascimento;
+
+    private Optional<@Length(min = 11, max = 11) String> cpf;
+
+    private Optional<@Length(min = 11, max = 11) String> telefoneCelular;
+
+    private Optional<@Length(min = 11, max = 11) String> whatsapp;
+
+    private Optional<@Past LocalDate> dataContratacao;
+
+    private Optional<Integer> cargoId;
+
+    private Optional<Integer> contratoId;
+
+    private Optional<Integer> departamentoId;
+
+    private Optional<Integer> jornadaId;
 
 }
