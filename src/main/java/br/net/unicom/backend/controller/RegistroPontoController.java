@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,14 +25,21 @@ import br.net.unicom.backend.model.RegistroPonto;
 import br.net.unicom.backend.model.Usuario;
 import br.net.unicom.backend.model.exception.RegistroPontoFullException;
 import br.net.unicom.backend.model.exception.RegistroPontoLockedException;
+import br.net.unicom.backend.model.exception.RegistroPontoUnauthorizedException;
 import br.net.unicom.backend.model.exception.UsuarioNaoRegistraPontoHojeException;
 import br.net.unicom.backend.model.exception.UsuarioSemContratoException;
 import br.net.unicom.backend.model.exception.UsuarioSemJornadaException;
+import br.net.unicom.backend.payload.request.RegistroPontoRegistrarRequest;
+import br.net.unicom.backend.payload.request.RegistroPontoValidateTokenRequest;
 import br.net.unicom.backend.payload.response.RegistroPontoLockedSecondsResponse;
+import br.net.unicom.backend.payload.response.RegistroPontoTokenResponse;
 import br.net.unicom.backend.repository.RegistroPontoRepository;
 import br.net.unicom.backend.repository.UsuarioRepository;
+import br.net.unicom.backend.security.jwt.PontoJwtUtils;
 import br.net.unicom.backend.security.service.UserDetailsImpl;
 import br.net.unicom.backend.service.RegistroPontoService;
+import jakarta.validation.Valid;
+
 
 
 
@@ -49,6 +59,11 @@ public class RegistroPontoController {
 
     @Autowired
     RegistroPontoService registroPontoService;
+
+    @Autowired
+    PontoJwtUtils pontoJwtUtils;
+
+    Logger logger = LoggerFactory.getLogger(RegistroPontoController.class);
 
     @PreAuthorize("hasAuthority('Ponto.Read.All')")
     @GetMapping("/me/hoje")
@@ -116,7 +131,14 @@ public class RegistroPontoController {
 
     @PreAuthorize("hasAuthority('Ponto.Read.All')")
     @PostMapping("/me/hoje/registrar")
-    public ResponseEntity<Void> registrarPontoByMeHoje() throws RegistroPontoFullException, RegistroPontoLockedException  {
+    public ResponseEntity<Void> registrarPontoByMeHoje(@Valid @RequestBody RegistroPontoRegistrarRequest registroPontoegistroPontoRegistrarRequest) throws RegistroPontoFullException, RegistroPontoLockedException, RegistroPontoUnauthorizedException  {
+
+        logger.info(registroPontoegistroPontoRegistrarRequest.getToken());
+        logger.info(String.valueOf(pontoJwtUtils.validateJwtToken(registroPontoegistroPontoRegistrarRequest.getToken())));
+
+        if (!pontoJwtUtils.validateJwtToken(registroPontoegistroPontoRegistrarRequest.getToken()))
+            throw new RegistroPontoUnauthorizedException();
+
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         LocalDateTime hoje = LocalDateTime.now();
@@ -153,6 +175,23 @@ public class RegistroPontoController {
         Integer lockedSeconds = registroPontoService.getLockedSeconds(registroPonto);
 
         return ResponseEntity.ok(new RegistroPontoLockedSecondsResponse(lockedSeconds));
+    }
+
+    @PreAuthorize("hasAuthority('Ponto.Write.All')")
+    @GetMapping("/generate-token")
+    public ResponseEntity<RegistroPontoTokenResponse> generatePontoJwtToken() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return ResponseEntity.ok(new RegistroPontoTokenResponse(pontoJwtUtils.generateJwtToken(userDetails.getId())));
+    }
+
+    @PreAuthorize("hasAuthority('Ponto.Read.All')")
+    @PostMapping("/validate-token")
+    public ResponseEntity<Void> validatePontoJwtToken(@Valid @RequestBody RegistroPontoValidateTokenRequest registroPontoValidateTokenRequest) {
+        if (pontoJwtUtils.validateJwtToken(registroPontoValidateTokenRequest.getToken()))
+            return ResponseEntity.noContent().build();
+        else
+            return ResponseEntity.badRequest().build();
     }
 
 }

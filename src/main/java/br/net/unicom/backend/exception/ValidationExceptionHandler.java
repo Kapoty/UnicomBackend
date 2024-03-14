@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import br.net.unicom.backend.model.exception.RegistroPontoFullException;
 import br.net.unicom.backend.model.exception.RegistroPontoLockedException;
+import br.net.unicom.backend.model.exception.RegistroPontoUnauthorizedException;
 import br.net.unicom.backend.model.exception.UsuarioEmailDuplicateException;
 import br.net.unicom.backend.model.exception.UsuarioMatriculaDuplicateException;
 import br.net.unicom.backend.model.exception.UsuarioNaoRegistraPontoHojeException;
@@ -119,6 +120,15 @@ public class ValidationExceptionHandler {
         Map<String, Object> response = new HashMap<>();
         Map<String, String> errorMap = new HashMap<>();
         errorMap.put("locked", "usuário deve aguardar antes de registrar ponto novamente");
+        response.put("errors", errorMap);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(RegistroPontoUnauthorizedException.class)
+    public ResponseEntity<?> handleRegistroPontoUnauthorizedException(RegistroPontoUnauthorizedException e) {
+        Map<String, Object> response = new HashMap<>();
+        Map<String, String> errorMap = new HashMap<>();
+        errorMap.put("token", "dispositivo não autorizado");
         response.put("errors", errorMap);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
