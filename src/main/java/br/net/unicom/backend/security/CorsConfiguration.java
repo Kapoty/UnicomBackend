@@ -18,6 +18,9 @@ public class CorsConfiguration {
 				registry.addMapping("/**")
                 .allowedOrigins("http://127.0.0.1:8000")
 				.allowedOrigins("http://127.0.0.1:8080")
+				.allowedOrigins("https://www.unicom.net.br")
+				.allowedOrigins("https://unisystem.unicom.net.br")
+				.allowedOrigins("*")
 				.allowedMethods("*");
 			}
 		};

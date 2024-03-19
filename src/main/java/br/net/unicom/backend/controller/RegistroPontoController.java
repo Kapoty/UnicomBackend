@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +21,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import br.net.unicom.backend.model.Contrato;
 import br.net.unicom.backend.model.Jornada;
 import br.net.unicom.backend.model.RegistroPonto;
@@ -29,6 +34,7 @@ import br.net.unicom.backend.model.exception.RegistroPontoUnauthorizedException;
 import br.net.unicom.backend.model.exception.UsuarioNaoRegistraPontoHojeException;
 import br.net.unicom.backend.model.exception.UsuarioSemContratoException;
 import br.net.unicom.backend.model.exception.UsuarioSemJornadaException;
+import br.net.unicom.backend.payload.request.RegistroPontoRegistrarFaceRequest;
 import br.net.unicom.backend.payload.request.RegistroPontoRegistrarRequest;
 import br.net.unicom.backend.payload.request.RegistroPontoValidateTokenRequest;
 import br.net.unicom.backend.payload.response.RegistroPontoLockedSecondsResponse;
@@ -37,7 +43,9 @@ import br.net.unicom.backend.repository.RegistroPontoRepository;
 import br.net.unicom.backend.repository.UsuarioRepository;
 import br.net.unicom.backend.security.jwt.PontoJwtUtils;
 import br.net.unicom.backend.security.service.UserDetailsImpl;
+import br.net.unicom.backend.service.DeepFaceService;
 import br.net.unicom.backend.service.RegistroPontoService;
+import br.net.unicom.backend.service.UsuarioService;
 import jakarta.validation.Valid;
 
 
@@ -55,6 +63,9 @@ public class RegistroPontoController {
     UsuarioRepository usuarioRepository;
 
     @Autowired
+    UsuarioService usuarioService;
+
+    @Autowired
     RegistroPontoRepository registroPontoRepository;
 
     @Autowired
@@ -62,6 +73,12 @@ public class RegistroPontoController {
 
     @Autowired
     PontoJwtUtils pontoJwtUtils;
+
+    @Autowired
+    DeepFaceService deepFaceService;
+
+    @Autowired
+    ObjectMapper objectMapper;
 
     Logger logger = LoggerFactory.getLogger(RegistroPontoController.class);
 
@@ -133,34 +150,49 @@ public class RegistroPontoController {
     @PostMapping("/me/hoje/registrar")
     public ResponseEntity<Void> registrarPontoByMeHoje(@Valid @RequestBody RegistroPontoRegistrarRequest registroPontoegistroPontoRegistrarRequest) throws RegistroPontoFullException, RegistroPontoLockedException, RegistroPontoUnauthorizedException  {
 
-        logger.info(registroPontoegistroPontoRegistrarRequest.getToken());
-        logger.info(String.valueOf(pontoJwtUtils.validateJwtToken(registroPontoegistroPontoRegistrarRequest.getToken())));
-
         if (!pontoJwtUtils.validateJwtToken(registroPontoegistroPontoRegistrarRequest.getToken()))
             throw new RegistroPontoUnauthorizedException();
 
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        LocalDateTime hoje = LocalDateTime.now();
-
-        RegistroPonto registroPonto = registroPontoRepository.findByUsuarioIdAndData(userDetails.getId(), hoje.toLocalDate()).orElseThrow(NoSuchElementException::new);
-
-        if (registroPontoService.getLockedSeconds(registroPonto) != 0)
-            throw new RegistroPontoLockedException();
-
-        if (registroPonto.getEntrada() == null)
-            registroPonto.setEntrada(hoje.toLocalTime());
-        else if (registroPonto.getIntervaloInicio() == null)
-            registroPonto.setIntervaloInicio(hoje.toLocalTime());
-        else if (registroPonto.getIntervaloFim() == null)
-            registroPonto.setIntervaloFim(hoje.toLocalTime());
-        else if (registroPonto.getSaida() == null)
-            registroPonto.setSaida(hoje.toLocalTime());
-        else throw new RegistroPontoFullException();
-
-        registroPontoRepository.save(registroPonto);
+        usuarioService.registrarPontoByUsuarioId(userDetails.getId());
 
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/registrar-face")
+    public ResponseEntity<Optional<Usuario>> registrarPontoByFace(@Valid @RequestBody RegistroPontoRegistrarFaceRequest registroPontoRegistrarFaceRequest) throws RegistroPontoFullException, RegistroPontoLockedException, RegistroPontoUnauthorizedException  {
+
+        if (!pontoJwtUtils.validateJwtToken(registroPontoRegistrarFaceRequest.getToken()))
+            throw new RegistroPontoUnauthorizedException();
+
+        JsonNode results;
+        JsonNode result;
+        String identity;
+        Integer usuarioId;
+        Optional<Usuario> usuario = null;
+
+        try {
+            String find = deepFaceService.find(registroPontoRegistrarFaceRequest.getImg(), "/uploads/usuario");
+            results = objectMapper.readTree(find).get("results");
+            result = objectMapper.readTree(results.get(0).asText());
+            identity = result.get("identity").get("0").asText();
+            logger.info(identity);
+            Pattern p = Pattern.compile("(\\d+)");
+            Matcher m = p.matcher(identity);
+            if (m.find()) {
+                logger.info("sim");
+                usuarioId = Integer.valueOf(m.group(1));
+                usuario = usuarioRepository.findByUsuarioId(usuarioId);
+            }
+
+        } catch (Exception e) {
+            logger.info(e.getMessage());
+        }
+
+        //usuarioService.registrarPontoByUsuarioId(userDetails.getId());
+
+        return ResponseEntity.ofNullable(usuario);
     }
 
     @PreAuthorize("hasAuthority('Ponto.Read.All')")
