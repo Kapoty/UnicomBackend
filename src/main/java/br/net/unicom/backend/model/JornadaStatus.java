@@ -1,6 +1,6 @@
 package br.net.unicom.backend.model;
 
-import java.util.List;
+import java.time.LocalTime;
 
 import org.hibernate.validator.constraints.Length;
 
@@ -8,16 +8,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,57 +26,36 @@ import lombok.ToString;
     @UniqueConstraint(columnNames = { "empresa_id", "nome" })
     })
 @Getter @Setter @NoArgsConstructor @ToString
-public class Contrato {
+public class JornadaStatus {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer contratoId;
-
-    @NotBlank
-    @Length(max = 100)
-    private String nome;
-
-    @NotNull
-    @Column(name = "empresa_id")
+    @Column(name = "jornada_status_id")
+    private Integer jornadaStatusId;
+    
+    @Column(name = "empresa_id", nullable = false)
     private Integer empresaId;
 
     @ManyToOne
     @JoinColumn(name = "empresa_id", insertable = false, updatable = false)
     @JsonIgnore
     @ToString.Exclude
-    private Empresa empresa;
-
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "contrato")
-    @JsonIgnore
-    @ToString.Exclude
-    private List<Usuario> usuarioList;
+    Empresa empresa;
 
     @NotNull
-    @Column(name = "r_p_segunda")
-    private Boolean rPSegunda;
+    @Length(max = 50)
+    private String nome;
+
+    private LocalTime maxDuracao;
+
+    private Integer maxUso;
 
     @NotNull
-    @Column(name = "r_p_terca")
-    private Boolean rPTerca;
+    private Boolean usuarioPodeAtivar;
 
     @NotNull
-    @Column(name = "r_p_quarta")
-    private Boolean rPQuarta;
+    private Boolean supervisorPodeAtivar;
 
     @NotNull
-    @Column(name = "r_p_quinta")
-    private Boolean rPQuinta;
-
-    @NotNull
-    @Column(name = "r_p_sexta")
-    private Boolean rPSexta;
-
-    @NotNull
-    @Column(name = "r_p_sabado")
-    private Boolean rPSabado;
-
-    @NotNull
-    @Column(name = "r_p_domingo")
-    private Boolean rPDomingo;
-
+    private Boolean ativo;
 }

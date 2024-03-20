@@ -5,6 +5,9 @@ import java.util.List;
 
 import org.hibernate.validator.constraints.Length;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -57,6 +60,9 @@ public class PostUsuarioRequest {
 
     private Integer departamentoId;
 
-    private Integer jornadaId;
+    private Integer equipeId;
+
+    @Valid
+    private JornadaRequest jornada;
 
 }

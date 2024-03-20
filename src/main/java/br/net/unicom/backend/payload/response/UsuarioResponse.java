@@ -7,6 +7,7 @@ import br.net.unicom.backend.model.Cargo;
 import br.net.unicom.backend.model.Contrato;
 import br.net.unicom.backend.model.Departamento;
 import br.net.unicom.backend.model.Empresa;
+import br.net.unicom.backend.model.Equipe;
 import br.net.unicom.backend.model.Jornada;
 import br.net.unicom.backend.model.Papel;
 import lombok.AllArgsConstructor;
@@ -60,7 +61,9 @@ public class UsuarioResponse {
 
     private Departamento departamento;
 
-    private Integer jornadaId;
+    private Integer equipeId;
+
+    private Equipe equipe;
 
     private Jornada jornada;
 

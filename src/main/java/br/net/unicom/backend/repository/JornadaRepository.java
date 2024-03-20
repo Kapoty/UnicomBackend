@@ -10,7 +10,6 @@ import br.net.unicom.backend.model.Jornada;
 public interface JornadaRepository extends JpaRepository<Jornada, Long> {
 
     List<Jornada> findAll();
-    Optional<Jornada> findByJornadaId(Integer papelId);
-    List<Jornada> findAllByEmpresaId(Integer empresaId);
+    Optional<Jornada> findByUsuarioUsuarioId(Integer usuarioId);
 
 }

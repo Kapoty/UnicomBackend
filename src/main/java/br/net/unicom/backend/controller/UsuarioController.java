@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-import javax.print.attribute.standard.Media;
-
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +31,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import br.net.unicom.backend.model.Equipe;
+import br.net.unicom.backend.model.Jornada;
 import br.net.unicom.backend.model.Permissao;
 import br.net.unicom.backend.model.Usuario;
 import br.net.unicom.backend.model.UsuarioPapel;
@@ -43,7 +43,9 @@ import br.net.unicom.backend.payload.request.PostUsuarioRequest;
 import br.net.unicom.backend.payload.response.IframeCategoryResponse;
 import br.net.unicom.backend.payload.response.UsuarioMeResponse;
 import br.net.unicom.backend.payload.response.UsuarioResponse;
+import br.net.unicom.backend.repository.EquipeRepository;
 import br.net.unicom.backend.repository.IframeCategoryRepository;
+import br.net.unicom.backend.repository.JornadaRepository;
 import br.net.unicom.backend.repository.PapelRepository;
 import br.net.unicom.backend.repository.PermissaoRepository;
 import br.net.unicom.backend.repository.UsuarioPapelRepository;
@@ -83,6 +85,12 @@ public class UsuarioController {
     PapelRepository papelRepository;
 
     @Autowired
+    JornadaRepository jornadaRepository;
+
+    @Autowired
+    EquipeRepository equipeRepository;
+
+    @Autowired
     FileService fileService;
     
     @Autowired
@@ -96,7 +104,6 @@ public class UsuarioController {
 
     @Autowired
     PasswordEncoder encoder;
-
 
     @Autowired
 	private Validator validator;
@@ -112,31 +119,7 @@ public class UsuarioController {
     public ResponseEntity<UsuarioResponse> getUsuarioByEmpresaIdAndUsuarioId(@Valid @PathVariable("usuarioId") Integer usuarioId) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioIdAndEmpresaId(usuarioId, userDetails.getEmpresaId()).orElseThrow(NoSuchElementException::new);
-        UsuarioResponse usuarioResponse = new UsuarioResponse(
-                                usuario.getUsuarioId(),
-                                usuario.getEmail(),
-                                usuario.getNome(),
-                                usuario.getAtivo(),
-                                usuario.getMatricula(),
-                                usuario.getEmpresaId(),
-                                usuario.getEmpresa(),
-                                usuario.getUsuarioPapelList().stream().map(up -> up.getPapel()).collect(Collectors.toList()),
-                                usuario.getFotoPerfil(),
-                                usuario.getFotoPerfilVersao(),
-                                usuario.getDataNascimento(),
-                                usuario.getCpf(),
-                                usuario.getTelefoneCelular(),
-                                usuario.getWhatsapp(),
-                                usuario.getDataContratacao(),
-                                usuario.getCargoId(),
-                                usuario.getCargo(),
-                                usuario.getContratoId(),
-                                usuario.getContrato(),
-                                usuario.getDepartamentoId(),
-                                usuario.getDepartamento(),
-                                usuario.getJornadaId(),
-                                usuario.getJornada()
-                            );
+        UsuarioResponse usuarioResponse = usuarioService.usuarioToUsuarioResponse(usuario);
         return ResponseEntity.ok(usuarioResponse);
     }
 
@@ -151,8 +134,8 @@ public class UsuarioController {
         
         Resource file = fileService.load(usuarioService.getUsuarioFotoPerfilFilename(usuario));
         return ResponseEntity.ok()
-                             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
-                             .body(file);
+                            .contentType(MediaType.IMAGE_JPEG)
+                            .body(file);
     }
 
     @GetMapping("/{usuarioId}/foto-perfil")
@@ -220,21 +203,10 @@ public class UsuarioController {
     public ResponseEntity<UsuarioMeResponse> getUsuarioByMe() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(userDetails.getId()).get();
-        return ResponseEntity.ok(new UsuarioMeResponse(
-            usuario.getUsuarioId(),
-            usuario.getEmail(),
-            usuario.getNome(),
-            usuario.getAtivo(),
-            usuario.getMatricula(),
-            usuario.getEmpresaId(),
-            usuario.getEmpresa(),
-            usuario.getUsuarioPapelList().stream().map(up -> up.getPapel()).collect(Collectors.toList()),
-            SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream().map(a -> a.getAuthority()).collect(Collectors.toList()),
-            usuario.getFotoPerfil(),
-            usuario.getFotoPerfilVersao(),
-            usuario.getDepartamento(),
-            usuario.getCargo()
-        ));
+        UsuarioMeResponse usuarioMeResponse = modelMapper.map(usuario, UsuarioMeResponse.class);
+        usuarioMeResponse.setPapelList(papelRepository.findAllByUsuarioId(usuario.getUsuarioId()));
+        usuarioMeResponse.setPermissaoList(SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream().map(a -> a.getAuthority()).collect(Collectors.toList()));
+        return ResponseEntity.ok(usuarioMeResponse);
     }
 
     @PreAuthorize("hasAuthority('Iframe.Read.All')")
@@ -252,6 +224,13 @@ public class UsuarioController {
             iframeCategory.getIframeList().stream().filter((iframe) -> iframe.getAtivo()).collect(Collectors.toList())
         )));
         return ResponseEntity.ok(iframeCategoryResponsesList);
+    }
+
+    @PreAuthorize("hasAuthority('Equipe.Read.All')")
+    @GetMapping("/me/minha-equipe")
+    public ResponseEntity<List<Equipe>> getMinhaEquipeListByMe() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(equipeRepository.findAllBySupervisorId(userDetails.getId()));
     }
 
     @PreAuthorize("hasAuthority('Usuario.Write.All')")
@@ -316,8 +295,23 @@ public class UsuarioController {
         usuario.setContratoId(patchUsuarioRequest.getContratoId().orElse(null));
         if (patchUsuarioRequest.getDepartamentoId() != null)
         usuario.setDepartamentoId(patchUsuarioRequest.getDepartamentoId().orElse(null));
-        if (patchUsuarioRequest.getJornadaId() != null)
-        usuario.setJornadaId(patchUsuarioRequest.getJornadaId().orElse(null));
+        if (patchUsuarioRequest.getEquipeId() != null)
+        usuario.setEquipeId(patchUsuarioRequest.getEquipeId().orElse(null));
+        if (patchUsuarioRequest.getJornada() != null) {
+            Jornada jornada = usuario.getJornada();
+            if (patchUsuarioRequest.getJornada().orElse(null) == null) {
+                if (jornada != null)
+                    jornadaRepository.delete(jornada);
+            }
+            else {
+                if (jornada == null) {
+                    jornada = new Jornada();
+                    jornada.setUsuario(usuario);
+                }
+                modelMapper.map(patchUsuarioRequest.getJornada().get(), jornada);
+                jornadaRepository.saveAndFlush(jornada);
+            }
+        }
 
         usuario = usuarioRepository.saveAndFlush(usuario);
 
@@ -347,40 +341,24 @@ public class UsuarioController {
 
         usuario.setUsuarioPapelList(usuarioPapelList);
 
+        if (postUsuarioRequest.getJornada() != null) {
+            Jornada jornada = new Jornada();
+            jornada.setUsuario(usuario);
+            modelMapper.map(postUsuarioRequest.getJornada(), jornada);
+
+            usuario.setJornada(jornada);
+
+            jornadaRepository.saveAndFlush(jornada);
+        }
+
         usuario = usuarioRepository.saveAndFlush(usuario);
 
         usuarioPapelRepository.saveAllAndFlush(usuarioPapelList);
 
 
-        UsuarioResponse usuarioResponse = new UsuarioResponse(
-            usuario.getUsuarioId(),
-            usuario.getEmail(),
-            usuario.getNome(),
-            usuario.getAtivo(),
-            usuario.getMatricula(),
-            usuario.getEmpresaId(),
-            usuario.getEmpresa(),
-            usuario.getUsuarioPapelList().stream().map(up -> up.getPapel()).collect(Collectors.toList()),
-            usuario.getFotoPerfil(),
-            usuario.getFotoPerfilVersao(),
-            usuario.getDataNascimento(),
-            usuario.getCpf(),
-            usuario.getTelefoneCelular(),
-            usuario.getWhatsapp(),
-            usuario.getDataContratacao(),
-            usuario.getCargoId(),
-            usuario.getCargo(),
-            usuario.getContratoId(),
-            usuario.getContrato(),
-            usuario.getDepartamentoId(),
-            usuario.getDepartamento(),
-            usuario.getJornadaId(),
-            usuario.getJornada()
-        );
+        UsuarioResponse usuarioResponse = usuarioService.usuarioToUsuarioResponse(usuario);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioResponse);
     }
-
-
 
 }

@@ -1,11 +1,14 @@
 package br.net.unicom.backend.payload.request;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
 import org.hibernate.validator.constraints.Length;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -47,6 +50,8 @@ public class PatchUsuarioRequest {
 
     private Optional<Integer> departamentoId;
 
-    private Optional<Integer> jornadaId;
+    private Optional<Integer> equipeId;
+
+    private Optional<@Valid JornadaRequest> jornada;
 
 }

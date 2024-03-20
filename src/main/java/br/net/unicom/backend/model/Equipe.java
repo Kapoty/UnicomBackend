@@ -15,8 +15,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.PrimaryKeyJoinColumn;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -25,43 +25,43 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
+@Table(uniqueConstraints = {
+    @UniqueConstraint(columnNames = { "empresa_id", "nome" })
+    })
 @Getter @Setter @NoArgsConstructor @ToString
-public class Empresa {
+public class Equipe {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer empresaId;
+    private Integer equipeId;
 
     @NotBlank
     @Length(max = 100)
     private String nome;
 
-    @NotBlank
-    @Length(max = 18)
-    private String cnpj;
-
     @NotNull
-    @Column(name = "grupo_id")
-    private int grupoId;
+    @Column(name = "empresa_id")
+    private int empresaId;
 
     @ManyToOne
-    @JoinColumn(name = "grupo_id", insertable = false, updatable = false)
+    @JoinColumn(name = "empresa_id", insertable = false, updatable = false)
     @JsonIgnore
     @ToString.Exclude
-    private Grupo grupo;
+    private Empresa empresa;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "empresa")
+    @NotNull
+    @Column(name = "supervisor_id")
+    private int supervisorId;
+
+    @ManyToOne
+    @JoinColumn(name = "supervisor_id", referencedColumnName = "usuarioId", insertable = false, updatable = false)
     @JsonIgnore
     @ToString.Exclude
-    private List<EmpresaPermissao> empresaPermissaoList;
+    private Usuario supervisor;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "empresa")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "equipe")
     @JsonIgnore
     @ToString.Exclude
-    private List<Papel> papelList;
-
-    @OneToOne(mappedBy = "empresa")
-    @PrimaryKeyJoinColumn
-    private PontoConfiguracao pontoConfiguracao;
+    private List<Usuario> usuarioList;
 
 }

@@ -23,6 +23,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     List<Usuario> findAllByEmpresaId(Integer empresaId);
 
+    List<Usuario> findAllByEquipeId(Integer equipeId);
+
     @Query(value = "SELECT usuario_id FROM Usuario WHERE matricula = :matricula and empresa_id = :empresaId", nativeQuery = true)
     Integer getUsuarioIdByMatriculaAndEmpresaId(@Param("matricula") Integer matricula,@Param("empresaId") Integer empresaId);
 

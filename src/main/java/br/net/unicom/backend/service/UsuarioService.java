@@ -3,6 +3,7 @@ package br.net.unicom.backend.service;
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +12,11 @@ import br.net.unicom.backend.model.Usuario;
 import br.net.unicom.backend.model.exception.RegistroPontoFullException;
 import br.net.unicom.backend.model.exception.RegistroPontoLockedException;
 import br.net.unicom.backend.model.exception.RegistroPontoUnauthorizedException;
+import br.net.unicom.backend.payload.response.UsuarioResponse;
+import br.net.unicom.backend.repository.JornadaRepository;
+import br.net.unicom.backend.repository.PapelRepository;
 import br.net.unicom.backend.repository.RegistroPontoRepository;
+import br.net.unicom.backend.repository.UsuarioRepository;
 
 @Service
 public class UsuarioService {
@@ -22,9 +27,33 @@ public class UsuarioService {
     @Autowired
     RegistroPontoService registroPontoService;
 
+    @Autowired
+    UsuarioRepository usuarioRepository;
+
+    @Autowired
+    PapelRepository papelRepository;
+
+    @Autowired
+    JornadaRepository jornadaRepository;
+
+    ModelMapper modelMapper;
+
+    @Autowired
+    public void setModelMapper(ModelMapper modelMapper) {
+        this.modelMapper = modelMapper;
+        //this.modelMapper.typeMap(Usuario.class, UsuarioResponse.class)
+        //    .addMapping(usuario -> papelRepository.findAllByUsuarioId(usuario.getUsuarioId()), UsuarioResponse::setPapelList);
+    }
+
+    public UsuarioResponse usuarioToUsuarioResponse(Usuario usuario) {
+        UsuarioResponse usuarioResponse = new UsuarioResponse();
+        this.modelMapper.map(usuario, usuarioResponse);
+        usuarioResponse.setPapelList(papelRepository.findAllByUsuarioId(usuario.getUsuarioId()));
+        return usuarioResponse;
+    }
+
     public String getUsuarioFotoPerfilFilename(Usuario usuario) {
         return "usuario/" + usuario.getUsuarioId() + "/foto_perfil.jpg";
-        //return "usuario_foto_perfil_" + usuario.getUsuarioId() + ".jpg";
     }
 
     public void registrarPontoByUsuarioId(Integer usuarioId) throws RegistroPontoFullException, RegistroPontoLockedException, RegistroPontoUnauthorizedException {

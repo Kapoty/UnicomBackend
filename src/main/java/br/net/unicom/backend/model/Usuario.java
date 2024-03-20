@@ -1,9 +1,11 @@
 package br.net.unicom.backend.model;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.hibernate.validator.constraints.Length;
+import org.springframework.boot.autoconfigure.amqp.RabbitConnectionDetails.Address;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -16,6 +18,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.Email;
@@ -75,6 +79,8 @@ public class Usuario {
 
     private LocalDate dataContratacao;
 
+    private LocalDateTime vistoPorUltimo;
+
     @NotNull
     @Column(name = "empresa_id")
     private Integer empresaId;
@@ -111,11 +117,15 @@ public class Usuario {
     @JoinColumn(name = "departamento_id", insertable = false, updatable = false)
     private Departamento departamento;
 
-    @Column(name = "jornada_id")
-    private Integer jornadaId;
+    @Column(name = "equipe_id")
+    private Integer equipeId;
 
     @ManyToOne
-    @JoinColumn(name = "jornada_id", insertable = false, updatable = false)
+    @JoinColumn(name = "equipe_id", insertable = false, updatable = false)
+    private Equipe equipe;
+
+    @OneToOne(mappedBy = "usuario")
+    @PrimaryKeyJoinColumn
     private Jornada jornada;
 
 }

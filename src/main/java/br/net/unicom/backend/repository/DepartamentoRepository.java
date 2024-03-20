@@ -10,7 +10,7 @@ import br.net.unicom.backend.model.Departamento;
 public interface DepartamentoRepository extends JpaRepository<Departamento, Long> {
 
     List<Departamento> findAll();
-    Optional<Departamento> findByDepartamentoId(Integer papelId);
+    Optional<Departamento> findByDepartamentoId(Integer departamentoId);
     List<Departamento> findAllByEmpresaId(Integer empresaId);
 
 }
