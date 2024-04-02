@@ -15,6 +15,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import br.net.unicom.backend.model.exception.JornadaStatusNaoEncontradoException;
+import br.net.unicom.backend.model.exception.JornadaStatusNaoPermitidoException;
+import br.net.unicom.backend.model.exception.PontoConfiguracaoNaoEncontradoException;
 import br.net.unicom.backend.model.exception.RegistroPontoFullException;
 import br.net.unicom.backend.model.exception.RegistroPontoLockedException;
 import br.net.unicom.backend.model.exception.RegistroPontoUnauthorizedException;
@@ -72,6 +75,7 @@ public class ValidationExceptionHandler {
 
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<?> handleNoSuchElementException(NoSuchElementException e) {
+        logger.error(e.getMessage(), e);
         Map<String, Object> response = new HashMap<>();
         Map<String, String> errorMap = new HashMap<>();
         errorMap.put("elemento", "elemento não encontrado");
@@ -129,6 +133,33 @@ public class ValidationExceptionHandler {
         Map<String, Object> response = new HashMap<>();
         Map<String, String> errorMap = new HashMap<>();
         errorMap.put("token", "dispositivo não autorizado");
+        response.put("errors", errorMap);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(PontoConfiguracaoNaoEncontradoException.class)
+    public ResponseEntity<?> handlePontoConfiguracaoNaoEncontradoException(PontoConfiguracaoNaoEncontradoException e) {
+        Map<String, Object> response = new HashMap<>();
+        Map<String, String> errorMap = new HashMap<>();
+        errorMap.put("pontoConfiguracao", "ponto configuração não encontrado");
+        response.put("errors", errorMap);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(JornadaStatusNaoEncontradoException.class)
+    public ResponseEntity<?> handleJornadaStatusNaoEncontradoException(JornadaStatusNaoEncontradoException e) {
+        Map<String, Object> response = new HashMap<>();
+        Map<String, String> errorMap = new HashMap<>();
+        errorMap.put("jornadaStatus", "status não encontrado");
+        response.put("errors", errorMap);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(JornadaStatusNaoPermitidoException.class)
+    public ResponseEntity<?> handleJornadaStatusNaoPermitidoException(JornadaStatusNaoPermitidoException e) {
+        Map<String, Object> response = new HashMap<>();
+        Map<String, String> errorMap = new HashMap<>();
+        errorMap.put("jornadaStatus", "status não permitido:" + e.getMessage());
         response.put("errors", errorMap);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }

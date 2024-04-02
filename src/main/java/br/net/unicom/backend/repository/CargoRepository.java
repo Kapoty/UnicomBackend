@@ -10,7 +10,7 @@ import br.net.unicom.backend.model.Cargo;
 public interface CargoRepository extends JpaRepository<Cargo, Long> {
 
     List<Cargo> findAll();
-    Optional<Cargo> findByCargoId(Integer papelId);
+    Optional<Cargo> findByCargoId(Integer cargoId);
     List<Cargo> findAllByEmpresaId(Integer empresaId);
 
 }

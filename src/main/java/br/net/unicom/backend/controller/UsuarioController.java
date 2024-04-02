@@ -1,5 +1,6 @@
 package br.net.unicom.backend.controller;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -10,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -355,10 +355,17 @@ public class UsuarioController {
 
         usuarioPapelRepository.saveAllAndFlush(usuarioPapelList);
 
-
         UsuarioResponse usuarioResponse = usuarioService.usuarioToUsuarioResponse(usuario);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioResponse);
+    }
+
+    @PostMapping("/me/ping")
+    public ResponseEntity<Void> usuarioPing() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Usuario usuario = usuarioRepository.findByUsuarioId(userDetails.getId()).get();
+        usuarioService.ping(usuario);
+        return ResponseEntity.noContent().build();
     }
 
 }

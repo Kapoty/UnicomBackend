@@ -26,13 +26,13 @@ public class PontoConfiguracao {
     private Integer empresaId;
 
     @NotNull
-    private LocalTime intervaloVerificacaoRegular;
+    private Integer intervaloVerificacaoRegular;
 
     @NotNull
-    private LocalTime intervaloVerificacaoHoraExtra;
+    private Integer intervaloVerificacaoHoraExtra;
 
     @NotNull
-    private LocalTime horaExtraMax;
+    private Integer horaExtraMax;
 
     @Column(name = "status_regular_id", nullable = false)
     @NotNull

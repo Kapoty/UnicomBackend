@@ -2,8 +2,6 @@ package br.net.unicom.backend.model;
 
 import java.time.LocalTime;
 
-import org.hibernate.validator.constraints.Length;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
@@ -13,8 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -46,7 +42,7 @@ public class RegistroJornadaStatus {
     @JoinColumn(name = "jornada_status_id", insertable = false, updatable = false)
     @JsonIgnore
     @ToString.Exclude
-    RegistroJornada jornadaStatus;
+    JornadaStatus jornadaStatus;
 
     @NotNull
     private LocalTime inicio;

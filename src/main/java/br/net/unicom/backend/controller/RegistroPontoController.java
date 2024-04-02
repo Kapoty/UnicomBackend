@@ -148,9 +148,9 @@ public class RegistroPontoController {
 
     @PreAuthorize("hasAuthority('Ponto.Read.All')")
     @PostMapping("/me/hoje/registrar")
-    public ResponseEntity<Void> registrarPontoByMeHoje(@Valid @RequestBody RegistroPontoRegistrarRequest registroPontoegistroPontoRegistrarRequest) throws RegistroPontoFullException, RegistroPontoLockedException, RegistroPontoUnauthorizedException  {
+    public ResponseEntity<Void> registrarPontoByMeHoje(@Valid @RequestBody RegistroPontoRegistrarRequest registroPontoRegistrarRequest) throws RegistroPontoFullException, RegistroPontoLockedException, RegistroPontoUnauthorizedException  {
 
-        if (!pontoJwtUtils.validateJwtToken(registroPontoegistroPontoRegistrarRequest.getToken()))
+        if (!pontoJwtUtils.validateJwtToken(registroPontoRegistrarRequest.getToken()))
             throw new RegistroPontoUnauthorizedException();
 
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

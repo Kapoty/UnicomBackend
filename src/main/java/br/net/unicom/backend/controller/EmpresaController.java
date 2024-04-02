@@ -21,6 +21,7 @@ import br.net.unicom.backend.model.Contrato;
 import br.net.unicom.backend.model.Departamento;
 import br.net.unicom.backend.model.Empresa;
 import br.net.unicom.backend.model.Equipe;
+import br.net.unicom.backend.model.JornadaStatus;
 import br.net.unicom.backend.model.Papel;
 import br.net.unicom.backend.model.Permissao;
 import br.net.unicom.backend.model.Usuario;
@@ -31,6 +32,7 @@ import br.net.unicom.backend.repository.DepartamentoRepository;
 import br.net.unicom.backend.repository.EmpresaRepository;
 import br.net.unicom.backend.repository.EquipeRepository;
 import br.net.unicom.backend.repository.JornadaRepository;
+import br.net.unicom.backend.repository.JornadaStatusRepository;
 import br.net.unicom.backend.repository.PapelRepository;
 import br.net.unicom.backend.repository.PermissaoRepository;
 import br.net.unicom.backend.repository.UsuarioRepository;
@@ -79,6 +81,9 @@ public class EmpresaController {
 
     @Autowired
     EquipeRepository equipeRepository;
+
+    @Autowired
+    JornadaStatusRepository jornadaStatusRepository;
 
     @Autowired
     EmpresaService empresaService;
@@ -161,5 +166,12 @@ public class EmpresaController {
     public ResponseEntity<List<Equipe>> getEquipeListByEmpresaMe() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(equipeRepository.findAllByEmpresaId(userDetails.getEmpresaId()));
+    }
+
+    @PreAuthorize("hasAuthority('Usuario.Read.All')")
+    @GetMapping("/me/jornada-status")
+    public ResponseEntity<List<JornadaStatus>> getJornadaStatusListByEmpresaMe() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(jornadaStatusRepository.findAllByEmpresaId(userDetails.getEmpresaId()));
     }
 }

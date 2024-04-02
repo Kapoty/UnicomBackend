@@ -1,5 +1,6 @@
 package br.net.unicom.backend.service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 
@@ -75,6 +76,15 @@ public class UsuarioService {
         else throw new RegistroPontoFullException();
 
         registroPontoRepository.save(registroPonto);
+    }
+
+    public Duration getDurationSinceUsuarioVistoPorUltimo(Usuario usuario) {
+        return Duration.between(usuario.getVistoPorUltimo(), LocalDateTime.now());
+    }
+
+    public void ping(Usuario usuario) {
+        usuario.setVistoPorUltimo(LocalDateTime.now());
+        usuarioRepository.saveAndFlush(usuario);
     }
 
 }

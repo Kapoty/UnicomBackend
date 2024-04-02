@@ -56,14 +56,16 @@ public class RegistroJornada {
     private Boolean horaExtraAuto;
 
     @NotNull
-    @Column(name = "status_id")
-    private Integer statusId;
+    private Boolean emHoraExtra;
+
+    @Column(name = "status_atual_id")
+    private Integer statusAtualId;
 
     @ManyToOne
-    @JoinColumn(name = "status_id", referencedColumnName = "registro_jornada_status_id", insertable = false, updatable = false)
+    @JoinColumn(name = "status_atual_id", referencedColumnName = "registro_jornada_status_id", insertable = false, updatable = false)
     @JsonIgnore
     @ToString.Exclude
-    private RegistroJornadaStatus status;
+    private RegistroJornadaStatus statusAtual;
 
     @NotNull
     @Column(name = "usuario_id")

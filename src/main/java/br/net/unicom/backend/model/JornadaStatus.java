@@ -46,7 +46,7 @@ public class JornadaStatus {
     @Length(max = 50)
     private String nome;
 
-    private LocalTime maxDuracao;
+    private Integer maxDuracao;
 
     private Integer maxUso;
 
@@ -58,4 +58,9 @@ public class JornadaStatus {
 
     @NotNull
     private Boolean ativo;
+
+    private String cor;
+
+    @NotNull
+    private Boolean agrupar;
 }
