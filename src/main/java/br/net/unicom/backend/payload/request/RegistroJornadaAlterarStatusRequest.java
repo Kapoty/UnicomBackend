@@ -9,7 +9,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @ToString
-public class RegistroJornadaAlterarStatusByMeRequest {
+public class RegistroJornadaAlterarStatusRequest {
 
     @NotBlank
     private String token;

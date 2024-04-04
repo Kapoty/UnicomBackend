@@ -1,7 +1,5 @@
 package br.net.unicom.backend.model;
 
-import java.time.LocalTime;
-
 import org.hibernate.validator.constraints.Length;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -33,7 +31,7 @@ public class JornadaStatus {
     @Column(name = "jornada_status_id")
     private Integer jornadaStatusId;
     
-    @Column(name = "empresa_id", nullable = false)
+    @Column(name = "empresa_id", nullable = true)
     private Integer empresaId;
 
     @ManyToOne
@@ -41,6 +39,15 @@ public class JornadaStatus {
     @JsonIgnore
     @ToString.Exclude
     Empresa empresa;
+
+    @Column(name = "contrato_id", nullable = true)
+    private Integer contratoId;
+
+    @ManyToOne
+    @JoinColumn(name = "contrato_id", insertable = false, updatable = false)
+    @JsonIgnore
+    @ToString.Exclude
+    Contrato contrato;
 
     @NotNull
     @Length(max = 50)

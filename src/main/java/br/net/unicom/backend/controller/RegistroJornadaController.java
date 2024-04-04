@@ -1,24 +1,31 @@
 package br.net.unicom.backend.controller;
 
+import java.util.NoSuchElementException;
+import java.util.Optional;
+
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.net.unicom.backend.model.PontoConfiguracao;
 import br.net.unicom.backend.model.RegistroJornada;
+import br.net.unicom.backend.model.Usuario;
 import br.net.unicom.backend.model.exception.JornadaStatusNaoEncontradoException;
 import br.net.unicom.backend.model.exception.JornadaStatusNaoPermitidoException;
 import br.net.unicom.backend.model.exception.PontoConfiguracaoNaoEncontradoException;
@@ -26,7 +33,7 @@ import br.net.unicom.backend.model.exception.RegistroPontoUnauthorizedException;
 import br.net.unicom.backend.model.exception.UsuarioNaoRegistraPontoHojeException;
 import br.net.unicom.backend.model.exception.UsuarioSemContratoException;
 import br.net.unicom.backend.model.exception.UsuarioSemJornadaException;
-import br.net.unicom.backend.payload.request.RegistroJornadaAlterarStatusByMeRequest;
+import br.net.unicom.backend.payload.request.RegistroJornadaAlterarStatusRequest;
 import br.net.unicom.backend.payload.request.RegistroJornadaLogarRequest;
 import br.net.unicom.backend.payload.request.RegistroPontoValidateTokenRequest;
 import br.net.unicom.backend.payload.response.RegistroJornadaResponse;
@@ -86,34 +93,45 @@ public class RegistroJornadaController {
     Logger logger = LoggerFactory.getLogger(RegistroPontoController.class);
 
     @PreAuthorize("hasAuthority('Jornada.Read.All')")
-    @GetMapping("/me/hoje")
-    public ResponseEntity<RegistroJornadaResponse> getRegistroJornadaByMeHoje() throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException {
+    @GetMapping("/{usuarioId}/hoje")
+    public ResponseEntity<RegistroJornadaResponse> getRegistroJornadaByMeHoje(@PathVariable("usuarioId") String usuarioId, @RequestParam(defaultValue = "false") Boolean completo) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException {
 
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        PontoConfiguracao pontoConfiguracao = pontoConfiguracaoRepository.findByEmpresaId(userDetails.getEmpresaId()).orElseThrow(PontoConfiguracaoNaoEncontradoException::new);
+        Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
 
-        RegistroJornada registroJornada = registroJornadaService.getRegistroJornadaByUsuarioIdHoje(userDetails.getId());
+        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario))
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        PontoConfiguracao pontoConfiguracao = pontoConfiguracaoRepository.findByEmpresaId(usuario.getEmpresaId()).orElseThrow(PontoConfiguracaoNaoEncontradoException::new);
+
+        RegistroJornada registroJornada = registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId());
 
         RegistroJornadaResponse registroJornadaResponse = modelMapper.map(registroJornada, RegistroJornadaResponse.class);
 
         registroJornadaResponse.setStatusAtual(registroJornadaService.getRegistroJornadaStatusAtual(registroJornada));
 
-        registroJornadaResponse.setCanUsuarioLogar(registroJornadaService.canUsuarioLogar(registroJornada));
-
-        registroJornadaResponse.setCanUsuarioIniciarHoraExtra(registroJornadaService.canUsuarioIniciarHoraExtra(registroJornada));
-
-        registroJornadaResponse.setCanUsuarioDeslogar(registroJornadaService.canUsuarioDeslogar(registroJornada));
-
-        registroJornadaResponse.setStatusGroupedList(registroJornadaService.getStatusGroupedList(registroJornada));
-
-        registroJornadaResponse.setStatusOptionList(registroJornadaService.getStatusOptionList(registroJornada));
-
         registroJornadaResponse.setSecondsToAusente(registroJornadaService.getSecondsToAusente(registroJornada));
 
-        registroJornadaResponse.setStatusRegularId(pontoConfiguracao.getStatusRegularId());
+        registroJornadaResponse.setCompleto(completo);
 
-        registroJornadaResponse.setStatusHoraExtraId(pontoConfiguracao.getStatusHoraExtraId());
+        if (completo) {
+            registroJornadaResponse.setCanUsuarioLogar(Optional.of(registroJornadaService.canUsuarioLogar(registroJornada)));
+
+            registroJornadaResponse.setCanUsuarioIniciarHoraExtra(Optional.of(registroJornadaService.canUsuarioIniciarHoraExtra(registroJornada)));
+
+            registroJornadaResponse.setCanUsuarioDeslogar(Optional.of(registroJornadaService.canUsuarioDeslogar(registroJornada)));
+
+            registroJornadaResponse.setStatusGroupedList(Optional.of(registroJornadaService.getStatusGroupedList(registroJornada)));
+
+            registroJornadaResponse.setStatusOptionList(Optional.of(registroJornadaService.getStatusOptionList(registroJornada)));
+
+            registroJornadaResponse.setStatusRegularId(Optional.of(pontoConfiguracao.getStatusRegularId()));
+
+            registroJornadaResponse.setStatusHoraExtraId(Optional.of(pontoConfiguracao.getStatusHoraExtraId()));
+
+            registroJornadaResponse.setStatusAusenteId(Optional.of(pontoConfiguracao.getStatusAusenteId()));
+        }
 
         return ResponseEntity.ok(registroJornadaResponse);
     }
@@ -136,46 +154,70 @@ public class RegistroJornadaController {
     }
 
     @PreAuthorize("hasAuthority('Jornada.Read.All')")
-    @PostMapping("/me/logar")
-    public ResponseEntity<Void> logar(@Valid @RequestBody RegistroJornadaLogarRequest registroJornadaLogarRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException {
+    @PostMapping("/{usuarioId}/logar")
+    public ResponseEntity<Void> logar(@PathVariable("usuarioId") String usuarioId, @Valid @RequestBody RegistroJornadaLogarRequest registroJornadaLogarRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException {
         if (!pontoJwtUtils.validateJwtToken(registroJornadaLogarRequest.getToken()))
             throw new RegistroPontoUnauthorizedException();
         
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        registroJornadaService.logar(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(userDetails.getId()));
+
+        Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
+
+        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario))
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        registroJornadaService.logar(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
         return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasAuthority('Jornada.Read.All')")
-    @PostMapping("/me/deslogar")
-    public ResponseEntity<Void> deslogar(@Valid @RequestBody RegistroJornadaLogarRequest registroJornadaLogarRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException {
+    @PostMapping("/{usuarioId}/deslogar")
+    public ResponseEntity<Void> deslogar(@PathVariable("usuarioId") String usuarioId, @Valid @RequestBody RegistroJornadaLogarRequest registroJornadaLogarRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException {
         if (!pontoJwtUtils.validateJwtToken(registroJornadaLogarRequest.getToken()))
             throw new RegistroPontoUnauthorizedException();
 
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        registroJornadaService.deslogar(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(userDetails.getId()));
+
+        Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
+
+        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario))
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        registroJornadaService.deslogar(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
         return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasAuthority('Jornada.Read.All')")
-    @PostMapping("/me/iniciar-hora-extra")
-    public ResponseEntity<Void> iniciarHoraExtra(@Valid @RequestBody RegistroJornadaLogarRequest registroJornadaLogarRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException {
+    @PostMapping("/{usuarioId}/iniciar-hora-extra")
+    public ResponseEntity<Void> iniciarHoraExtra(@PathVariable("usuarioId") String usuarioId, @Valid @RequestBody RegistroJornadaLogarRequest registroJornadaLogarRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException {
         if (!pontoJwtUtils.validateJwtToken(registroJornadaLogarRequest.getToken()))
             throw new RegistroPontoUnauthorizedException();
 
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        registroJornadaService.iniciarHoraExtra(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(userDetails.getId()));
+
+        Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
+
+        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario))
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        registroJornadaService.iniciarHoraExtra(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
         return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasAuthority('Jornada.Read.All')")
-    @PostMapping("/me/toggle-hora-extra-auto")
-    public ResponseEntity<Void> horaExtraAuto(@Valid @RequestBody RegistroJornadaLogarRequest registroJornadaLogarRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException {
+    @PostMapping("/{usuarioId}/toggle-hora-extra-auto")
+    public ResponseEntity<Void> horaExtraAuto(@PathVariable("usuarioId") String usuarioId, @Valid @RequestBody RegistroJornadaLogarRequest registroJornadaLogarRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException {
         if (!pontoJwtUtils.validateJwtToken(registroJornadaLogarRequest.getToken()))
             throw new RegistroPontoUnauthorizedException();
 
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        registroJornadaService.toggleHoraExtraAuto(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(userDetails.getId()));
+
+        Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
+
+        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario))
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        registroJornadaService.toggleHoraExtraAuto(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
         return ResponseEntity.noContent().build();
     }
 
@@ -191,14 +233,26 @@ public class RegistroJornadaController {
     }
 
     @PreAuthorize("hasAuthority('Jornada.Read.All')")
-    @PostMapping("/me/alterar-status")
-    public ResponseEntity<Void> alterarStatusByMe(@Valid @RequestBody RegistroJornadaAlterarStatusByMeRequest registroJornadaAlterarStatusByMeRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException, JornadaStatusNaoEncontradoException, JornadaStatusNaoPermitidoException {
-        if (!pontoJwtUtils.validateJwtToken(registroJornadaAlterarStatusByMeRequest.getToken()))
+    @PostMapping("/{usuarioId}/alterar-status")
+    public ResponseEntity<Void> alterarStatusByMe(@PathVariable("usuarioId") String usuarioId, @Valid @RequestBody RegistroJornadaAlterarStatusRequest registroJornadaAlterarStatusRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException, JornadaStatusNaoEncontradoException, JornadaStatusNaoPermitidoException {
+        if (!pontoJwtUtils.validateJwtToken(registroJornadaAlterarStatusRequest.getToken()))
             throw new RegistroPontoUnauthorizedException();
 
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        registroJornadaService.alterarStatusByMe(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(userDetails.getId()), registroJornadaAlterarStatusByMeRequest.getJornadaStatusId());
-        return ResponseEntity.noContent().build();
+
+        Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
+
+        if (usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario)) {
+            registroJornadaService.alterarStatusBySupervisor(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()), registroJornadaAlterarStatusRequest.getJornadaStatusId());
+            return ResponseEntity.noContent().build();
+        }
+
+        if (userDetails.getId() == usuario.getUsuarioId()) {
+            registroJornadaService.alterarStatusByMe(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()), registroJornadaAlterarStatusRequest.getJornadaStatusId());
+            return ResponseEntity.noContent().build();
+        }
+        
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
 }

@@ -3,8 +3,6 @@ package br.net.unicom.backend.model;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import org.hibernate.validator.constraints.Length;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
@@ -35,10 +33,6 @@ public class RegistroJornada {
 
     @NotNull
     private LocalDate data;
-
-    @NotNull
-    @Length(max = 50)
-    private String contratoNome;
 
     @NotNull
     private LocalTime jornadaEntrada;
@@ -76,5 +70,15 @@ public class RegistroJornada {
     @JsonIgnore
     @ToString.Exclude
     private Usuario usuario;
+
+    @NotNull
+    @Column(name = "contrato_id")
+    private Integer contratoId;
+
+    @ManyToOne
+    @JoinColumn(name = "contrato_id", insertable = false, updatable = false)
+    @JsonIgnore
+    @ToString.Exclude
+    private Contrato contrato;
 
 }

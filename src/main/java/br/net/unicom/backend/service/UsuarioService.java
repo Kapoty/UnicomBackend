@@ -8,16 +8,19 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import br.net.unicom.backend.model.RegistroJornada;
 import br.net.unicom.backend.model.RegistroPonto;
 import br.net.unicom.backend.model.Usuario;
 import br.net.unicom.backend.model.exception.RegistroPontoFullException;
 import br.net.unicom.backend.model.exception.RegistroPontoLockedException;
 import br.net.unicom.backend.model.exception.RegistroPontoUnauthorizedException;
+import br.net.unicom.backend.payload.response.UsuarioMinhaEquipeResponse;
 import br.net.unicom.backend.payload.response.UsuarioResponse;
 import br.net.unicom.backend.repository.JornadaRepository;
 import br.net.unicom.backend.repository.PapelRepository;
 import br.net.unicom.backend.repository.RegistroPontoRepository;
 import br.net.unicom.backend.repository.UsuarioRepository;
+import br.net.unicom.backend.security.service.UserDetailsImpl;
 
 @Service
 public class UsuarioService {
@@ -51,6 +54,23 @@ public class UsuarioService {
         this.modelMapper.map(usuario, usuarioResponse);
         usuarioResponse.setPapelList(papelRepository.findAllByUsuarioId(usuario.getUsuarioId()));
         return usuarioResponse;
+    }
+
+    public UsuarioMinhaEquipeResponse usuarioToUsuarioMinhaEquipeResponse(Usuario usuario) {
+        UsuarioMinhaEquipeResponse usuarioMinhaEquipeResponse = new UsuarioMinhaEquipeResponse();
+        this.modelMapper.map(usuario, usuarioMinhaEquipeResponse);
+        return usuarioMinhaEquipeResponse;
+    }
+
+    public Integer parseUsuarioIdString(UserDetailsImpl userDetails, String usuarioId) {
+        if (usuarioId.equals("me")) {
+            return userDetails.getId();
+        }
+        return Integer.valueOf(usuarioId);
+    }
+
+    public Boolean isUsuarioSupervisorOf(Integer supervisorId, Usuario usuario) {
+        return (usuario.getEquipe() != null && supervisorId == usuario.getEquipe().getSupervisorId());
     }
 
     public String getUsuarioFotoPerfilFilename(Usuario usuario) {

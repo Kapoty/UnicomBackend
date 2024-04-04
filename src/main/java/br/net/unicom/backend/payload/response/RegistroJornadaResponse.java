@@ -1,9 +1,9 @@
 package br.net.unicom.backend.payload.response;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,6 +14,8 @@ import lombok.ToString;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @ToString
 public class RegistroJornadaResponse {
+
+    private Boolean completo;
 
     private Integer registroJornadaId;
 
@@ -31,26 +33,26 @@ public class RegistroJornadaResponse {
 
     private Boolean horaExtraAuto;
 
-    private RegistroJornadaStatusAtualResponse statusAtual;
-
-    private List<JornadaStatusOptionResponse> statusOptionList;
-
-    private List<JornadaStatusGroupedResponse> statusGroupedList;
-
-    private LocalDateTime vistoPorUltimo;
-
-    private Boolean canUsuarioLogar;
-
-    private Boolean canUsuarioIniciarHoraExtra;
-
-    private Boolean canUsuarioDeslogar;
-
     private Boolean emHoraExtra;
+
+    private RegistroJornadaStatusAtualResponse statusAtual;
 
     private Integer secondsToAusente;
 
-    private Integer statusRegularId;
+    private Optional<List<JornadaStatusOptionResponse>> statusOptionList;
 
-    private Integer statusHoraExtraId;
+    private Optional<List<JornadaStatusGroupedResponse>> statusGroupedList;
+
+    private Optional<Boolean> canUsuarioLogar;
+
+    private Optional<Boolean> canUsuarioIniciarHoraExtra;
+
+    private Optional<Boolean> canUsuarioDeslogar;
+
+    private Optional<Integer> statusRegularId;
+
+    private Optional<Integer> statusHoraExtraId;
+
+    private Optional<Integer> statusAusenteId;
 
 }

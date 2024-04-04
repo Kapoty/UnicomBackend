@@ -21,4 +21,6 @@ public class RegistroJornadaStatusAtualResponse {
 
     private Boolean usuarioPodeAtivar;
 
+    private Boolean supervisorPodeAtivar;
+
 }

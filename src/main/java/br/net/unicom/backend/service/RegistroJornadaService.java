@@ -99,7 +99,8 @@ public class RegistroJornadaService {
             registroJornada = new RegistroJornada();
             registroJornada.setUsuarioId(usuario.getUsuarioId());
             registroJornada.setUsuario(usuario);
-            registroJornada.setContratoNome(contrato.getNome());
+            registroJornada.setContratoId(contrato.getContratoId());
+            registroJornada.setContrato(contrato);
             registroJornada.setData(data);
             registroJornada.setJornadaEntrada(jornadaExcecao.get().getEntrada());
             registroJornada.setJornadaIntervaloInicio(jornadaExcecao.get().getIntervaloInicio());
@@ -150,7 +151,8 @@ public class RegistroJornadaService {
             registroJornada = new RegistroJornada();
             registroJornada.setUsuarioId(usuario.getUsuarioId());
             registroJornada.setUsuario(usuario);
-            registroJornada.setContratoNome(contrato.getNome());
+            registroJornada.setContratoId(contrato.getContratoId());
+            registroJornada.setContrato(contrato);
             registroJornada.setData(data);
             registroJornada.setJornadaEntrada(jornada.getEntrada());
             registroJornada.setJornadaIntervaloInicio(jornada.getIntervaloInicio());
@@ -275,14 +277,12 @@ public class RegistroJornadaService {
 
         PontoConfiguracao pontoConfiguracao = pontoConfiguracaoRepository.findByEmpresaId(registroJornada.getUsuario().getEmpresaId()).orElseThrow(PontoConfiguracaoNaoEncontradoException::new);
 
-        JornadaStatus novoStatus = jornadaStatusRepository.findByJornadaStatusIdAndEmpresaId(jornadaStatusId, registroJornada.getUsuario().getEmpresaId()).orElseThrow(JornadaStatusNaoEncontradoException::new);
+        JornadaStatus novoStatus = jornadaStatusRepository.findByJornadaStatusIdAndEmpresaIdAndContratoId(jornadaStatusId, registroJornada.getUsuario().getEmpresaId(), registroJornada.getContratoId()).orElseThrow(JornadaStatusNaoEncontradoException::new);
 
         if (novoStatus.getJornadaStatusId() == registroJornada.getStatusAtual().getJornadaStatusId())
                 throw new JornadaStatusNaoPermitidoException("novo status não pode ser igual ao atual");
 
-        if (!registroJornada.getStatusAtual().getJornadaStatus().getUsuarioPodeAtivar() &&
-            registroJornada.getStatusAtual().getJornadaStatusId() != pontoConfiguracao.getStatusRegularId() &&
-            registroJornada.getStatusAtual().getJornadaStatusId() != pontoConfiguracao.getStatusHoraExtraId())
+        if (!registroJornada.getStatusAtual().getJornadaStatus().getUsuarioPodeAtivar())
             throw new JornadaStatusNaoPermitidoException("usuário não pode ativar o status atual");
 
         if (novoStatus.getJornadaStatusId() == pontoConfiguracao.getStatusRegularId()) {
@@ -295,7 +295,7 @@ public class RegistroJornadaService {
         } else if (novoStatus.getJornadaStatusId() == pontoConfiguracao.getStatusHoraExtraId()) {
 
             if (!registroJornada.getEmHoraExtra())
-                throw new JornadaStatusNaoPermitidoException("bão está em hora extra");
+                throw new JornadaStatusNaoPermitidoException("não está em hora extra");
 
             alterarStatus(registroJornada, pontoConfiguracao.getStatusHoraExtra());
         } else {
@@ -305,6 +305,38 @@ public class RegistroJornadaService {
 
             if (novoStatus.getMaxUso() != null && getRegistroJornadaStatusUsosTotal(registroJornada, novoStatus) >= novoStatus.getMaxUso())
                 throw new JornadaStatusNaoPermitidoException("max. de uso atingido");
+
+            alterarStatus(registroJornada, novoStatus);
+        }
+        
+    }
+
+    public void alterarStatusBySupervisor(RegistroJornada registroJornada, Integer jornadaStatusId) throws JornadaStatusNaoEncontradoException, JornadaStatusNaoPermitidoException, PontoConfiguracaoNaoEncontradoException {
+
+        PontoConfiguracao pontoConfiguracao = pontoConfiguracaoRepository.findByEmpresaId(registroJornada.getUsuario().getEmpresaId()).orElseThrow(PontoConfiguracaoNaoEncontradoException::new);
+
+        JornadaStatus novoStatus = jornadaStatusRepository.findByJornadaStatusIdAndEmpresaIdAndContratoId(jornadaStatusId, registroJornada.getUsuario().getEmpresaId(), registroJornada.getContratoId()).orElseThrow(JornadaStatusNaoEncontradoException::new);
+
+        if (novoStatus.getJornadaStatusId() == registroJornada.getStatusAtual().getJornadaStatusId())
+                throw new JornadaStatusNaoPermitidoException("novo status não pode ser igual ao atual");
+
+        if (novoStatus.getJornadaStatusId() == pontoConfiguracao.getStatusRegularId()) {
+
+            if (registroJornada.getEmHoraExtra())
+                throw new JornadaStatusNaoPermitidoException("está em hora extra");
+                
+            alterarStatus(registroJornada, pontoConfiguracao.getStatusRegular());
+
+        } else if (novoStatus.getJornadaStatusId() == pontoConfiguracao.getStatusHoraExtraId()) {
+
+            if (!registroJornada.getEmHoraExtra())
+                throw new JornadaStatusNaoPermitidoException("não está em hora extra");
+
+            alterarStatus(registroJornada, pontoConfiguracao.getStatusHoraExtra());
+        } else {
+
+            if (!novoStatus.getSupervisorPodeAtivar())
+                throw new JornadaStatusNaoPermitidoException("supervisor não pode ativar o status novo");
 
             alterarStatus(registroJornada, novoStatus);
         }
@@ -363,7 +395,7 @@ public class RegistroJornadaService {
     }
 
     public List<JornadaStatusOptionResponse> getStatusOptionList(RegistroJornada registroJornada) {
-        return jornadaStatusRepository.getJornadaStatusOptionProjectionListByEmpresaIdAndRegistroJornadaId(registroJornada.getUsuario().getEmpresaId(), registroJornada.getRegistroJornadaId())
+        return jornadaStatusRepository.getJornadaStatusOptionProjectionListByEmpresaIdAndContratoIdAndRegistroJornadaId(registroJornada.getUsuario().getEmpresaId(), registroJornada.getContratoId(), registroJornada.getRegistroJornadaId())
             .stream()
             .map(statusGrouped -> modelMapper.map(statusGrouped, JornadaStatusOptionResponse.class))
             .collect(Collectors.toList());
