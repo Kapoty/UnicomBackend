@@ -1,5 +1,6 @@
 package br.net.unicom.backend.payload.response;
 
+import br.net.unicom.backend.model.Cargo;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -7,21 +8,14 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @ToString
-public class JornadaStatusGroupedResponse {
+public class RegistroJornadaReportUsuarioResponse {
 
-    private Integer jornadaStatusId;
+    private Integer usuarioId;
 
     private String nome;
-    
-    private Integer maxDuracao;
 
-    private Integer duracao;
+    private String cpf;
 
-    private Integer maxUso;
+    private Cargo cargo;
 
-    private Integer usos;
-
-    private String cor;
-
-    private Boolean horaTrabalhada;
 }

@@ -1,5 +1,10 @@
 package br.net.unicom.backend.controller;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.Year;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -35,7 +40,12 @@ import br.net.unicom.backend.model.exception.UsuarioSemContratoException;
 import br.net.unicom.backend.model.exception.UsuarioSemJornadaException;
 import br.net.unicom.backend.payload.request.RegistroJornadaAlterarStatusRequest;
 import br.net.unicom.backend.payload.request.RegistroJornadaLogarRequest;
+import br.net.unicom.backend.payload.request.RegistroJornadaReportByUsuarioIdRequest;
 import br.net.unicom.backend.payload.request.RegistroPontoValidateTokenRequest;
+import br.net.unicom.backend.payload.response.JornadaStatusGroupedResponse;
+import br.net.unicom.backend.payload.response.RegistroJornadaReportDayResponse;
+import br.net.unicom.backend.payload.response.RegistroJornadaReportResponse;
+import br.net.unicom.backend.payload.response.RegistroJornadaReportUsuarioResponse;
 import br.net.unicom.backend.payload.response.RegistroJornadaResponse;
 import br.net.unicom.backend.payload.response.RegistroPontoTokenResponse;
 import br.net.unicom.backend.repository.JornadaExcecaoRepository;
@@ -118,6 +128,8 @@ public class RegistroJornadaController {
         if (completo) {
             registroJornadaResponse.setCanUsuarioLogar(Optional.of(registroJornadaService.canUsuarioLogar(registroJornada)));
 
+            registroJornadaResponse.setCanSupervisorLogar(Optional.of(registroJornadaService.canSupervisorLogar(registroJornada)));
+
             registroJornadaResponse.setCanUsuarioIniciarHoraExtra(Optional.of(registroJornadaService.canUsuarioIniciarHoraExtra(registroJornada)));
 
             registroJornadaResponse.setCanUsuarioDeslogar(Optional.of(registroJornadaService.canUsuarioDeslogar(registroJornada)));
@@ -163,11 +175,17 @@ public class RegistroJornadaController {
 
         Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
 
-        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario))
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        if (usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario)) {
+            registroJornadaService.logarBySupervisor(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
+            return ResponseEntity.noContent().build();
+        }
 
-        registroJornadaService.logar(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
-        return ResponseEntity.noContent().build();
+        if (userDetails.getId() == usuario.getUsuarioId()) {
+            registroJornadaService.logarByUsuario(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
+            return ResponseEntity.noContent().build();
+        }
+        
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
     @PreAuthorize("hasAuthority('Jornada.Read.All')")
@@ -205,8 +223,25 @@ public class RegistroJornadaController {
     }
 
     @PreAuthorize("hasAuthority('Jornada.Read.All')")
+    @PostMapping("/{usuarioId}/toggle-hora-extra-permitida")
+    public ResponseEntity<Void> toggleHoraExtraPermitida(@PathVariable("usuarioId") String usuarioId, @Valid @RequestBody RegistroJornadaLogarRequest registroJornadaLogarRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException {
+        if (!pontoJwtUtils.validateJwtToken(registroJornadaLogarRequest.getToken()))
+            throw new RegistroPontoUnauthorizedException();
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
+
+        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario))
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        registroJornadaService.toggleHoraExtraPermitida(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
+        return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasAuthority('Jornada.Read.All')")
     @PostMapping("/{usuarioId}/toggle-hora-extra-auto")
-    public ResponseEntity<Void> horaExtraAuto(@PathVariable("usuarioId") String usuarioId, @Valid @RequestBody RegistroJornadaLogarRequest registroJornadaLogarRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException {
+    public ResponseEntity<Void> toggleHoraExtraAuto(@PathVariable("usuarioId") String usuarioId, @Valid @RequestBody RegistroJornadaLogarRequest registroJornadaLogarRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException {
         if (!pontoJwtUtils.validateJwtToken(registroJornadaLogarRequest.getToken()))
             throw new RegistroPontoUnauthorizedException();
 
@@ -253,6 +288,57 @@ public class RegistroJornadaController {
         }
         
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
+    @PreAuthorize("hasAuthority('Equipe.Read.All')")
+    @PostMapping("/{usuarioId}/report")
+    public ResponseEntity<RegistroJornadaReportResponse> generateReportByUsuarioId(@PathVariable("usuarioId") Integer usuarioId, @Valid @RequestBody RegistroJornadaReportByUsuarioIdRequest registroJornadaReportByUsuarioIdRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException, JornadaStatusNaoEncontradoException, JornadaStatusNaoPermitidoException {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
+
+        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        RegistroJornadaReportResponse registroJornadaReportResponse = new RegistroJornadaReportResponse();
+
+        registroJornadaReportResponse.setAno(registroJornadaReportByUsuarioIdRequest.getAno());
+        registroJornadaReportResponse.setMes(registroJornadaReportByUsuarioIdRequest.getMes());
+        
+        registroJornadaReportResponse.setUsuario(modelMapper.map(usuario, RegistroJornadaReportUsuarioResponse.class));
+
+        List<RegistroJornadaReportDayResponse> dayList = new ArrayList<>();
+
+        LocalDate startData = LocalDate.of(registroJornadaReportByUsuarioIdRequest.getAno(), registroJornadaReportByUsuarioIdRequest.getMes(), 1);
+        LocalDate endData = startData.plusDays(startData.getMonth().length(Year.of(startData.getYear()).isLeap()));
+
+        for (LocalDate data = startData; data.isBefore(endData); data = data.plusDays(1)) {
+            RegistroJornadaReportDayResponse registroJornadaReportDayResponse = new RegistroJornadaReportDayResponse();
+            registroJornadaReportDayResponse.setData(data);
+            RegistroJornada registroJornada = registroJornadaRepository.findByUsuarioIdAndData(usuarioId, data).orElse(null);
+            if (registroJornada != null) {
+                registroJornadaReportDayResponse.setRegistroJornada(registroJornada);
+
+                List<JornadaStatusGroupedResponse> jornadaStatusGroupedResponse = registroJornadaService.getStatusGroupedList(registroJornada);
+
+                registroJornadaReportDayResponse.setStatusGroupedList(jornadaStatusGroupedResponse);
+
+                registroJornadaReportDayResponse.setHorasATrabalhar(registroJornadaService.calculateHorasATrabalhar(registroJornada));
+                registroJornadaReportDayResponse.setHorasTrabalhadas(registroJornadaService.calculateHorasTrabalhadas(jornadaStatusGroupedResponse));
+
+                LocalTime entrada = registroJornadaService.calculateEntrada(registroJornada).orElse(null);
+                LocalTime saida = registroJornadaService.calculateSaida(registroJornada).orElse(null);
+                Integer horasNaoTrabalhadas = registroJornadaService.calculateHorasNaoTrabalhadas(jornadaStatusGroupedResponse, entrada, saida).orElse(null);
+
+                registroJornadaReportDayResponse.setEntrada(entrada);
+                registroJornadaReportDayResponse.setSaida(saida);
+                registroJornadaReportDayResponse.setHorasNaoTrabalhadas(horasNaoTrabalhadas);
+            }
+            dayList.add(registroJornadaReportDayResponse);
+        }
+
+        registroJornadaReportResponse.setDayList(dayList);
+        
+        return ResponseEntity.ok(registroJornadaReportResponse);
     }
 
 }

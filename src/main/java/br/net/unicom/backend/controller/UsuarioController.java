@@ -1,6 +1,6 @@
 package br.net.unicom.backend.controller;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -38,6 +38,8 @@ import br.net.unicom.backend.model.Usuario;
 import br.net.unicom.backend.model.UsuarioPapel;
 import br.net.unicom.backend.model.exception.UsuarioEmailDuplicateException;
 import br.net.unicom.backend.model.exception.UsuarioMatriculaDuplicateException;
+import br.net.unicom.backend.model.projection.DataProjection;
+import br.net.unicom.backend.payload.request.PatchJornadaRequest;
 import br.net.unicom.backend.payload.request.PatchUsuarioRequest;
 import br.net.unicom.backend.payload.request.PostUsuarioRequest;
 import br.net.unicom.backend.payload.response.IframeCategoryResponse;
@@ -45,6 +47,7 @@ import br.net.unicom.backend.payload.response.UsuarioMeResponse;
 import br.net.unicom.backend.payload.response.UsuarioResponse;
 import br.net.unicom.backend.repository.EquipeRepository;
 import br.net.unicom.backend.repository.IframeCategoryRepository;
+import br.net.unicom.backend.repository.JornadaExcecaoRepository;
 import br.net.unicom.backend.repository.JornadaRepository;
 import br.net.unicom.backend.repository.PapelRepository;
 import br.net.unicom.backend.repository.PermissaoRepository;
@@ -89,6 +92,9 @@ public class UsuarioController {
 
     @Autowired
     EquipeRepository equipeRepository;
+
+    @Autowired
+    JornadaExcecaoRepository jornadaExcecaoRepository;
 
     @Autowired
     FileService fileService;
@@ -368,4 +374,64 @@ public class UsuarioController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasAuthority('Equipe.Read.All')")
+    @GetMapping("/{usuarioId}/jornada")
+    public ResponseEntity<Jornada> getJornadaByUsuarioId(@Valid @PathVariable("usuarioId") Integer usuarioId) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Usuario usuario = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
+
+        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        return ResponseEntity.ok(usuario.getJornada());
+    }
+
+    @PreAuthorize("hasAuthority('Equipe.Read.All')")
+    @PatchMapping("/{usuarioId}/jornada")
+    @Transactional
+    public ResponseEntity<Jornada> patchJornadaByUsuarioId(@Valid @PathVariable("usuarioId") Integer usuarioId, @Valid @RequestBody PatchJornadaRequest patchJornadaRequest) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Usuario usuario = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
+
+        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        if (patchJornadaRequest.getJornada() != null) {
+            Jornada jornada = usuario.getJornada();
+            if (patchJornadaRequest.getJornada().orElse(null) == null) {
+                if (jornada != null)
+                    jornadaRepository.delete(jornada);
+            }
+            else {
+                if (jornada == null) {
+                    jornada = new Jornada();
+                    jornada.setUsuario(usuario);
+                }
+                modelMapper.map(patchJornadaRequest.getJornada().get(), jornada);
+                jornadaRepository.saveAndFlush(jornada);
+            }
+        }
+
+        usuario = usuarioRepository.saveAndFlush(usuario);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasAuthority('Equipe.Read.All')")
+    @GetMapping("/{usuarioId}/jornada-excecao-data-list")
+    public ResponseEntity<List<LocalDate>> getJornadaExcecaoDataListByUsuarioId(@Valid @PathVariable("usuarioId") Integer usuarioId) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Usuario usuario = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
+
+        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        return ResponseEntity.ok(
+            jornadaExcecaoRepository.getDataListByUsuarioId(usuario.getUsuarioId())
+            .stream()
+            .map((data) -> data.getData())
+            .collect(Collectors.toList())
+            );
+    }
+    
 }

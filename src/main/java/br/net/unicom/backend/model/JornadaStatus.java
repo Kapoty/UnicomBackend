@@ -20,9 +20,6 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(uniqueConstraints = {
-    @UniqueConstraint(columnNames = { "empresa_id", "nome" })
-    })
 @Getter @Setter @NoArgsConstructor @ToString
 public class JornadaStatus {
 
@@ -31,7 +28,7 @@ public class JornadaStatus {
     @Column(name = "jornada_status_id")
     private Integer jornadaStatusId;
     
-    @Column(name = "empresa_id", nullable = true)
+    @Column(name = "empresa_id", nullable = false)
     private Integer empresaId;
 
     @ManyToOne
@@ -70,4 +67,7 @@ public class JornadaStatus {
 
     @NotNull
     private Boolean agrupar;
+
+    @NotNull
+    private Boolean horaTrabalhada;
 }

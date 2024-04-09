@@ -79,6 +79,7 @@ public class Usuario {
 
     private LocalDate dataContratacao;
 
+    @Column(insertable = false)
     private LocalDateTime vistoPorUltimo;
 
     @NotNull

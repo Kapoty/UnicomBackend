@@ -16,4 +16,5 @@ public interface JornadaStatusGroupedProjection {
 
     String getCor();
 
+    Boolean getHoraTrabalhada();
 }

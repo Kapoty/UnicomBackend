@@ -35,6 +35,8 @@ public class RegistroJornadaResponse {
 
     private Boolean emHoraExtra;
 
+    private Boolean horaExtraPermitida;
+
     private RegistroJornadaStatusAtualResponse statusAtual;
 
     private Integer secondsToAusente;
@@ -44,6 +46,8 @@ public class RegistroJornadaResponse {
     private Optional<List<JornadaStatusGroupedResponse>> statusGroupedList;
 
     private Optional<Boolean> canUsuarioLogar;
+
+    private Optional<Boolean> canSupervisorLogar;
 
     private Optional<Boolean> canUsuarioIniciarHoraExtra;
 

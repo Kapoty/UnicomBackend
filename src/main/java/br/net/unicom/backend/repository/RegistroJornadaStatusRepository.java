@@ -1,5 +1,6 @@
 package br.net.unicom.backend.repository;
 
+import java.time.LocalTime;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,5 +18,11 @@ public interface RegistroJornadaStatusRepository extends JpaRepository<RegistroJ
 
     @Query(value = "SELECT COUNT(*) FROM registro_jornada_status WHERE registro_jornada_id = :registroJornadaId and jornada_status_id = :jornadaStatusId", nativeQuery = true)
     Optional<Integer> getUsosByRegistroJornadaIdAndJornadaStatusId(@Param(value = "registroJornadaId") Integer registroJornadaId, @Param(value = "jornadaStatusId") Integer jornadaStatusId);
+
+    @Query(value = "SELECT inicio FROM registro_jornada_status WHERE registro_jornada_id = :registroJornadaId ORDER BY inicio ASC LIMIT 1", nativeQuery = true)
+    Optional<LocalTime> calculateEntradaByRegistroJornadaId(@Param(value = "registroJornadaId") Integer registroJornadaId);
+
+    @Query(value = "SELECT fim FROM registro_jornada_status WHERE registro_jornada_id = :registroJornadaId ORDER BY inicio DESC LIMIT 1", nativeQuery = true)
+    Optional<LocalTime> calculateSaidaByRegistroJornadaId(@Param(value = "registroJornadaId") Integer registroJornadaId);
 
 }

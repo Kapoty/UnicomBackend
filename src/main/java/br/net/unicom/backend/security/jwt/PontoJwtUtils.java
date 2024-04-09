@@ -25,7 +25,7 @@ public class PontoJwtUtils {
   private String jwtSecret;
 
   @Value("${unicom.backend.pontoJwtExpirationMs}")
-  private int jwtExpirationMs;
+  private long jwtExpirationMs;
 
   public String generateJwtToken(Integer usuarioId) {
 

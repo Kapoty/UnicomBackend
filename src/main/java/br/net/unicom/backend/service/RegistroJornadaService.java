@@ -12,6 +12,7 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import br.net.unicom.backend.model.Contrato;
@@ -207,9 +208,21 @@ public class RegistroJornadaService {
     public Boolean canUsuarioLogar(RegistroJornada registroJornada) throws PontoConfiguracaoNaoEncontradoException {
         if (registroJornada.getStatusAtualId() != null)
             return false;
-        //if (existsRegistroJornadaStatus(registroJornada))
-            //return false;
-        if (!isInRegularTime(registroJornada) && !isInHoraExtraTime(registroJornada))
+        if (existsRegistroJornadaStatus(registroJornada))
+            return false;
+        if (!isInRegularTime(registroJornada) && !(isInHoraExtraTime(registroJornada) && canUsuarioIniciarHoraExtra(registroJornada)))
+            return false;
+        if (LocalTime.now().isAfter(LocalTime.of(23, 55)))
+            return false;
+        return true;
+    }
+
+    public Boolean canSupervisorLogar(RegistroJornada registroJornada) throws PontoConfiguracaoNaoEncontradoException {
+        if (registroJornada.getStatusAtualId() != null)
+            return false;
+        if (!isInRegularTime(registroJornada) && !(isInHoraExtraTime(registroJornada) && canUsuarioIniciarHoraExtra(registroJornada)))
+            return false;
+        if (LocalTime.now().isAfter(LocalTime.of(23, 55)))
             return false;
         return true;
     }
@@ -219,6 +232,8 @@ public class RegistroJornadaService {
     }
 
     public Boolean canUsuarioIniciarHoraExtra(RegistroJornada registroJornada) throws PontoConfiguracaoNaoEncontradoException {
+        if (!registroJornada.getHoraExtraPermitida())
+            return false;
         if (!isInHoraExtraTime(registroJornada))
             return false;
         if (registroJornada.getStatusAtualId() != null && registroJornada.getEmHoraExtra())
@@ -344,8 +359,6 @@ public class RegistroJornadaService {
     }
 
     public void logar(RegistroJornada registroJornada) throws PontoConfiguracaoNaoEncontradoException {
-        if (!canUsuarioLogar(registroJornada))
-            return;
 
         PontoConfiguracao pontoConfiguracao = pontoConfiguracaoRepository.findByEmpresaId(registroJornada.getUsuario().getEmpresaId()).orElseThrow(PontoConfiguracaoNaoEncontradoException::new);
 
@@ -358,6 +371,16 @@ public class RegistroJornadaService {
         }
 
         registroJornadaRepository.save(registroJornada);
+    }
+
+    public void logarBySupervisor(RegistroJornada registroJornada) throws PontoConfiguracaoNaoEncontradoException {
+        if (canSupervisorLogar(registroJornada))
+            logar(registroJornada);
+    }
+
+    public void logarByUsuario(RegistroJornada registroJornada) throws PontoConfiguracaoNaoEncontradoException {
+        if (canUsuarioLogar(registroJornada))
+            logar(registroJornada);
     }
 
     public void deslogar(RegistroJornada registroJornada) {
@@ -405,6 +428,10 @@ public class RegistroJornadaService {
         registroJornada.setHoraExtraAuto(!registroJornada.getHoraExtraAuto());
     }
 
+    public void toggleHoraExtraPermitida(RegistroJornada registroJornada) {
+        registroJornada.setHoraExtraPermitida(!registroJornada.getHoraExtraPermitida());
+    }
+
     public Integer getSecondsToAusente(RegistroJornada registroJornada) throws PontoConfiguracaoNaoEncontradoException {
         PontoConfiguracao pontoConfiguracao = pontoConfiguracaoRepository.findByEmpresaId(registroJornada.getUsuario().getEmpresaId()).orElseThrow(PontoConfiguracaoNaoEncontradoException::new);
         Usuario usuario = registroJornada.getUsuario();
@@ -424,6 +451,51 @@ public class RegistroJornadaService {
         } else {
             return Math.max(pontoConfiguracao.getIntervaloVerificacaoHoraExtra() - secondsSinceVistoPorUltimo, 0);
         }
+    }
+
+    public Integer calculateHorasIntervalo(RegistroJornada registroJornada) {
+        return (int) (Duration.between(registroJornada.getJornadaIntervaloInicio(), registroJornada.getJornadaIntervaloFim()).toSeconds());
+    }
+
+    public Integer calculateHorasJornada(RegistroJornada registroJornada) {
+        return (int) (Duration.between(registroJornada.getJornadaEntrada(), registroJornada.getJornadaSaida()).toSeconds());
+    }
+
+    public Integer calculateHorasATrabalhar(RegistroJornada registroJornada) {
+        return (calculateHorasJornada(registroJornada) - calculateHorasIntervalo(registroJornada));
+    }
+
+    public Integer calculateHorasTrabalhadas(List<JornadaStatusGroupedResponse> statusGroupedList) {
+        Integer horasTrabalhadas = 0;
+
+        for (JornadaStatusGroupedResponse jornadaStatusGroupedResponse : statusGroupedList) {
+            if (jornadaStatusGroupedResponse.getHoraTrabalhada()) {
+                if (jornadaStatusGroupedResponse.getMaxDuracao() == null || jornadaStatusGroupedResponse.getMaxUso() == null)
+                    horasTrabalhadas += jornadaStatusGroupedResponse.getDuracao();
+                else {
+                    horasTrabalhadas += Math.min(jornadaStatusGroupedResponse.getDuracao(), jornadaStatusGroupedResponse.getMaxDuracao() * jornadaStatusGroupedResponse.getMaxUso()); 
+                }
+            }
+        }
+
+        return horasTrabalhadas;
+    }
+
+    public Optional<Integer> calculateHorasNaoTrabalhadas(List<JornadaStatusGroupedResponse> statusGroupedList, LocalTime entrada, LocalTime saida) {
+        if (entrada == null || saida == null)
+            return Optional.empty();
+
+        Integer horasTrabalhadas = calculateHorasTrabalhadas(statusGroupedList);
+        
+        return Optional.of((int) Duration.between(entrada, saida).toSeconds() - horasTrabalhadas);
+    } 
+
+    public Optional<LocalTime> calculateEntrada(RegistroJornada registroJornada) {
+        return registroJornadaStatusRepository.calculateEntradaByRegistroJornadaId(registroJornada.getRegistroJornadaId());
+    }
+
+    public Optional<LocalTime> calculateSaida(RegistroJornada registroJornada) {
+        return registroJornadaStatusRepository.calculateSaidaByRegistroJornadaId(registroJornada.getRegistroJornadaId());
     }
 
     public void imHere(RegistroJornada registroJornada) throws PontoConfiguracaoNaoEncontradoException {
@@ -448,14 +520,15 @@ public class RegistroJornadaService {
             Usuario usuario = registroJornada.getUsuario();
 
             if (registroJornada.getStatusAtual() == null) {
-                if (!existsRegistroJornadaStatus(registroJornada) &&
-                    isInRegularTime(registroJornada) &&
+                if (canUsuarioLogar(registroJornada) &&
                     Duration.between(usuario.getVistoPorUltimo(), LocalDateTime.now()).toSeconds() < 60) {
                         logar(registroJornada);
                     }
             } else {
-                if (!registroJornada.getEmHoraExtra()) {
-                    if (isInHoraExtraTime(registroJornada) && registroJornada.getHoraExtraAuto()) {
+                if (LocalTime.now().isAfter(LocalTime.of(23, 55))) {
+                    deslogar(registroJornada);
+                } else if (!registroJornada.getEmHoraExtra()) {
+                    if (isInHoraExtraTime(registroJornada) && registroJornada.getHoraExtraAuto() && registroJornada.getHoraExtraPermitida()) {
                         iniciarHoraExtra(registroJornada);
                     } else if (Duration.between(registroJornada.getJornadaSaida(), LocalTime.now()).toSeconds() > 300) {
                         deslogar(registroJornada);
@@ -483,6 +556,7 @@ public class RegistroJornadaService {
 
                 if (registroJornada.getStatusAtual() == null)
                     return;
+
                 if (!registroJornada.getEmHoraExtra()) {
                     if (registroJornada.getStatusAtual().getJornadaStatusId() == pontoConfiguracao.getStatusRegularId()) {
                         if (Duration.between(usuario.getVistoPorUltimo(), agora).toSeconds() > pontoConfiguracao.getIntervaloVerificacaoRegular()) {

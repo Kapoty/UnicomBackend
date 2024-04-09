@@ -52,6 +52,9 @@ public class RegistroJornada {
     @NotNull
     private Boolean emHoraExtra;
 
+    @NotNull
+    private Boolean horaExtraPermitida;
+
     @Column(name = "status_atual_id")
     private Integer statusAtualId;
 
