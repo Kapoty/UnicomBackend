@@ -38,6 +38,7 @@ import br.net.unicom.backend.model.exception.RegistroPontoUnauthorizedException;
 import br.net.unicom.backend.model.exception.UsuarioNaoRegistraPontoHojeException;
 import br.net.unicom.backend.model.exception.UsuarioSemContratoException;
 import br.net.unicom.backend.model.exception.UsuarioSemJornadaException;
+import br.net.unicom.backend.model.key.RegistroJornadaCorrecaoKey;
 import br.net.unicom.backend.payload.request.RegistroJornadaAlterarStatusRequest;
 import br.net.unicom.backend.payload.request.RegistroJornadaLogarRequest;
 import br.net.unicom.backend.payload.request.RegistroJornadaReportByUsuarioIdRequest;
@@ -51,6 +52,7 @@ import br.net.unicom.backend.payload.response.RegistroPontoTokenResponse;
 import br.net.unicom.backend.repository.JornadaExcecaoRepository;
 import br.net.unicom.backend.repository.JornadaStatusRepository;
 import br.net.unicom.backend.repository.PontoConfiguracaoRepository;
+import br.net.unicom.backend.repository.RegistroJornadaCorrecaoRepository;
 import br.net.unicom.backend.repository.RegistroJornadaRepository;
 import br.net.unicom.backend.repository.UsuarioRepository;
 import br.net.unicom.backend.security.jwt.PontoJwtUtils;
@@ -90,6 +92,9 @@ public class RegistroJornadaController {
 
     @Autowired
     PontoConfiguracaoRepository pontoConfiguracaoRepository;
+
+    @Autowired
+    RegistroJornadaCorrecaoRepository registroJornadaCorrecaoRepository;
 
     @Autowired
     PontoJwtUtils pontoJwtUtils;
@@ -333,6 +338,9 @@ public class RegistroJornadaController {
                 registroJornadaReportDayResponse.setSaida(saida);
                 registroJornadaReportDayResponse.setHorasNaoTrabalhadas(horasNaoTrabalhadas);
             }
+
+            registroJornadaReportDayResponse.setRegistroJornadaCorrecao(registroJornadaCorrecaoRepository.findByRegistroJornadaCorrecaoKey(new RegistroJornadaCorrecaoKey(usuarioId, data)).orElse(null));
+            
             dayList.add(registroJornadaReportDayResponse);
         }
 

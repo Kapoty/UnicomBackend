@@ -2,6 +2,7 @@ package br.net.unicom.backend.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import br.net.unicom.backend.model.key.PapelEmpresaPermissaoKey;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

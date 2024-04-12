@@ -109,6 +109,7 @@ public class RegistroJornadaService {
             registroJornada.setJornadaSaida(jornadaExcecao.get().getSaida());
             registroJornada.setHoraExtraAuto(false);
             registroJornada.setEmHoraExtra(false);
+            registroJornada.setHoraExtraPermitida(false);
             registroJornadaRepository.save(registroJornada);
 
         } else {
@@ -161,6 +162,7 @@ public class RegistroJornadaService {
             registroJornada.setJornadaSaida(jornada.getSaida());
             registroJornada.setHoraExtraAuto(false);
             registroJornada.setEmHoraExtra(false);
+            registroJornada.setHoraExtraPermitida(false);
             registroJornadaRepository.save(registroJornada);
         }
         
@@ -463,6 +465,11 @@ public class RegistroJornadaService {
 
     public Integer calculateHorasATrabalhar(RegistroJornada registroJornada) {
         return (calculateHorasJornada(registroJornada) - calculateHorasIntervalo(registroJornada));
+    }
+
+    public Integer calculateHorasTrabalhadas(RegistroJornada registroJornada) {
+        List<JornadaStatusGroupedResponse> statusGroupedList = this.getStatusGroupedList(registroJornada);
+        return calculateHorasTrabalhadas(statusGroupedList);
     }
 
     public Integer calculateHorasTrabalhadas(List<JornadaStatusGroupedResponse> statusGroupedList) {

@@ -1,6 +1,7 @@
-package br.net.unicom.backend.model;
+package br.net.unicom.backend.model.key;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
@@ -12,10 +13,10 @@ import lombok.ToString;
 
 @Embeddable
 @Getter @Setter @NoArgsConstructor @ToString @EqualsAndHashCode @AllArgsConstructor
-public class UsuarioPapelKey implements Serializable {
+public class RegistroJornadaCorrecaoKey implements Serializable {
 
     Integer usuarioId;
 
-    Integer papelId;
+    LocalDate data;
 
 }

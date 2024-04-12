@@ -1,5 +1,6 @@
 package br.net.unicom.backend.model;
 
+import br.net.unicom.backend.model.key.IframeCategoryPapelKey;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

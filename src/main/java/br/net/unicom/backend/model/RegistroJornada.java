@@ -80,8 +80,6 @@ public class RegistroJornada {
 
     @ManyToOne
     @JoinColumn(name = "contrato_id", insertable = false, updatable = false)
-    @JsonIgnore
-    @ToString.Exclude
     private Contrato contrato;
 
 }

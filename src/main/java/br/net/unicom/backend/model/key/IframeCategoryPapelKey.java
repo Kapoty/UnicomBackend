@@ -1,4 +1,4 @@
-package br.net.unicom.backend.model;
+package br.net.unicom.backend.model.key;
 
 import java.io.Serializable;
 

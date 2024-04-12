@@ -1,10 +1,8 @@
-package br.net.unicom.backend.model;
+package br.net.unicom.backend.model.key;
 
 import java.io.Serializable;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-import jakarta.persistence.Embedded;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,12 +11,10 @@ import lombok.ToString;
 
 @Embeddable
 @Getter @Setter @NoArgsConstructor @ToString @EqualsAndHashCode
-public class PapelEmpresaPermissaoKey implements Serializable {
+public class EmpresaPermissaoKey implements Serializable {
 
-    @Embedded
-    EmpresaPermissaoKey empresaPermissaoId;
+    Integer empresaId;
 
-    @Column(name = "papel_id")
-    Integer papelId;
+    Integer permissaoId;
 
 }

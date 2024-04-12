@@ -5,6 +5,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 import br.net.unicom.backend.model.RegistroJornada;
+import br.net.unicom.backend.model.RegistroJornadaCorrecao;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,5 +23,6 @@ public class RegistroJornadaReportDayResponse {
     private Integer horasNaoTrabalhadas;
     private LocalTime entrada;
     private LocalTime saida;
+    private RegistroJornadaCorrecao registroJornadaCorrecao;
 
 }
