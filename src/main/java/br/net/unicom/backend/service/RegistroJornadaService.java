@@ -12,7 +12,6 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import br.net.unicom.backend.model.Contrato;
@@ -38,6 +37,8 @@ import br.net.unicom.backend.repository.PontoConfiguracaoRepository;
 import br.net.unicom.backend.repository.RegistroJornadaRepository;
 import br.net.unicom.backend.repository.RegistroJornadaStatusRepository;
 import br.net.unicom.backend.repository.UsuarioRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -69,6 +70,9 @@ public class RegistroJornadaService {
 
     @Autowired
     ModelMapper modelMapper;
+
+    @Autowired
+    EntityManager entityManager;
 
     public RegistroJornada getRegistroJornadaByUsuarioIdHoje(Integer usuarioId) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException {
 
@@ -269,6 +273,11 @@ public class RegistroJornadaService {
         LocalTime agora = LocalTime.now();
 
         RegistroJornadaStatus novoRegistroJornadaStatus = null;
+
+        if (registroJornada.getStatusAtual() != null) {
+            registroJornada.getStatusAtual().setFim(agora);
+            registroJornadaStatusRepository.saveAndFlush(registroJornada.getStatusAtual());
+        }
         
         if (novoStatus != null) {
             novoRegistroJornadaStatus = new RegistroJornadaStatus();
@@ -278,12 +287,7 @@ public class RegistroJornadaService {
             registroJornadaStatusRepository.save(novoRegistroJornadaStatus);
         }
 
-        if (registroJornada.getStatusAtual() != null) {
-            registroJornada.getStatusAtual().setFim(agora);
-            registroJornadaStatusRepository.save(registroJornada.getStatusAtual());
-        }
-
-        if (novoStatus == null)
+        if (novoRegistroJornadaStatus == null)
             registroJornada.setStatusAtualId(null);
         else
             registroJornada.setStatusAtualId(novoRegistroJornadaStatus.getRegistroJornadaStatusId());

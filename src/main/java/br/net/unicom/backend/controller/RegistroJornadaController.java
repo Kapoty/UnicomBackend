@@ -295,14 +295,13 @@ public class RegistroJornadaController {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
-    @PreAuthorize("hasAuthority('Equipe.Read.All')")
     @PostMapping("/{usuarioId}/report")
     public ResponseEntity<RegistroJornadaReportResponse> generateReportByUsuarioId(@PathVariable("usuarioId") Integer usuarioId, @Valid @RequestBody RegistroJornadaReportByUsuarioIdRequest registroJornadaReportByUsuarioIdRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException, JornadaStatusNaoEncontradoException, JornadaStatusNaoPermitidoException {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
 
-        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario))
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario))
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         RegistroJornadaReportResponse registroJornadaReportResponse = new RegistroJornadaReportResponse();
 

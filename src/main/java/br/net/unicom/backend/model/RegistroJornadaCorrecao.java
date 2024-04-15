@@ -82,4 +82,7 @@ public class RegistroJornadaCorrecao {
     @NotNull
     private Integer ajusteHoraExtra;
 
+    @NotNull
+    private Boolean aprovada;
+
 }

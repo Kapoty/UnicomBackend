@@ -147,7 +147,6 @@ public class EmpresaController {
         return ResponseEntity.ok(cargoRepository.findAllByEmpresaId(userDetails.getEmpresaId()));
     }
 
-    @PreAuthorize("hasAuthority('Usuario.Read.All')")
     @GetMapping("/me/contrato")
     public ResponseEntity<List<Contrato>> getContratoListByEmpresaMe() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

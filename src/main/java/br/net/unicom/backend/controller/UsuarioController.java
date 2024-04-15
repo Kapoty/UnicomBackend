@@ -36,12 +36,13 @@ import br.net.unicom.backend.model.Jornada;
 import br.net.unicom.backend.model.Permissao;
 import br.net.unicom.backend.model.Usuario;
 import br.net.unicom.backend.model.UsuarioPapel;
+import br.net.unicom.backend.model.exception.RegistroPontoUnauthorizedException;
 import br.net.unicom.backend.model.exception.UsuarioEmailDuplicateException;
 import br.net.unicom.backend.model.exception.UsuarioMatriculaDuplicateException;
-import br.net.unicom.backend.model.projection.DataProjection;
 import br.net.unicom.backend.payload.request.PatchJornadaRequest;
 import br.net.unicom.backend.payload.request.PatchUsuarioRequest;
 import br.net.unicom.backend.payload.request.PostUsuarioRequest;
+import br.net.unicom.backend.payload.request.UsuarioPingRequest;
 import br.net.unicom.backend.payload.response.IframeCategoryResponse;
 import br.net.unicom.backend.payload.response.UsuarioMeResponse;
 import br.net.unicom.backend.payload.response.UsuarioResponse;
@@ -53,6 +54,7 @@ import br.net.unicom.backend.repository.PapelRepository;
 import br.net.unicom.backend.repository.PermissaoRepository;
 import br.net.unicom.backend.repository.UsuarioPapelRepository;
 import br.net.unicom.backend.repository.UsuarioRepository;
+import br.net.unicom.backend.security.jwt.PontoJwtUtils;
 import br.net.unicom.backend.security.service.UserDetailsImpl;
 import br.net.unicom.backend.service.FileService;
 import br.net.unicom.backend.service.UsuarioService;
@@ -113,6 +115,9 @@ public class UsuarioController {
 
     @Autowired
 	private Validator validator;
+
+    @Autowired
+    PontoJwtUtils pontoJwtUtils;
 
     @PreAuthorize("hasAuthority('Usuario.Read.All')")
     @GetMapping("")
@@ -367,7 +372,10 @@ public class UsuarioController {
     }
 
     @PostMapping("/me/ping")
-    public ResponseEntity<Void> usuarioPing() {
+    public ResponseEntity<Void> usuarioPing(@Valid @RequestBody UsuarioPingRequest usuarioPingRequest) throws RegistroPontoUnauthorizedException {
+        if (!pontoJwtUtils.validateJwtToken(usuarioPingRequest.getToken()))
+            throw new RegistroPontoUnauthorizedException();
+
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(userDetails.getId()).get();
         usuarioService.ping(usuario);

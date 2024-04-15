@@ -11,4 +11,6 @@ import br.net.unicom.backend.model.key.RegistroJornadaCorrecaoKey;
 public interface RegistroJornadaCorrecaoRepository extends JpaRepository<RegistroJornadaCorrecao, RegistroJornadaCorrecaoKey> {
 
     Optional<RegistroJornadaCorrecao> findByRegistroJornadaCorrecaoKey(RegistroJornadaCorrecaoKey registroJornadaCorrecaoKey);
+
+    Boolean existsByRegistroJornadaCorrecaoKey(RegistroJornadaCorrecaoKey registroJornadaCorrecaoKey);
 }

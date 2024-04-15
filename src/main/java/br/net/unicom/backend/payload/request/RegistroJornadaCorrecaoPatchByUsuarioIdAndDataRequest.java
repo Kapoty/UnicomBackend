@@ -80,4 +80,6 @@ public class RegistroJornadaCorrecaoPatchByUsuarioIdAndDataRequest {
     @NotNull
     private Integer ajusteHoraExtra;
 
+    private Boolean aprovada;
+
 }
