@@ -49,9 +49,8 @@ public class Equipe {
     @ToString.Exclude
     private Empresa empresa;
 
-    @NotNull
     @Column(name = "supervisor_id")
-    private int supervisorId;
+    private Integer supervisorId;
 
     @ManyToOne
     @JoinColumn(name = "supervisor_id", referencedColumnName = "usuarioId", insertable = false, updatable = false)

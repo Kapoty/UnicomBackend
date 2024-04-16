@@ -62,6 +62,8 @@ public class Empresa {
 
     @OneToOne(mappedBy = "empresa")
     @PrimaryKeyJoinColumn
+    @JsonIgnore
+    @ToString.Exclude
     private PontoConfiguracao pontoConfiguracao;
 
 }

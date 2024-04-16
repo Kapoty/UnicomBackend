@@ -8,12 +8,12 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import br.net.unicom.backend.model.RegistroJornada;
 import br.net.unicom.backend.model.RegistroPonto;
 import br.net.unicom.backend.model.Usuario;
 import br.net.unicom.backend.model.exception.RegistroPontoFullException;
 import br.net.unicom.backend.model.exception.RegistroPontoLockedException;
 import br.net.unicom.backend.model.exception.RegistroPontoUnauthorizedException;
+import br.net.unicom.backend.payload.response.UsuarioEquipeResponse;
 import br.net.unicom.backend.payload.response.UsuarioMinhaEquipeResponse;
 import br.net.unicom.backend.payload.response.UsuarioResponse;
 import br.net.unicom.backend.repository.JornadaRepository;
@@ -60,6 +60,12 @@ public class UsuarioService {
         UsuarioMinhaEquipeResponse usuarioMinhaEquipeResponse = new UsuarioMinhaEquipeResponse();
         this.modelMapper.map(usuario, usuarioMinhaEquipeResponse);
         return usuarioMinhaEquipeResponse;
+    }
+
+    public UsuarioEquipeResponse usuarioToUsuarioEquipeResponse(Usuario usuario) {
+        UsuarioEquipeResponse usuarioEquipeResponse = new UsuarioEquipeResponse();
+        this.modelMapper.map(usuario, usuarioEquipeResponse);
+        return usuarioEquipeResponse;
     }
 
     public Integer parseUsuarioIdString(UserDetailsImpl userDetails, String usuarioId) {

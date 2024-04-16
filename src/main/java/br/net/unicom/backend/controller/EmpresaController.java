@@ -25,6 +25,7 @@ import br.net.unicom.backend.model.JornadaStatus;
 import br.net.unicom.backend.model.Papel;
 import br.net.unicom.backend.model.Permissao;
 import br.net.unicom.backend.model.Usuario;
+import br.net.unicom.backend.payload.response.EquipeResponse;
 import br.net.unicom.backend.payload.response.UsuarioResponse;
 import br.net.unicom.backend.repository.CargoRepository;
 import br.net.unicom.backend.repository.ContratoRepository;
@@ -38,6 +39,7 @@ import br.net.unicom.backend.repository.PermissaoRepository;
 import br.net.unicom.backend.repository.UsuarioRepository;
 import br.net.unicom.backend.security.service.UserDetailsImpl;
 import br.net.unicom.backend.service.EmpresaService;
+import br.net.unicom.backend.service.EquipeService;
 import br.net.unicom.backend.service.UsuarioService;
 import jakarta.validation.Valid;
 
@@ -57,7 +59,10 @@ public class EmpresaController {
 
     @Autowired
     UsuarioService usuarioService;
-    
+
+    @Autowired
+    EquipeService equipeService;
+
     @Autowired
     PermissaoRepository permissaoRepository;
 
@@ -121,7 +126,7 @@ public class EmpresaController {
         return ResponseEntity.ok(usuarioRepository.findAllByEmpresaId(empresaId));
     }
 
-    @PreAuthorize("hasAuthority('Usuario.Read.All')")
+    @PreAuthorize("hasAuthority('Usuario.Read.All') or hasAuthority('Equipe.Read.All')")
     @GetMapping("/me/usuario")
     public ResponseEntity<List<UsuarioResponse>> getUsuarioListByEmpresaMe() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -162,9 +167,16 @@ public class EmpresaController {
 
     @PreAuthorize("hasAuthority('Usuario.Read.All')")
     @GetMapping("/me/equipe")
-    public ResponseEntity<List<Equipe>> getEquipeListByEmpresaMe() {
+    public ResponseEntity<List<EquipeResponse>> getEquipeListByEmpresaMe() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return ResponseEntity.ok(equipeRepository.findAllByEmpresaId(userDetails.getEmpresaId()));
+
+        List<Equipe> equipeList = equipeRepository.findAllByEmpresaId(userDetails.getEmpresaId());
+
+        return ResponseEntity.ok(
+            equipeList.stream().
+                        map(equipe -> equipeService.equipeToEquipeResponse(equipe)).
+                        collect(Collectors.toList())
+            );
     }
 
     @PreAuthorize("hasAuthority('Usuario.Read.All')")

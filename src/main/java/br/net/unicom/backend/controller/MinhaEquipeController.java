@@ -46,7 +46,7 @@ public class MinhaEquipeController {
     @Autowired
     ModelMapper modelMapper;
 
-    @PreAuthorize("hasAuthority('Equipe.Read.All')")
+    @PreAuthorize("hasAuthority('MinhaEquipe.Read.All')")
     @GetMapping("{equipeId}")
     public ResponseEntity<MinhaEquipeResponse> getMinhaEquipeByEquipeId(@Valid @PathVariable("equipeId") Integer equipeId) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

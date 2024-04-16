@@ -11,6 +11,7 @@ public interface EquipeRepository extends JpaRepository<Equipe, Long> {
 
     List<Equipe> findAll();
     Optional<Equipe> findByEquipeId(Integer equipeId);
+    Optional<Equipe> findByEquipeIdAndEmpresaId(Integer equipeId, Integer empresaId);
     List<Equipe> findAllByEmpresaId(Integer empresaId);
     List<Equipe> findAllBySupervisorId(Integer supervisorId);
 

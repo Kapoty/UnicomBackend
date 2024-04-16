@@ -237,7 +237,7 @@ public class UsuarioController {
         return ResponseEntity.ok(iframeCategoryResponsesList);
     }
 
-    @PreAuthorize("hasAuthority('Equipe.Read.All')")
+    @PreAuthorize("hasAuthority('MinhaEquipe.Read.All')")
     @GetMapping("/me/minha-equipe")
     public ResponseEntity<List<Equipe>> getMinhaEquipeListByMe() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
