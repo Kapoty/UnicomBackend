@@ -59,8 +59,16 @@ public class UserDetailsImpl implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
       return authorities;
     }
+
+    public Boolean hasAuthority(String authority) {
+      return this.getAuthorities().contains(new SimpleGrantedAuthority(authority));
+    }
   
     public Integer getId() {
+      return usuarioId;
+    }
+
+    public Integer getUsuarioId() {
       return usuarioId;
     }
   
@@ -69,7 +77,7 @@ public class UserDetailsImpl implements UserDetails {
     }
 
     public Integer getEmpresaId() {
-        return empresaId;
+      return empresaId;
     }
   
     @Override

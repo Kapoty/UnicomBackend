@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
@@ -241,6 +242,10 @@ public class UsuarioController {
     @GetMapping("/me/minha-equipe")
     public ResponseEntity<List<Equipe>> getMinhaEquipeListByMe() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (userDetails.hasAuthority("MinhaEquipe.Write.All"))
+            return ResponseEntity.ok(equipeRepository.findAllByEmpresaId(userDetails.getEmpresaId()));
+
         return ResponseEntity.ok(equipeRepository.findAllBySupervisorId(userDetails.getId()));
     }
 
@@ -344,11 +349,15 @@ public class UsuarioController {
         if (usuarioRepository.getUsuarioIdByMatriculaAndEmpresaId(postUsuarioRequest.getMatricula(), usuario.getEmpresaId()) != null)
             throw new UsuarioMatriculaDuplicateException();
 
+        usuario = usuarioRepository.saveAndFlush(usuario);
+
         List<UsuarioPapel> usuarioPapelList = new ArrayList<>();
 
         for(Integer papelId : postUsuarioRequest.getPapelIdList()) {
             usuarioPapelList.add(new UsuarioPapel(usuario, papelRepository.findByPapelId(papelId).orElseThrow(NoSuchElementException::new)));
         }
+
+        usuarioPapelRepository.saveAllAndFlush(usuarioPapelList);
 
         usuario.setUsuarioPapelList(usuarioPapelList);
 
@@ -363,8 +372,6 @@ public class UsuarioController {
         }
 
         usuario = usuarioRepository.saveAndFlush(usuario);
-
-        usuarioPapelRepository.saveAllAndFlush(usuarioPapelList);
 
         UsuarioResponse usuarioResponse = usuarioService.usuarioToUsuarioResponse(usuario);
 
@@ -382,26 +389,26 @@ public class UsuarioController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAuthority('Equipe.Read.All')")
+    @PreAuthorize("hasAuthority('MinhaEquipe.Read.All')")
     @GetMapping("/{usuarioId}/jornada")
     public ResponseEntity<Jornada> getJornadaByUsuarioId(@Valid @PathVariable("usuarioId") Integer usuarioId) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
 
-        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario))
+        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("MinhaEquipe.Write.All"))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         return ResponseEntity.ok(usuario.getJornada());
     }
 
-    @PreAuthorize("hasAuthority('Equipe.Read.All')")
+    @PreAuthorize("hasAuthority('MinhaEquipe.Read.All')")
     @PatchMapping("/{usuarioId}/jornada")
     @Transactional
     public ResponseEntity<Jornada> patchJornadaByUsuarioId(@Valid @PathVariable("usuarioId") Integer usuarioId, @Valid @RequestBody PatchJornadaRequest patchJornadaRequest) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
 
-        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario))
+        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("MinhaEquipe.Write.All"))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         if (patchJornadaRequest.getJornada() != null) {
@@ -425,13 +432,13 @@ public class UsuarioController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAuthority('Equipe.Read.All')")
+    @PreAuthorize("hasAuthority('MinhaEquipe.Read.All')")
     @GetMapping("/{usuarioId}/jornada-excecao-data-list")
     public ResponseEntity<List<LocalDate>> getJornadaExcecaoDataListByUsuarioId(@Valid @PathVariable("usuarioId") Integer usuarioId) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
 
-        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario))
+        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("MinhaEquipe.Write.All"))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         return ResponseEntity.ok(

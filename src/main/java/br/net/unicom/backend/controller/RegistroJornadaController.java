@@ -115,7 +115,7 @@ public class RegistroJornadaController {
 
         Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
 
-        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario))
+        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("MinhaEquipe.Write.All"))
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         PontoConfiguracao pontoConfiguracao = pontoConfiguracaoRepository.findByEmpresaId(usuario.getEmpresaId()).orElseThrow(PontoConfiguracaoNaoEncontradoException::new);
@@ -180,7 +180,7 @@ public class RegistroJornadaController {
 
         Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
 
-        if (usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario)) {
+        if (usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) || userDetails.hasAuthority("MinhaEquipe.Write.All")) {
             registroJornadaService.logarBySupervisor(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
             return ResponseEntity.noContent().build();
         }
@@ -203,7 +203,7 @@ public class RegistroJornadaController {
 
         Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
 
-        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario))
+        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("MinhaEquipe.Write.All"))
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         registroJornadaService.deslogar(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
@@ -220,7 +220,7 @@ public class RegistroJornadaController {
 
         Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
 
-        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario))
+        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("MinhaEquipe.Write.All"))
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         registroJornadaService.iniciarHoraExtra(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
@@ -237,7 +237,7 @@ public class RegistroJornadaController {
 
         Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
 
-        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario))
+        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("MinhaEquipe.Write.All"))
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         registroJornadaService.toggleHoraExtraPermitida(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
@@ -254,7 +254,7 @@ public class RegistroJornadaController {
 
         Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
 
-        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario))
+        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("MinhaEquipe.Write.All"))
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         registroJornadaService.toggleHoraExtraAuto(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
@@ -282,7 +282,7 @@ public class RegistroJornadaController {
 
         Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
 
-        if (usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario)) {
+        if (usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) || userDetails.hasAuthority("MinhaEquipe.Write.All")) {
             registroJornadaService.alterarStatusBySupervisor(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()), registroJornadaAlterarStatusRequest.getJornadaStatusId());
             return ResponseEntity.noContent().build();
         }
@@ -300,7 +300,7 @@ public class RegistroJornadaController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
 
-        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario))
+        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("MinhaEquipe.Write.All"))
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         RegistroJornadaReportResponse registroJornadaReportResponse = new RegistroJornadaReportResponse();

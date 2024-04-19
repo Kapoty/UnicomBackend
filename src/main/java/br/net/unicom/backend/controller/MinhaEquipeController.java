@@ -53,7 +53,7 @@ public class MinhaEquipeController {
         Optional<Equipe> equipe = equipeRepository.findByEquipeId(equipeId);
         if (equipe.isEmpty())
             return ResponseEntity.notFound().build();
-        if (equipe.get().getSupervisorId() != userDetails.getId())
+        if (equipe.get().getSupervisorId() != userDetails.getId() && !userDetails.hasAuthority("MinhaEquipe.Write.All"))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         MinhaEquipeResponse minhaEquipeResponse = modelMapper.map(equipe.get(), MinhaEquipeResponse.class);
         minhaEquipeResponse.setUsuarioList(

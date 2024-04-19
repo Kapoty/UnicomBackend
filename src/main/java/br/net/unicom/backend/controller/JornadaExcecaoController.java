@@ -53,27 +53,27 @@ public class JornadaExcecaoController {
     @Autowired
     ModelMapper modelMapper;
 
-    @PreAuthorize("hasAuthority('Equipe.Read.All')")
+    @PreAuthorize("hasAuthority('MinhaEquipe.Read.All')")
     @PostMapping("find-by-usuario-id-and-data")
     public ResponseEntity<JornadaExcecao> findByUsuarioIdAndData(@Valid @RequestBody JornadaExcecaoFindByUsuarioIdAndDataRequest jornadaExcecaoFindByUsuarioIdAndDataRequest ) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(jornadaExcecaoFindByUsuarioIdAndDataRequest.getUsuarioId()).orElseThrow(NoSuchElementException::new);
 
-        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario))
+        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("MinhaEquipe.Write.All"))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         return ResponseEntity.of(jornadaExcecaoRepository.findByUsuarioIdAndData(usuario.getUsuarioId(), jornadaExcecaoFindByUsuarioIdAndDataRequest.getData()));
     }
 
 
-    @PreAuthorize("hasAuthority('Equipe.Read.All')")
+    @PreAuthorize("hasAuthority('MinhaEquipe.Read.All')")
     @PatchMapping("/patch-by-usuario-id-and-data")
     @Transactional
     public ResponseEntity<Jornada> patchByUsuarioIdAndData(@Valid @RequestBody PatchJornadaExcecaoByUsuarioIdAndDataRequest patchJornadaExcecaoByUsuarioIdAndDataRequest) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(patchJornadaExcecaoByUsuarioIdAndDataRequest.getUsuarioId()).orElseThrow(NoSuchElementException::new);
 
-        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario))
+        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("MinhaEquipe.Write.All"))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         JornadaExcecao jornadaExcecao = jornadaExcecaoRepository.findByUsuarioIdAndData(patchJornadaExcecaoByUsuarioIdAndDataRequest.getUsuarioId(), patchJornadaExcecaoByUsuarioIdAndDataRequest.getData()).orElseThrow(NoSuchElementException::new);
@@ -84,14 +84,14 @@ public class JornadaExcecaoController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAuthority('Equipe.Read.All')")
+    @PreAuthorize("hasAuthority('MinhaEquipe.Read.All')")
     @PostMapping("/create-by-usuario-id-and-data")
     @Transactional
     public ResponseEntity<Jornada> createByUsuarioIdAndData(@Valid @RequestBody CreateJornadaExcecaoByUsuarioIdAndDataRequest createJornadaExcecaoByUsuarioIdAndDataRequest) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(createJornadaExcecaoByUsuarioIdAndDataRequest.getUsuarioId()).orElseThrow(NoSuchElementException::new);
 
-        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario))
+        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("MinhaEquipe.Write.All"))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         JornadaExcecao jornadaExcecao = new JornadaExcecao();
@@ -154,14 +154,14 @@ public class JornadaExcecaoController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAuthority('Equipe.Read.All')")
+    @PreAuthorize("hasAuthority('MinhaEquipe.Read.All')")
     @PostMapping("/delete-by-usuario-id-and-data")
     @Transactional
     public ResponseEntity<Jornada> deleteByUsuarioIdAndData(@Valid @RequestBody JornadaExcecaoFindByUsuarioIdAndDataRequest jornadaExcecaoFindByUsuarioIdAndDataRequest) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(jornadaExcecaoFindByUsuarioIdAndDataRequest.getUsuarioId()).orElseThrow(NoSuchElementException::new);
 
-        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario))
+        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("MinhaEquipe.Write.All"))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         JornadaExcecao jornadaExcecao = jornadaExcecaoRepository.findByUsuarioIdAndData(jornadaExcecaoFindByUsuarioIdAndDataRequest.getUsuarioId(), jornadaExcecaoFindByUsuarioIdAndDataRequest.getData()).orElseThrow(NoSuchElementException::new);
