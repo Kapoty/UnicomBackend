@@ -24,7 +24,7 @@ public class PatchUsuarioRequest {
 
     private Optional<@Email @NotBlank @Length(max = 256) String> email;
 
-    private Optional<@NotBlank @Length(min = 3, max = 12) String> senha;
+    private Optional<@NotBlank @Length(min = 3, max = 20) String> senha;
 
     private Optional<@NotBlank @Length(max = 200) String> nome;
 

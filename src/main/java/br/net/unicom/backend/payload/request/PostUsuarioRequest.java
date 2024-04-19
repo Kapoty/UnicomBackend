@@ -26,7 +26,7 @@ public class PostUsuarioRequest {
     private String email;
 
     @NotBlank
-    @Length(min = 3, max = 12)
+    @Length(min = 3, max = 20)
     private String senha;
 
     @NotBlank
