@@ -17,7 +17,7 @@ public class LoginRequest {
     private String login;
     
     @NotBlank
-    @Length(min = 3, max = 12)
+    @Length(min = 3, max = 20)
     private String senha;
 
     private String dominio;
