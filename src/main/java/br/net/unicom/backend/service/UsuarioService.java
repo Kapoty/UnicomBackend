@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import br.net.unicom.backend.model.RegistroPonto;
 import br.net.unicom.backend.model.Usuario;
+import br.net.unicom.backend.model.UsuarioPapel;
 import br.net.unicom.backend.model.exception.RegistroPontoFullException;
 import br.net.unicom.backend.model.exception.RegistroPontoLockedException;
 import br.net.unicom.backend.model.exception.RegistroPontoUnauthorizedException;
@@ -111,6 +112,21 @@ public class UsuarioService {
     public void ping(Usuario usuario) {
         usuario.setVistoPorUltimo(LocalDateTime.now());
         usuarioRepository.saveAndFlush(usuario);
+    }
+
+    public Integer getNivel(Usuario usuario) {
+        Integer nivel = 0;
+
+        for (UsuarioPapel usuarioPapel : usuario.getUsuarioPapelList()) {
+            if (usuarioPapel.getPapel().getNivel() > nivel)
+                nivel = usuarioPapel.getPapel().getNivel();
+        }
+
+        return nivel;
+    }
+
+    public Boolean isNivelGreaterThan(Usuario usuario, Usuario usuario2) {
+        return this.getNivel(usuario) > this.getNivel(usuario2);
     }
 
 }

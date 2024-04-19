@@ -24,6 +24,7 @@ import br.net.unicom.backend.model.exception.RegistroPontoUnauthorizedException;
 import br.net.unicom.backend.model.exception.UsuarioEmailDuplicateException;
 import br.net.unicom.backend.model.exception.UsuarioMatriculaDuplicateException;
 import br.net.unicom.backend.model.exception.UsuarioNaoRegistraPontoHojeException;
+import br.net.unicom.backend.model.exception.UsuarioNivelTooLowException;
 import br.net.unicom.backend.model.exception.UsuarioSemContratoException;
 import br.net.unicom.backend.model.exception.UsuarioSemJornadaException;
 import jakarta.validation.ConstraintViolation;
@@ -163,4 +164,14 @@ public class ValidationExceptionHandler {
         response.put("errors", errorMap);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(UsuarioNivelTooLowException.class)
+    public ResponseEntity<?> handleUsuarioNivelTooLowException(UsuarioNivelTooLowException e) {
+        Map<String, Object> response = new HashMap<>();
+        Map<String, String> errorMap = new HashMap<>();
+        errorMap.put("nivel", "nivel muito baixo");
+        response.put("errors", errorMap);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
 }

@@ -63,7 +63,7 @@ public class UserDetailsImpl implements UserDetails {
     public Boolean hasAuthority(String authority) {
       return this.getAuthorities().contains(new SimpleGrantedAuthority(authority));
     }
-  
+
     public Integer getId() {
       return usuarioId;
     }

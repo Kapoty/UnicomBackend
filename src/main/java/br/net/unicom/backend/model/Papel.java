@@ -41,7 +41,10 @@ public class Papel {
 
     @NotNull
     @Column(name = "empresa_id")
-    private int empresaId;
+    private Integer empresaId;
+
+    @NotNull
+    private Integer nivel;
 
     @ManyToOne
     @JoinColumn(name = "empresa_id", insertable = false, updatable = false)
