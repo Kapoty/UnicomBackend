@@ -145,10 +145,24 @@ public class RegistroJornadaCorrecaoController {
             registroJornadaCorrecao.setHorasTrabalhadas(registroJornadaService.calculateHorasTrabalhadas(registroJornada));
             registroJornadaCorrecao.setHoraExtraPermitida(registroJornada.getHoraExtraPermitida());
         } else {
-            registroJornadaCorrecao.setJornadaEntrada(LocalTime.of(8, 0));
-            registroJornadaCorrecao.setJornadaIntervaloInicio(LocalTime.of(12, 0));
-            registroJornadaCorrecao.setJornadaIntervaloFim(LocalTime.of(14, 0));
-            registroJornadaCorrecao.setJornadaSaida(LocalTime.of(17, 0));
+
+            if (usuario.getJornada() != null) {
+                registroJornadaCorrecao.setJornadaEntrada(usuario.getJornada().getEntrada());
+                registroJornadaCorrecao.setJornadaIntervaloInicio(usuario.getJornada().getIntervaloInicio());
+                registroJornadaCorrecao.setJornadaIntervaloFim(usuario.getJornada().getIntervaloFim());
+                registroJornadaCorrecao.setJornadaSaida(usuario.getJornada().getSaida());
+            } else {
+                registroJornadaCorrecao.setJornadaEntrada(LocalTime.of(8, 0));
+                registroJornadaCorrecao.setJornadaIntervaloInicio(LocalTime.of(12, 0));
+                registroJornadaCorrecao.setJornadaIntervaloFim(LocalTime.of(14, 0));
+                registroJornadaCorrecao.setJornadaSaida(LocalTime.of(17, 0));
+            }
+
+            if (usuario.getContrato() != null) {
+                registroJornadaCorrecao.setContratoId(usuario.getContratoId());
+                registroJornadaCorrecao.setContrato(usuario.getContrato());
+            }
+
             registroJornadaCorrecao.setHoraExtraPermitida(false);
             registroJornadaCorrecao.setHorasTrabalhadas(0);
         }
