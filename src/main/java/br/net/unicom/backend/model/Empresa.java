@@ -66,4 +66,9 @@ public class Empresa {
     @ToString.Exclude
     private PontoConfiguracao pontoConfiguracao;
 
+    @JsonIgnore
+    @ToString.Exclude
+    @NotNull
+    private String googledriveFolderId;
+
 }

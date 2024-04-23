@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### secrets ###
+
+/src/main/resources/googledrive/

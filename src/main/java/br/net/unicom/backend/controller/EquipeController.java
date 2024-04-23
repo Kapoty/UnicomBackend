@@ -52,13 +52,17 @@ public class EquipeController {
     @PreAuthorize("hasAuthority('Equipe.Read.All')")
     @GetMapping("")
     public ResponseEntity<List<Equipe>> getAll() {
-        return new ResponseEntity<List<Equipe>>(equipeRepository.findAll(), HttpStatus.OK);
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return new ResponseEntity<List<Equipe>>(equipeRepository.findAllByEmpresaId(userDetails.getEmpresaId()), HttpStatus.OK);
     }
 
     @PreAuthorize("hasAuthority('Equipe.Read.All')")
     @GetMapping("/{equipeId}")
     public ResponseEntity<Equipe> geEquipeByEquipeId(@Valid @PathVariable("equipeId") Integer equipeId) {
-        return ResponseEntity.of(equipeRepository.findByEquipeId(equipeId));
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return ResponseEntity.of(equipeRepository.findByEquipeIdAndEmpresaId(equipeId, userDetails.getEmpresaId()));
     }
 
     @PreAuthorize("hasAuthority('Equipe.Write.All')")
