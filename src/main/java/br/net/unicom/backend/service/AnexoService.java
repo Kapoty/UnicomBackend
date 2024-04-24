@@ -1,7 +1,6 @@
 package br.net.unicom.backend.service;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.security.GeneralSecurityException;
 import java.util.List;
 
@@ -14,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.google.api.services.drive.model.File;
 
 import br.net.unicom.backend.model.Empresa;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -39,8 +39,8 @@ public class AnexoService {
         return googleDriveService.uploadFile(file, empresa.getGoogledriveFolderId(), "venda/" + vendaId.toString());
     }
 
-    public void downloadByFileId(String fileId, OutputStream outputStream) throws IOException, GeneralSecurityException {
-        googleDriveService.downloadFile(fileId, outputStream);
+    public void downloadByFileId(String fileId, HttpServletResponse response) throws IOException, GeneralSecurityException {
+        googleDriveService.downloadFile(fileId, response);
     }
 
     public void deleteByFileId(String fileId) throws Exception {

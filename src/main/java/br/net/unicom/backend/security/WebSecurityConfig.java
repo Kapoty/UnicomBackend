@@ -64,6 +64,7 @@ public class WebSecurityConfig {
               .requestMatchers("/error").permitAll()
               .requestMatchers("/usuario/*/foto-perfil").permitAll()
               .requestMatchers("/registro-ponto/registrar-face").denyAll()
+              .requestMatchers("/anexo/download/*").permitAll()
               .anyRequest().authenticated()
         );
     

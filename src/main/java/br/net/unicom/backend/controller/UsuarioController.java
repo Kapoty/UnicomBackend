@@ -42,8 +42,8 @@ import br.net.unicom.backend.model.exception.UsuarioEmailDuplicateException;
 import br.net.unicom.backend.model.exception.UsuarioMatriculaDuplicateException;
 import br.net.unicom.backend.model.exception.UsuarioNivelTooLowException;
 import br.net.unicom.backend.payload.request.PatchJornadaRequest;
-import br.net.unicom.backend.payload.request.PatchUsuarioRequest;
-import br.net.unicom.backend.payload.request.PostUsuarioRequest;
+import br.net.unicom.backend.payload.request.UsuarioPatchRequest;
+import br.net.unicom.backend.payload.request.UsuarioPostRequest;
 import br.net.unicom.backend.payload.request.UsuarioPingRequest;
 import br.net.unicom.backend.payload.response.IframeCategoryResponse;
 import br.net.unicom.backend.payload.response.UsuarioMeResponse;
@@ -253,7 +253,7 @@ public class UsuarioController {
     @PreAuthorize("hasAuthority('Usuario.Write.All')")
     @PatchMapping("/{usuarioId}")
     @Transactional
-    public ResponseEntity<Void> patchUsuarioByUsuarioId(@Valid @PathVariable Integer usuarioId, @Valid @RequestBody PatchUsuarioRequest patchUsuarioRequest) throws UsuarioEmailDuplicateException, UsuarioMatriculaDuplicateException, UsuarioNivelTooLowException {
+    public ResponseEntity<Void> patchUsuarioByUsuarioId(@Valid @PathVariable Integer usuarioId, @Valid @RequestBody UsuarioPatchRequest patchUsuarioRequest) throws UsuarioEmailDuplicateException, UsuarioMatriculaDuplicateException, UsuarioNivelTooLowException {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         
         Usuario userDetailsUsuario = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).get();
@@ -376,7 +376,7 @@ public class UsuarioController {
     @PreAuthorize("hasAuthority('Usuario.Write.All')")
     @PostMapping("/")
     @Transactional
-    public ResponseEntity<UsuarioResponse> postUsuarioByUsuarioId(@Valid @RequestBody PostUsuarioRequest postUsuarioRequest) throws UsuarioEmailDuplicateException, UsuarioMatriculaDuplicateException {
+    public ResponseEntity<UsuarioResponse> postUsuarioByUsuarioId(@Valid @RequestBody UsuarioPostRequest postUsuarioRequest) throws UsuarioEmailDuplicateException, UsuarioMatriculaDuplicateException {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Usuario userDetailsUsuario = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).get();

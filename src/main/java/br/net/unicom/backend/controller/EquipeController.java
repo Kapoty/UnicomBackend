@@ -59,7 +59,7 @@ public class EquipeController {
 
     @PreAuthorize("hasAuthority('Equipe.Read.All')")
     @GetMapping("/{equipeId}")
-    public ResponseEntity<Equipe> geEquipeByEquipeId(@Valid @PathVariable("equipeId") Integer equipeId) {
+    public ResponseEntity<Equipe> getEquipeByEquipeId(@Valid @PathVariable("equipeId") Integer equipeId) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         return ResponseEntity.of(equipeRepository.findByEquipeIdAndEmpresaId(equipeId, userDetails.getEmpresaId()));

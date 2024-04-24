@@ -27,6 +27,8 @@ import com.google.api.services.drive.model.FileList;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
 
+import jakarta.servlet.http.HttpServletResponse;
+
 @Component
 public class GoogleDriveService {
  
@@ -87,11 +89,17 @@ public class GoogleDriveService {
 		return result.getFiles();
 	}
 
-	public void downloadFile(String id, OutputStream outputStream) throws IOException, GeneralSecurityException {
-		if (id != null) {
-			String fileId = id;
-			getInstance().files().get(fileId).executeMediaAndDownloadTo(outputStream);
-		}
+	public void downloadFile(String fileId, HttpServletResponse response) throws IOException, GeneralSecurityException {
+		File file = getInstance().files().get(fileId).execute();
+		response.setHeader("Content-Disposition", "inline; filename=\"" + file.getName() + "\"");
+		response.setContentType(file.getMimeType());
+		getInstance().files().get(fileId).executeMediaAndDownloadTo(response.getOutputStream());
+	}
+
+	public void trashFile(String fileId) throws Exception {
+		File newContent = new File();
+		newContent.setTrashed(true);
+		getInstance().files().update(fileId, newContent).setSupportsAllDrives(true).execute();
 	}
 
 	public void deleteFile(String fileId) throws Exception {

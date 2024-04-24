@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -77,14 +78,13 @@ public class AnexoController {
         return ResponseEntity.ok(fileId);
     }
 
-    @PreAuthorize("hasAuthority('Venda.Read.All')")
     @GetMapping("/download/{fileId}")
     public void downloadByFileId(@Valid @PathVariable("fileId") String fileId, HttpServletResponse response) throws IOException, GeneralSecurityException {
-        anexoService.downloadByFileId(fileId, response.getOutputStream());
+        anexoService.downloadByFileId(fileId, response);
     }
 
     @PreAuthorize("hasAuthority('Venda.Read.All')")
-    @GetMapping("/delete/{fileId}")
+    @DeleteMapping("/delete/{fileId}")
     public ResponseEntity<Void> deleteByFileId(@Valid @PathVariable("fileId") String fileId) throws Exception {
         anexoService.deleteByFileId(fileId);
         

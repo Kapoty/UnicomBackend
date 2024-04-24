@@ -18,7 +18,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @ToString
-public class PostUsuarioRequest {
+public class UsuarioPostRequest {
 
     @Email
     @NotBlank

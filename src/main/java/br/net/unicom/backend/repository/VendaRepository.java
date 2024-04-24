@@ -10,7 +10,11 @@ import br.net.unicom.backend.model.Venda;
 public interface VendaRepository extends JpaRepository<Venda, Long> {
 
     List<Venda> findAll();
+
     Optional<Venda> findByVendaId(Integer vendaId);
+
+    Optional<Venda> findByVendaIdAndEmpresaId(Integer vendaId, Integer empresaId);
+
     List<Venda> findAllByEmpresaId(Integer empresaId);
 
 }
