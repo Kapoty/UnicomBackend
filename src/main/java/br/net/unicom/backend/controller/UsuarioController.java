@@ -40,7 +40,6 @@ import br.net.unicom.backend.model.UsuarioPapel;
 import br.net.unicom.backend.model.exception.RegistroPontoUnauthorizedException;
 import br.net.unicom.backend.model.exception.UsuarioEmailDuplicateException;
 import br.net.unicom.backend.model.exception.UsuarioMatriculaDuplicateException;
-import br.net.unicom.backend.model.exception.UsuarioNivelTooLowException;
 import br.net.unicom.backend.payload.request.PatchJornadaRequest;
 import br.net.unicom.backend.payload.request.UsuarioPatchRequest;
 import br.net.unicom.backend.payload.request.UsuarioPostRequest;
@@ -253,15 +252,15 @@ public class UsuarioController {
     @PreAuthorize("hasAuthority('Usuario.Write.All')")
     @PatchMapping("/{usuarioId}")
     @Transactional
-    public ResponseEntity<Void> patchUsuarioByUsuarioId(@Valid @PathVariable Integer usuarioId, @Valid @RequestBody UsuarioPatchRequest patchUsuarioRequest) throws UsuarioEmailDuplicateException, UsuarioMatriculaDuplicateException, UsuarioNivelTooLowException {
+    public ResponseEntity<Void> patchUsuarioByUsuarioId(@Valid @PathVariable Integer usuarioId, @Valid @RequestBody UsuarioPatchRequest patchUsuarioRequest) throws UsuarioEmailDuplicateException, UsuarioMatriculaDuplicateException {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         
         Usuario userDetailsUsuario = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).get();
 
         Usuario usuario = usuarioRepository.findByUsuarioIdAndEmpresaId(usuarioId, userDetails.getEmpresaId()).orElseThrow(NoSuchElementException::new);
 
-        if (!usuario.equals(userDetailsUsuario) && !usuarioService.isNivelGreaterThan(userDetailsUsuario, usuario))
-            throw new UsuarioNivelTooLowException();
+        if (!usuario.equals(userDetailsUsuario))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         if (patchUsuarioRequest.getEmail() != null) {
             Integer usuarioIdByEmail = usuarioRepository.getUsuarioIdByEmail(patchUsuarioRequest.getEmail().get());
@@ -297,8 +296,8 @@ public class UsuarioController {
 
                 Papel papel = usuarioPapel.getPapel();
                 
-                if (papel.getNivel() >= usuarioService.getNivel(userDetailsUsuario))
-                    continue;
+                //if (papel.getNivel() >= usuarioService.getNivel(userDetailsUsuario))
+                    //continue;
 
                 if (!patchUsuarioRequest.getPapelIdList().get().contains(papel.getPapelId())) {
                     usuarioRemovePapelList.add(usuarioPapel);
@@ -317,8 +316,8 @@ public class UsuarioController {
 
                 Papel papel = papelRepository.findByPapelId(papelId).orElseThrow(NoSuchElementException::new);
 
-                if (papel.getNivel() >= usuarioService.getNivel(userDetailsUsuario))
-                    continue;
+                //if (papel.getNivel() >= usuarioService.getNivel(userDetailsUsuario))
+                    //continue;
 
                 UsuarioPapel usuarioPapel = new UsuarioPapel(usuario, papel);
 
@@ -376,12 +375,11 @@ public class UsuarioController {
     @PreAuthorize("hasAuthority('Usuario.Write.All')")
     @PostMapping("/")
     @Transactional
-    public ResponseEntity<UsuarioResponse> postUsuarioByUsuarioId(@Valid @RequestBody UsuarioPostRequest postUsuarioRequest) throws UsuarioEmailDuplicateException, UsuarioMatriculaDuplicateException {
+    public ResponseEntity<UsuarioResponse> postUsuario(@Valid @RequestBody UsuarioPostRequest postUsuarioRequest) throws UsuarioEmailDuplicateException, UsuarioMatriculaDuplicateException {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Usuario userDetailsUsuario = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).get();
-
         Usuario usuario = modelMapper.map(postUsuarioRequest, Usuario.class);
+        usuario.setJornada(null);
 
         usuario.setEmpresaId(userDetails.getEmpresaId());
         if (usuarioRepository.getUsuarioIdByEmail(postUsuarioRequest.getEmail()) != null)
@@ -390,34 +388,32 @@ public class UsuarioController {
         if (usuarioRepository.getUsuarioIdByMatriculaAndEmpresaId(postUsuarioRequest.getMatricula(), usuario.getEmpresaId()) != null)
             throw new UsuarioMatriculaDuplicateException();
 
-        usuario = usuarioRepository.saveAndFlush(usuario);
+        usuarioRepository.save(usuario);
 
         List<UsuarioPapel> usuarioPapelList = new ArrayList<>();
 
         for(Integer papelId : postUsuarioRequest.getPapelIdList()) {
             Papel papel = papelRepository.findByPapelId(papelId).get();
 
-            if (papel.getNivel() >= usuarioService.getNivel(userDetailsUsuario))
-                    continue;
-
             usuarioPapelList.add(new UsuarioPapel(usuario, papel));
         }
 
-        usuarioPapelRepository.saveAllAndFlush(usuarioPapelList);
+        usuarioPapelRepository.saveAll(usuarioPapelList);
 
         usuario.setUsuarioPapelList(usuarioPapelList);
 
+        usuarioRepository.save(usuario);
+
         if (postUsuarioRequest.getJornada() != null) {
             Jornada jornada = new Jornada();
-            jornada.setUsuario(usuario);
             modelMapper.map(postUsuarioRequest.getJornada(), jornada);
 
+            jornada.setUsuario(usuario);
+            jornadaRepository.save(jornada);
+
             usuario.setJornada(jornada);
-
-            jornadaRepository.saveAndFlush(jornada);
+            usuarioRepository.save(usuario);
         }
-
-        usuario = usuarioRepository.saveAndFlush(usuario);
 
         UsuarioResponse usuarioResponse = usuarioService.usuarioToUsuarioResponse(usuario);
 

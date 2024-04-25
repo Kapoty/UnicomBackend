@@ -43,9 +43,6 @@ public class Papel {
     @Column(name = "empresa_id")
     private Integer empresaId;
 
-    @NotNull
-    private Integer nivel;
-
     @ManyToOne
     @JoinColumn(name = "empresa_id", insertable = false, updatable = false)
     @JsonIgnore

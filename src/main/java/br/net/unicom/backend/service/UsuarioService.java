@@ -114,19 +114,4 @@ public class UsuarioService {
         usuarioRepository.saveAndFlush(usuario);
     }
 
-    public Integer getNivel(Usuario usuario) {
-        Integer nivel = 0;
-
-        for (UsuarioPapel usuarioPapel : usuario.getUsuarioPapelList()) {
-            if (usuarioPapel.getPapel().getNivel() > nivel)
-                nivel = usuarioPapel.getPapel().getNivel();
-        }
-
-        return nivel;
-    }
-
-    public Boolean isNivelGreaterThan(Usuario usuario, Usuario usuario2) {
-        return this.getNivel(usuario) > this.getNivel(usuario2);
-    }
-
 }

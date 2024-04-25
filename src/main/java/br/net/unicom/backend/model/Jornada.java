@@ -11,7 +11,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -43,13 +42,5 @@ public class Jornada {
     @JsonIgnore
     @ToString.Exclude
     private Usuario usuario;
-
-    public Jornada(Usuario usuario, LocalTime entrada, LocalTime intervaloInicio, LocalTime intervaloFim, LocalTime saida) {
-        this.usuario = usuario;
-        this.entrada = entrada;
-        this.intervaloInicio = intervaloInicio;
-        this.intervaloFim = intervaloFim;
-        this.saida = saida;
-    }
 
 }

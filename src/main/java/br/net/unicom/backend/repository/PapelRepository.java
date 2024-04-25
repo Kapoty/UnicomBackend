@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import br.net.unicom.backend.model.Papel;
-import br.net.unicom.backend.model.Permissao;
 
 public interface PapelRepository extends JpaRepository<Papel, Long> {
 
