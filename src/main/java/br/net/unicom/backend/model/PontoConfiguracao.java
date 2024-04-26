@@ -1,7 +1,5 @@
 package br.net.unicom.backend.model;
 
-import java.time.LocalTime;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;

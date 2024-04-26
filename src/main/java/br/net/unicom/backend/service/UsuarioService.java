@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import br.net.unicom.backend.model.RegistroPonto;
 import br.net.unicom.backend.model.Usuario;
-import br.net.unicom.backend.model.UsuarioPapel;
 import br.net.unicom.backend.model.exception.RegistroPontoFullException;
 import br.net.unicom.backend.model.exception.RegistroPontoLockedException;
 import br.net.unicom.backend.model.exception.RegistroPontoUnauthorizedException;

@@ -38,7 +38,6 @@ import br.net.unicom.backend.repository.RegistroJornadaRepository;
 import br.net.unicom.backend.repository.RegistroJornadaStatusRepository;
 import br.net.unicom.backend.repository.UsuarioRepository;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -440,7 +439,6 @@ public class RegistroJornadaService {
 
     public Integer getSecondsToAusente(RegistroJornada registroJornada) throws PontoConfiguracaoNaoEncontradoException {
         PontoConfiguracao pontoConfiguracao = pontoConfiguracaoRepository.findByEmpresaId(registroJornada.getUsuario().getEmpresaId()).orElseThrow(PontoConfiguracaoNaoEncontradoException::new);
-        Usuario usuario = registroJornada.getUsuario();
 
         if (registroJornada.getStatusAtual() == null)
             return -1;

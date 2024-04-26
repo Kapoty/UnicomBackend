@@ -46,14 +46,14 @@ public class MinhaEquipeController {
     @Autowired
     ModelMapper modelMapper;
 
-    @PreAuthorize("hasAuthority('MinhaEquipe.Read.All')")
+    @PreAuthorize("hasAuthority('VER_MODULO_MINHA_EQUIPE')")
     @GetMapping("{equipeId}")
     public ResponseEntity<MinhaEquipeResponse> getMinhaEquipeByEquipeId(@Valid @PathVariable("equipeId") Integer equipeId) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Optional<Equipe> equipe = equipeRepository.findByEquipeId(equipeId);
         if (equipe.isEmpty())
             return ResponseEntity.notFound().build();
-        if (equipe.get().getSupervisorId() != userDetails.getId() && !userDetails.hasAuthority("MinhaEquipe.Write.All"))
+        if (equipe.get().getSupervisorId() != userDetails.getId() && !userDetails.hasAuthority("VER_MODULO_MINHA_EQUIPE"))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         MinhaEquipeResponse minhaEquipeResponse = modelMapper.map(equipe.get(), MinhaEquipeResponse.class);
         minhaEquipeResponse.setUsuarioList(

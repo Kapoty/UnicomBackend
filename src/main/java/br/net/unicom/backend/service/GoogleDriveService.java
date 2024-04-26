@@ -3,7 +3,6 @@ package br.net.unicom.backend.service;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.List;

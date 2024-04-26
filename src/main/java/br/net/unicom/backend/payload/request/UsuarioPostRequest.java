@@ -5,8 +5,6 @@ import java.util.List;
 
 import org.hibernate.validator.constraints.Length;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

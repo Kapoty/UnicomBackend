@@ -1,52 +1,21 @@
 package br.net.unicom.backend.controller;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import br.net.unicom.backend.model.Contrato;
-import br.net.unicom.backend.model.Jornada;
-import br.net.unicom.backend.model.RegistroPonto;
-import br.net.unicom.backend.model.Usuario;
-import br.net.unicom.backend.model.exception.RegistroPontoFullException;
-import br.net.unicom.backend.model.exception.RegistroPontoLockedException;
-import br.net.unicom.backend.model.exception.RegistroPontoUnauthorizedException;
-import br.net.unicom.backend.model.exception.UsuarioNaoRegistraPontoHojeException;
-import br.net.unicom.backend.model.exception.UsuarioSemContratoException;
-import br.net.unicom.backend.model.exception.UsuarioSemJornadaException;
-import br.net.unicom.backend.payload.request.RegistroPontoRegistrarFaceRequest;
-import br.net.unicom.backend.payload.request.RegistroPontoRegistrarRequest;
-import br.net.unicom.backend.payload.request.RegistroPontoValidateTokenRequest;
-import br.net.unicom.backend.payload.response.RegistroPontoLockedSecondsResponse;
-import br.net.unicom.backend.payload.response.RegistroPontoTokenResponse;
 import br.net.unicom.backend.repository.RegistroPontoRepository;
 import br.net.unicom.backend.repository.UsuarioRepository;
 import br.net.unicom.backend.security.jwt.PontoJwtUtils;
-import br.net.unicom.backend.security.service.UserDetailsImpl;
 import br.net.unicom.backend.service.DeepFaceService;
 import br.net.unicom.backend.service.RegistroPontoService;
 import br.net.unicom.backend.service.UsuarioService;
-import jakarta.validation.Valid;
 
 
 
@@ -82,7 +51,7 @@ public class RegistroPontoController {
 
     Logger logger = LoggerFactory.getLogger(RegistroPontoController.class);
 
-    @PreAuthorize("hasAuthority('Ponto.Read.All')")
+    /*@PreAuthorize("hasAuthority('Ponto.Read.All')")
     @GetMapping("/me/hoje")
     public ResponseEntity<RegistroPonto> getRegistroPontoByMeHoje() throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException {
 
@@ -224,6 +193,6 @@ public class RegistroPontoController {
             return ResponseEntity.noContent().build();
         else
             return ResponseEntity.badRequest().build();
-    }
+    }*/
 
 }

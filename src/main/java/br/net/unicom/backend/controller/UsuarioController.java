@@ -42,8 +42,8 @@ import br.net.unicom.backend.model.exception.UsuarioEmailDuplicateException;
 import br.net.unicom.backend.model.exception.UsuarioMatriculaDuplicateException;
 import br.net.unicom.backend.payload.request.PatchJornadaRequest;
 import br.net.unicom.backend.payload.request.UsuarioPatchRequest;
-import br.net.unicom.backend.payload.request.UsuarioPostRequest;
 import br.net.unicom.backend.payload.request.UsuarioPingRequest;
+import br.net.unicom.backend.payload.request.UsuarioPostRequest;
 import br.net.unicom.backend.payload.response.IframeCategoryResponse;
 import br.net.unicom.backend.payload.response.UsuarioMeResponse;
 import br.net.unicom.backend.payload.response.UsuarioResponse;
@@ -61,7 +61,6 @@ import br.net.unicom.backend.service.FileService;
 import br.net.unicom.backend.service.UsuarioService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import jakarta.validation.Validator;
 
 
 
@@ -115,18 +114,9 @@ public class UsuarioController {
     PasswordEncoder encoder;
 
     @Autowired
-	private Validator validator;
-
-    @Autowired
     PontoJwtUtils pontoJwtUtils;
 
-    @PreAuthorize("hasAuthority('Usuario.Read.All')")
-    @GetMapping("")
-    public ResponseEntity<List<Usuario>> getAll() {
-        return new ResponseEntity<List<Usuario>>(usuarioRepository.findAll(), HttpStatus.OK);
-    }
-
-    @PreAuthorize("hasAuthority('Usuario.Read.All')")
+    @PreAuthorize("hasAuthority('CADASTRAR_USUARIOS')")
     @GetMapping("/{usuarioId}")
     public ResponseEntity<UsuarioResponse> getUsuarioByEmpresaIdAndUsuarioId(@Valid @PathVariable("usuarioId") Integer usuarioId) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -135,7 +125,6 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioResponse);
     }
 
-    @PreAuthorize("hasAuthority('Usuario.Read.All')")
     @GetMapping("/me/foto-perfil")
     public ResponseEntity<Resource> getUsuarioFotoPerfilByMe() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -163,7 +152,7 @@ public class UsuarioController {
                             .body(file);
     }
 
-    @PreAuthorize("hasAuthority('Usuario.Write.All')")
+    @PreAuthorize("hasAuthority('CADASTRAR_USUARIOS')")
     @PostMapping("/{usuarioId}/foto-perfil")
     public ResponseEntity<Void> postUsuarioFotoPerfilByUsuarioIdandEmpresaId(@Valid @PathVariable("usuarioId") Integer usuarioId, @RequestParam("file") MultipartFile file) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -187,7 +176,7 @@ public class UsuarioController {
         }
     }
 
-    @PreAuthorize("hasAuthority('Usuario.Write.All')")
+    @PreAuthorize("hasAuthority('CADASTRAR_USUARIOS')")
     @DeleteMapping("/{usuarioId}/foto-perfil")
     public ResponseEntity<Void> deleteUsuarioFotoPerfilByUsuarioIdandEmpresaId(@Valid @PathVariable("usuarioId") Integer usuarioId) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -205,7 +194,7 @@ public class UsuarioController {
         }
     }
 
-    @PreAuthorize("hasAuthority('Usuario.Read.All')")
+    @PreAuthorize("hasAuthority('CADASTRAR_USUARIOS')")
     @GetMapping("/{usuarioId}/permissao")
     public ResponseEntity<List<Permissao>> getPermissaoListByEmpresaIdAndUsuarioId(@Valid @PathVariable("usuarioId") Integer usuarioId) {
         return ResponseEntity.ok(permissaoRepository.findAllByUsuarioId(usuarioId));
@@ -221,7 +210,7 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioMeResponse);
     }
 
-    @PreAuthorize("hasAuthority('Iframe.Read.All')")
+    @PreAuthorize("hasAuthority('VER_MODULO_IFRAME')")
     @GetMapping("/me/iframe-category")
     public ResponseEntity<List<IframeCategoryResponse>> getIframeCategoryListByMe() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -238,18 +227,18 @@ public class UsuarioController {
         return ResponseEntity.ok(iframeCategoryResponsesList);
     }
 
-    @PreAuthorize("hasAuthority('MinhaEquipe.Read.All')")
+    @PreAuthorize("hasAuthority('VER_MODULO_MINHA_EQUIPE')")
     @GetMapping("/me/minha-equipe")
     public ResponseEntity<List<Equipe>> getMinhaEquipeListByMe() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        if (userDetails.hasAuthority("MinhaEquipe.Write.All"))
+        if (userDetails.hasAuthority("VER_TODAS_EQUIPES"))
             return ResponseEntity.ok(equipeRepository.findAllByEmpresaId(userDetails.getEmpresaId()));
 
         return ResponseEntity.ok(equipeRepository.findAllBySupervisorId(userDetails.getId()));
     }
 
-    @PreAuthorize("hasAuthority('Usuario.Write.All')")
+    @PreAuthorize("hasAuthority('CADASTRAR_USUARIOS')")
     @PatchMapping("/{usuarioId}")
     @Transactional
     public ResponseEntity<Void> patchUsuarioByUsuarioId(@Valid @PathVariable Integer usuarioId, @Valid @RequestBody UsuarioPatchRequest patchUsuarioRequest) throws UsuarioEmailDuplicateException, UsuarioMatriculaDuplicateException {
@@ -258,9 +247,6 @@ public class UsuarioController {
         Usuario userDetailsUsuario = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).get();
 
         Usuario usuario = usuarioRepository.findByUsuarioIdAndEmpresaId(usuarioId, userDetails.getEmpresaId()).orElseThrow(NoSuchElementException::new);
-
-        if (!usuario.equals(userDetailsUsuario))
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         if (patchUsuarioRequest.getEmail() != null) {
             Integer usuarioIdByEmail = usuarioRepository.getUsuarioIdByEmail(patchUsuarioRequest.getEmail().get());
@@ -372,7 +358,7 @@ public class UsuarioController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAuthority('Usuario.Write.All')")
+    @PreAuthorize("hasAuthority('CADASTRAR_USUARIOS')")
     @PostMapping("/")
     @Transactional
     public ResponseEntity<UsuarioResponse> postUsuario(@Valid @RequestBody UsuarioPostRequest postUsuarioRequest) throws UsuarioEmailDuplicateException, UsuarioMatriculaDuplicateException {
@@ -431,26 +417,26 @@ public class UsuarioController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAuthority('MinhaEquipe.Read.All')")
+    @PreAuthorize("hasAuthority('VER_MODULO_MINHA_EQUIPE')")
     @GetMapping("/{usuarioId}/jornada")
     public ResponseEntity<Jornada> getJornadaByUsuarioId(@Valid @PathVariable("usuarioId") Integer usuarioId) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
 
-        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("MinhaEquipe.Write.All"))
+        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         return ResponseEntity.ok(usuario.getJornada());
     }
 
-    @PreAuthorize("hasAuthority('MinhaEquipe.Read.All')")
+    @PreAuthorize("hasAuthority('VER_MODULO_MINHA_EQUIPE')")
     @PatchMapping("/{usuarioId}/jornada")
     @Transactional
     public ResponseEntity<Jornada> patchJornadaByUsuarioId(@Valid @PathVariable("usuarioId") Integer usuarioId, @Valid @RequestBody PatchJornadaRequest patchJornadaRequest) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
 
-        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("MinhaEquipe.Write.All"))
+        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         if (patchJornadaRequest.getJornada() != null) {
@@ -474,13 +460,13 @@ public class UsuarioController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAuthority('MinhaEquipe.Read.All')")
+    @PreAuthorize("hasAuthority('VER_MODULO_MINHA_EQUIPE')")
     @GetMapping("/{usuarioId}/jornada-excecao-data-list")
     public ResponseEntity<List<LocalDate>> getJornadaExcecaoDataListByUsuarioId(@Valid @PathVariable("usuarioId") Integer usuarioId) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
 
-        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("MinhaEquipe.Write.All"))
+        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         return ResponseEntity.ok(

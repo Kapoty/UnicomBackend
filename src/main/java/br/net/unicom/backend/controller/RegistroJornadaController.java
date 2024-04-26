@@ -107,7 +107,7 @@ public class RegistroJornadaController {
 
     Logger logger = LoggerFactory.getLogger(RegistroPontoController.class);
 
-    @PreAuthorize("hasAuthority('Jornada.Read.All')")
+    @PreAuthorize("hasAuthority('REGISTRAR_JORNADA')")
     @GetMapping("/{usuarioId}/hoje")
     public ResponseEntity<RegistroJornadaResponse> getRegistroJornadaByMeHoje(@PathVariable("usuarioId") String usuarioId, @RequestParam(defaultValue = "false") Boolean completo) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException {
 
@@ -115,7 +115,7 @@ public class RegistroJornadaController {
 
         Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
 
-        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("MinhaEquipe.Write.All"))
+        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         PontoConfiguracao pontoConfiguracao = pontoConfiguracaoRepository.findByEmpresaId(usuario.getEmpresaId()).orElseThrow(PontoConfiguracaoNaoEncontradoException::new);
@@ -153,7 +153,7 @@ public class RegistroJornadaController {
         return ResponseEntity.ok(registroJornadaResponse);
     }
 
-    @PreAuthorize("hasAuthority('Jornada.Write.All')")
+    @PreAuthorize("hasAuthority('AUTORIZAR_DISPOSITIVO')")
     @GetMapping("/generate-token")
     public ResponseEntity<RegistroPontoTokenResponse> generatePontoJwtToken() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -161,7 +161,7 @@ public class RegistroJornadaController {
         return ResponseEntity.ok(new RegistroPontoTokenResponse(pontoJwtUtils.generateJwtToken(userDetails.getId())));
     }
 
-    @PreAuthorize("hasAuthority('Jornada.Read.All')")
+    @PreAuthorize("hasAuthority('REGISTRAR_JORNADA')")
     @PostMapping("/validate-token")
     public ResponseEntity<Void> validatePontoJwtToken(@Valid @RequestBody RegistroPontoValidateTokenRequest registroPontoValidateTokenRequest) {
         if (pontoJwtUtils.validateJwtToken(registroPontoValidateTokenRequest.getToken()))
@@ -170,7 +170,7 @@ public class RegistroJornadaController {
             return ResponseEntity.badRequest().build();
     }
 
-    @PreAuthorize("hasAuthority('Jornada.Read.All')")
+    @PreAuthorize("hasAuthority('REGISTRAR_JORNADA')")
     @PostMapping("/{usuarioId}/logar")
     public ResponseEntity<Void> logar(@PathVariable("usuarioId") String usuarioId, @Valid @RequestBody RegistroJornadaLogarRequest registroJornadaLogarRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException {
         if (!pontoJwtUtils.validateJwtToken(registroJornadaLogarRequest.getToken()))
@@ -180,7 +180,7 @@ public class RegistroJornadaController {
 
         Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
 
-        if (usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) || userDetails.hasAuthority("MinhaEquipe.Write.All")) {
+        if (usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) || userDetails.hasAuthority("VER_TODAS_EQUIPES")) {
             registroJornadaService.logarBySupervisor(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
             return ResponseEntity.noContent().build();
         }
@@ -193,7 +193,7 @@ public class RegistroJornadaController {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
-    @PreAuthorize("hasAuthority('Jornada.Read.All')")
+    @PreAuthorize("hasAuthority('REGISTRAR_JORNADA')")
     @PostMapping("/{usuarioId}/deslogar")
     public ResponseEntity<Void> deslogar(@PathVariable("usuarioId") String usuarioId, @Valid @RequestBody RegistroJornadaLogarRequest registroJornadaLogarRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException {
         if (!pontoJwtUtils.validateJwtToken(registroJornadaLogarRequest.getToken()))
@@ -203,14 +203,14 @@ public class RegistroJornadaController {
 
         Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
 
-        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("MinhaEquipe.Write.All"))
+        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         registroJornadaService.deslogar(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAuthority('Jornada.Read.All')")
+    @PreAuthorize("hasAuthority('REGISTRAR_JORNADA')")
     @PostMapping("/{usuarioId}/iniciar-hora-extra")
     public ResponseEntity<Void> iniciarHoraExtra(@PathVariable("usuarioId") String usuarioId, @Valid @RequestBody RegistroJornadaLogarRequest registroJornadaLogarRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException {
         if (!pontoJwtUtils.validateJwtToken(registroJornadaLogarRequest.getToken()))
@@ -220,14 +220,14 @@ public class RegistroJornadaController {
 
         Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
 
-        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("MinhaEquipe.Write.All"))
+        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         registroJornadaService.iniciarHoraExtra(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAuthority('Jornada.Read.All')")
+    @PreAuthorize("hasAuthority('REGISTRAR_JORNADA')")
     @PostMapping("/{usuarioId}/toggle-hora-extra-permitida")
     public ResponseEntity<Void> toggleHoraExtraPermitida(@PathVariable("usuarioId") String usuarioId, @Valid @RequestBody RegistroJornadaLogarRequest registroJornadaLogarRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException {
         if (!pontoJwtUtils.validateJwtToken(registroJornadaLogarRequest.getToken()))
@@ -237,14 +237,14 @@ public class RegistroJornadaController {
 
         Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
 
-        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("MinhaEquipe.Write.All"))
+        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         registroJornadaService.toggleHoraExtraPermitida(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAuthority('Jornada.Read.All')")
+    @PreAuthorize("hasAuthority('REGISTRAR_JORNADA')")
     @PostMapping("/{usuarioId}/toggle-hora-extra-auto")
     public ResponseEntity<Void> toggleHoraExtraAuto(@PathVariable("usuarioId") String usuarioId, @Valid @RequestBody RegistroJornadaLogarRequest registroJornadaLogarRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException {
         if (!pontoJwtUtils.validateJwtToken(registroJornadaLogarRequest.getToken()))
@@ -254,14 +254,14 @@ public class RegistroJornadaController {
 
         Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
 
-        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("MinhaEquipe.Write.All"))
+        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         registroJornadaService.toggleHoraExtraAuto(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAuthority('Jornada.Read.All')")
+    @PreAuthorize("hasAuthority('REGISTRAR_JORNADA')")
     @PostMapping("/me/im-here")
     public ResponseEntity<Void> imHere(@Valid @RequestBody RegistroJornadaLogarRequest registroJornadaLogarRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException {
         if (!pontoJwtUtils.validateJwtToken(registroJornadaLogarRequest.getToken()))
@@ -272,7 +272,7 @@ public class RegistroJornadaController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAuthority('Jornada.Read.All')")
+    @PreAuthorize("hasAuthority('REGISTRAR_JORNADA')")
     @PostMapping("/{usuarioId}/alterar-status")
     public ResponseEntity<Void> alterarStatusByMe(@PathVariable("usuarioId") String usuarioId, @Valid @RequestBody RegistroJornadaAlterarStatusRequest registroJornadaAlterarStatusRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException, JornadaStatusNaoEncontradoException, JornadaStatusNaoPermitidoException {
         if (!pontoJwtUtils.validateJwtToken(registroJornadaAlterarStatusRequest.getToken()))
@@ -282,7 +282,7 @@ public class RegistroJornadaController {
 
         Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
 
-        if (usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) || userDetails.hasAuthority("MinhaEquipe.Write.All")) {
+        if (usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) || userDetails.hasAuthority("VER_TODAS_EQUIPES")) {
             registroJornadaService.alterarStatusBySupervisor(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()), registroJornadaAlterarStatusRequest.getJornadaStatusId());
             return ResponseEntity.noContent().build();
         }
@@ -300,7 +300,7 @@ public class RegistroJornadaController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
 
-        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("MinhaEquipe.Write.All"))
+        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         RegistroJornadaReportResponse registroJornadaReportResponse = new RegistroJornadaReportResponse();

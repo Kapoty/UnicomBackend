@@ -45,17 +45,8 @@ public class AnexoController {
     
     @Autowired
     EmpresaRepository empresaRepository;
-
-    @PreAuthorize("hasAuthority('Venda.Read.All')")
-    @GetMapping("/get-all-files")
-    public List<File> getAllFiles() throws IOException, GeneralSecurityException {
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Empresa empresa = empresaRepository.findByEmpresaId(userDetails.getEmpresaId()).orElseThrow(NoSuchElementException::new);
-        
-        return anexoService.getAllFiles(empresa);
-    }
     
-    @PreAuthorize("hasAuthority('Venda.Read.All')")
+    @PreAuthorize("hasAuthority('CADASTRAR_VENDAS')")
     @GetMapping("/venda/{vendaId}")
     public List<File> listAllByVendaId(@Valid @PathVariable("vendaId") Integer vendaId) throws Exception {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -64,7 +55,7 @@ public class AnexoController {
         return anexoService.listAllFilesByVendaId(empresa, vendaId);
     }
     
-    @PreAuthorize("hasAuthority('Venda.Read.All')")
+    @PreAuthorize("hasAuthority('CADASTRAR_VENDAS')")
     @PostMapping("/venda/{vendaId}/upload")
     public ResponseEntity<String> uploadByVendaId(@Valid @PathVariable("vendaId") Integer vendaId, @RequestParam("file") MultipartFile file) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -83,7 +74,7 @@ public class AnexoController {
         anexoService.downloadByFileId(fileId, response);
     }
 
-    @PreAuthorize("hasAuthority('Venda.Read.All')")
+    @PreAuthorize("hasAuthority('CADASTRAR_VENDAS')")
     @DeleteMapping("/delete/{fileId}")
     public ResponseEntity<Void> deleteByFileId(@Valid @PathVariable("fileId") String fileId) throws Exception {
         anexoService.deleteByFileId(fileId);

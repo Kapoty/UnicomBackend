@@ -1,6 +1,5 @@
 package br.net.unicom.backend.controller;
 
-import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.modelmapper.ModelMapper;
@@ -49,15 +48,7 @@ public class EquipeController {
     @Autowired
     EquipeService equipeService;
 
-    @PreAuthorize("hasAuthority('Equipe.Read.All')")
-    @GetMapping("")
-    public ResponseEntity<List<Equipe>> getAll() {
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        return new ResponseEntity<List<Equipe>>(equipeRepository.findAllByEmpresaId(userDetails.getEmpresaId()), HttpStatus.OK);
-    }
-
-    @PreAuthorize("hasAuthority('Equipe.Read.All')")
+    @PreAuthorize("hasAuthority('CADASTRAR_EQUIPES')")
     @GetMapping("/{equipeId}")
     public ResponseEntity<Equipe> getEquipeByEquipeId(@Valid @PathVariable("equipeId") Integer equipeId) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -65,7 +56,7 @@ public class EquipeController {
         return ResponseEntity.of(equipeRepository.findByEquipeIdAndEmpresaId(equipeId, userDetails.getEmpresaId()));
     }
 
-    @PreAuthorize("hasAuthority('Equipe.Write.All')")
+    @PreAuthorize("hasAuthority('CADASTRAR_EQUIPES')")
     @PatchMapping("/{equipeId}")
     @Transactional
     public ResponseEntity<Void> patchByEquipeId(@Valid @PathVariable("equipeId") Integer equipeId, @Valid @RequestBody EquipePatchRequest equipePatchRequest) {
@@ -81,7 +72,7 @@ public class EquipeController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAuthority('Equipe.Write.All')")
+    @PreAuthorize("hasAuthority('CADASTRAR_EQUIPES')")
     @PostMapping("/")
     @Transactional
     public ResponseEntity<EquipeResponse> postEquipe(@Valid @RequestBody EquipePostRequest equipePostRequest) {
@@ -99,7 +90,7 @@ public class EquipeController {
         return ResponseEntity.status(HttpStatus.CREATED).body(equipeResponse);
     }
 
-    @PreAuthorize("hasAuthority('Equipe.Write.All')")
+    @PreAuthorize("hasAuthority('CADASTRAR_EQUIPES')")
     @DeleteMapping("/{equipeId}")
     @Transactional
     public ResponseEntity<EquipeResponse> deleteEquipe(@Valid @PathVariable("equipeId") Integer equipeId) {

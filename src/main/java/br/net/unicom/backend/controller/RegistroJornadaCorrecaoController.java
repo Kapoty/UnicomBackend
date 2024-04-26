@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -70,7 +69,7 @@ public class RegistroJornadaCorrecaoController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(registroJornadaCorrecaoFindByUsuarioIdAndDataRequest.getUsuarioId()).orElseThrow(NoSuchElementException::new);
 
-        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("MinhaEquipe.Write.All"))
+        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         return ResponseEntity.of(registroJornadaCorrecaoRepository.findByRegistroJornadaCorrecaoKey(new RegistroJornadaCorrecaoKey(usuario.getUsuarioId(), registroJornadaCorrecaoFindByUsuarioIdAndDataRequest.getData())));
@@ -82,7 +81,7 @@ public class RegistroJornadaCorrecaoController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(registroJornadaCorrecaoPatchByUsuarioIdAndDataRequest.getUsuarioId()).orElseThrow(NoSuchElementException::new);
 
-        Boolean isSupervisor = usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) || userDetails.hasAuthority("MinhaEquipe.Write.All");
+        Boolean isSupervisor = usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) || userDetails.hasAuthority("VER_TODAS_EQUIPES");
 
         if (userDetails.getId() != usuario.getUsuarioId() && !isSupervisor)
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -119,7 +118,7 @@ public class RegistroJornadaCorrecaoController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(registroJornadaCorrecaoFindByUsuarioIdAndDataRequest.getUsuarioId()).orElseThrow(NoSuchElementException::new);
 
-        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("MinhaEquipe.Write.All"))
+        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         RegistroJornadaCorrecaoKey registroJornadaCorrecaoKey = new RegistroJornadaCorrecaoKey(registroJornadaCorrecaoFindByUsuarioIdAndDataRequest.getUsuarioId(), registroJornadaCorrecaoFindByUsuarioIdAndDataRequest.getData());
@@ -183,7 +182,7 @@ public class RegistroJornadaCorrecaoController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(registroJornadaCorrecaoFindByUsuarioIdAndDataRequest.getUsuarioId()).orElseThrow(NoSuchElementException::new);
 
-        Boolean isSupervisor = usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) || userDetails.hasAuthority("MinhaEquipe.Write.All");
+        Boolean isSupervisor = usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) || userDetails.hasAuthority("VER_TODAS_EQUIPES");
 
         if (userDetails.getId() != usuario.getUsuarioId() && !isSupervisor)
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();

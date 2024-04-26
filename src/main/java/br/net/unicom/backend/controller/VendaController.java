@@ -1,6 +1,5 @@
 package br.net.unicom.backend.controller;
 
-import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.modelmapper.ModelMapper;
@@ -43,15 +42,7 @@ public class VendaController {
     @Autowired
     ModelMapper modelMapper;
 
-    @PreAuthorize("hasAuthority('Venda.Read.All')")
-    @GetMapping("")
-    public ResponseEntity<List<Venda>> getAll() {
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        return new ResponseEntity<List<Venda>>(vendaRepository.findAllByEmpresaId(userDetails.getEmpresaId()), HttpStatus.OK);
-    }
-
-    @PreAuthorize("hasAuthority('Venda.Read.All')")
+    @PreAuthorize("hasAuthority('CADASTRAR_VENDAS')")
     @GetMapping("/{vendaId}")
     public ResponseEntity<Venda> getVendaByVendaId(@Valid @PathVariable("vendaId") Integer vendaId) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -59,7 +50,7 @@ public class VendaController {
         return ResponseEntity.of(vendaRepository.findByVendaIdAndEmpresaId(vendaId, userDetails.getEmpresaId()));
     }
 
-    @PreAuthorize("hasAuthority('Venda.Write.All')")
+    @PreAuthorize("hasAuthority('CADASTRAR_VENDAS')")
     @PatchMapping("/{vendaId}")
     @Transactional
     public ResponseEntity<Void> patchByVendaId(@Valid @PathVariable("vendaId") Integer vendaId, @Valid @RequestBody VendaPatchRequest vendaPatchRequest) {
@@ -75,7 +66,7 @@ public class VendaController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAuthority('Venda.Write.All')")
+    @PreAuthorize("hasAuthority('CADASTRAR_VENDAS')")
     @PostMapping("/")
     @Transactional
     public ResponseEntity<Venda> postVenda(@Valid @RequestBody VendaPostRequest vendaPostRequest) {
