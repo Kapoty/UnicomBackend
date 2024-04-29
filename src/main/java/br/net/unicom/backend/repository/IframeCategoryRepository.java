@@ -14,7 +14,7 @@ public interface IframeCategoryRepository extends JpaRepository<IframeCategory, 
     List<IframeCategory> findAll();
     Optional<IframeCategory> findByIframeCategoryId(Integer iframeCategoryId);
 
-    @Query(value = "SELECT * FROM Iframe_Category ic WHERE ic.ativo = 1 and ic.iframe_category_id IN(SELECT DISTINCT(iframe_category_id) FROM Iframe_Category_Papel ifp WHERE ifp.papel_id IN (SELECT papel_id FROM Usuario_Papel up WHERE up.usuario_id = :usuarioId))", nativeQuery = true)
+    @Query(value = "SELECT * FROM Iframe_Category ic WHERE ic.ativo = 1 and ic.iframe_category_id IN(SELECT DISTINCT(iframe_category_id) FROM Iframe_Category_Papel ifp WHERE ifp.papel_id = (SELECT papel_id FROM usuario u WHERE u.usuario_id = :usuarioId))", nativeQuery = true)
     List<IframeCategory> findAllAtivoByUsuarioId(@Param("usuarioId") Integer usuarioId);
 
 }

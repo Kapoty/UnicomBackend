@@ -93,11 +93,6 @@ public class Usuario {
     @ToString.Exclude
     private Empresa empresa;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "usuario")
-    @JsonIgnore
-    @ToString.Exclude
-    private List<UsuarioPapel> usuarioPapelList;
-
     @Column(name = "cargo_id")
     private Integer cargoId;
 
@@ -125,6 +120,14 @@ public class Usuario {
     @ManyToOne
     @JoinColumn(name = "equipe_id", insertable = false, updatable = false)
     private Equipe equipe;
+
+    @Column(name = "papel_id")
+    @NotNull
+    private Integer papelId;
+
+    @ManyToOne
+    @JoinColumn(name = "papel_id", insertable = false, updatable = false)
+    private Papel papel;
 
     @OneToOne(mappedBy = "usuario")
     @PrimaryKeyJoinColumn

@@ -33,10 +33,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.net.unicom.backend.model.Equipe;
 import br.net.unicom.backend.model.Jornada;
-import br.net.unicom.backend.model.Papel;
 import br.net.unicom.backend.model.Permissao;
 import br.net.unicom.backend.model.Usuario;
-import br.net.unicom.backend.model.UsuarioPapel;
 import br.net.unicom.backend.model.exception.RegistroPontoUnauthorizedException;
 import br.net.unicom.backend.model.exception.UsuarioEmailDuplicateException;
 import br.net.unicom.backend.model.exception.UsuarioMatriculaDuplicateException;
@@ -53,7 +51,6 @@ import br.net.unicom.backend.repository.JornadaExcecaoRepository;
 import br.net.unicom.backend.repository.JornadaRepository;
 import br.net.unicom.backend.repository.PapelRepository;
 import br.net.unicom.backend.repository.PermissaoRepository;
-import br.net.unicom.backend.repository.UsuarioPapelRepository;
 import br.net.unicom.backend.repository.UsuarioRepository;
 import br.net.unicom.backend.security.jwt.PontoJwtUtils;
 import br.net.unicom.backend.security.service.UserDetailsImpl;
@@ -82,10 +79,7 @@ public class UsuarioController {
 
     @Autowired
     IframeCategoryRepository iframeCategoryRepository;
-
-    @Autowired
-    UsuarioPapelRepository usuarioPapelRepository;
-
+    
     @Autowired
     PapelRepository papelRepository;
 
@@ -205,7 +199,6 @@ public class UsuarioController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(userDetails.getId()).get();
         UsuarioMeResponse usuarioMeResponse = modelMapper.map(usuario, UsuarioMeResponse.class);
-        usuarioMeResponse.setPapelList(papelRepository.findAllByUsuarioId(usuario.getUsuarioId()));
         usuarioMeResponse.setPermissaoList(SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream().map(a -> a.getAuthority()).collect(Collectors.toList()));
         return ResponseEntity.ok(usuarioMeResponse);
     }
@@ -235,7 +228,7 @@ public class UsuarioController {
         if (userDetails.hasAuthority("VER_TODAS_EQUIPES"))
             return ResponseEntity.ok(equipeRepository.findAllByEmpresaId(userDetails.getEmpresaId()));
 
-        return ResponseEntity.ok(equipeRepository.findAllBySupervisorId(userDetails.getId()));
+        return ResponseEntity.ok(equipeRepository.findAllBySupervisorIdOrGerenteId(userDetails.getId(), userDetails.getId()));
     }
 
     @PreAuthorize("hasAuthority('CADASTRAR_USUARIOS')")
@@ -270,55 +263,8 @@ public class UsuarioController {
                 else throw new UsuarioMatriculaDuplicateException();
             }
         }
-        if (patchUsuarioRequest.getPapelIdList() != null) {
-
-            // delete papeis
-
-            List<UsuarioPapel> usuarioPapelList = usuario.getUsuarioPapelList();
-            List<UsuarioPapel> usuarioRemovePapelList = new ArrayList<>();
-            List<UsuarioPapel> usuarioAddPapelList = new ArrayList<>();
-
-            for(UsuarioPapel usuarioPapel : usuarioPapelList) {
-
-                Papel papel = usuarioPapel.getPapel();
-                
-                //if (papel.getNivel() >= usuarioService.getNivel(userDetailsUsuario))
-                    //continue;
-
-                if (!patchUsuarioRequest.getPapelIdList().get().contains(papel.getPapelId())) {
-                    usuarioRemovePapelList.add(usuarioPapel);
-                }
-
-            }
-
-            logger.info("Removeu os seguintes papeis: " + usuarioRemovePapelList.toString());
-
-            usuarioPapelList.removeAll(usuarioRemovePapelList);
-            usuarioPapelRepository.deleteAll(usuarioRemovePapelList);
-
-            // add papeis
-            
-            for(Integer papelId : patchUsuarioRequest.getPapelIdList().get()) {
-
-                Papel papel = papelRepository.findByPapelId(papelId).orElseThrow(NoSuchElementException::new);
-
-                //if (papel.getNivel() >= usuarioService.getNivel(userDetailsUsuario))
-                    //continue;
-
-                UsuarioPapel usuarioPapel = new UsuarioPapel(usuario, papel);
-
-                if (!usuarioPapelList.contains(usuarioPapel)) {
-                    usuarioAddPapelList.add(usuarioPapel);
-                }
-            }
-
-            logger.info("Adicionou os seguintes papeis: " + usuarioAddPapelList.toString());
-
-            usuarioPapelRepository.saveAllAndFlush(usuarioAddPapelList);
-            usuarioPapelList.addAll(usuarioAddPapelList);
-
-
-        }
+        if (patchUsuarioRequest.getPapelId() != null)
+        usuario.setPapelId(patchUsuarioRequest.getPapelId().orElse(null));
         if (patchUsuarioRequest.getDataNascimento() != null)
         usuario.setDataNascimento(patchUsuarioRequest.getDataNascimento().orElse(null));
         if (patchUsuarioRequest.getCpf() != null)
@@ -376,20 +322,6 @@ public class UsuarioController {
 
         usuarioRepository.save(usuario);
 
-        List<UsuarioPapel> usuarioPapelList = new ArrayList<>();
-
-        for(Integer papelId : postUsuarioRequest.getPapelIdList()) {
-            Papel papel = papelRepository.findByPapelId(papelId).get();
-
-            usuarioPapelList.add(new UsuarioPapel(usuario, papel));
-        }
-
-        usuarioPapelRepository.saveAll(usuarioPapelList);
-
-        usuario.setUsuarioPapelList(usuarioPapelList);
-
-        usuarioRepository.save(usuario);
-
         if (postUsuarioRequest.getJornada() != null) {
             Jornada jornada = new Jornada();
             modelMapper.map(postUsuarioRequest.getJornada(), jornada);
@@ -423,7 +355,7 @@ public class UsuarioController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
 
-        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
+        if (!usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         return ResponseEntity.ok(usuario.getJornada());
@@ -436,7 +368,7 @@ public class UsuarioController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
 
-        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
+        if (!usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         if (patchJornadaRequest.getJornada() != null) {
@@ -466,7 +398,7 @@ public class UsuarioController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
 
-        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
+        if (!usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         return ResponseEntity.ok(

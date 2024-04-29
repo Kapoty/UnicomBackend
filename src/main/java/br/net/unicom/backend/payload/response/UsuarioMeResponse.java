@@ -30,7 +30,9 @@ public class UsuarioMeResponse {
 
     private Empresa empresa;
 
-    private List<Papel> papelList;;
+    private Integer papelId;
+
+    private Papel papel;
 
     private List<String> permissaoList;
 

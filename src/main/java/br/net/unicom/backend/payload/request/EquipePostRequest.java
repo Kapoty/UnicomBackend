@@ -11,6 +11,8 @@ public class EquipePostRequest {
 
     private Integer supervisorId;
 
+    private Integer gerenteId;
+
     @NotBlank
     private String nome;
 

@@ -52,7 +52,6 @@ public class UsuarioService {
     public UsuarioResponse usuarioToUsuarioResponse(Usuario usuario) {
         UsuarioResponse usuarioResponse = new UsuarioResponse();
         this.modelMapper.map(usuario, usuarioResponse);
-        usuarioResponse.setPapelList(papelRepository.findAllByUsuarioId(usuario.getUsuarioId()));
         return usuarioResponse;
     }
 
@@ -77,6 +76,14 @@ public class UsuarioService {
 
     public Boolean isUsuarioSupervisorOf(Integer supervisorId, Usuario usuario) {
         return (usuario.getEquipe() != null && supervisorId == usuario.getEquipe().getSupervisorId());
+    }
+
+    public Boolean isUsuarioGerenteOf(Integer gerenteId, Usuario usuario) {
+        return (usuario.getEquipe() != null && gerenteId == usuario.getEquipe().getGerenteId());
+    }
+
+    public Boolean isUsuarioGreaterThan(Integer usuarioId, Usuario usuario) {
+        return isUsuarioSupervisorOf(usuarioId, usuario) || isUsuarioGerenteOf(usuarioId, usuario);
     }
 
     public String getUsuarioFotoPerfilFilename(Usuario usuario) {

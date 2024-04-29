@@ -59,7 +59,7 @@ public class JornadaExcecaoController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(jornadaExcecaoFindByUsuarioIdAndDataRequest.getUsuarioId()).orElseThrow(NoSuchElementException::new);
 
-        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
+        if (!usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         return ResponseEntity.of(jornadaExcecaoRepository.findByUsuarioIdAndData(usuario.getUsuarioId(), jornadaExcecaoFindByUsuarioIdAndDataRequest.getData()));
@@ -72,7 +72,7 @@ public class JornadaExcecaoController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(patchJornadaExcecaoByUsuarioIdAndDataRequest.getUsuarioId()).orElseThrow(NoSuchElementException::new);
 
-        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
+        if (!usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         JornadaExcecao jornadaExcecao = jornadaExcecaoRepository.findByUsuarioIdAndData(patchJornadaExcecaoByUsuarioIdAndDataRequest.getUsuarioId(), patchJornadaExcecaoByUsuarioIdAndDataRequest.getData()).orElseThrow(NoSuchElementException::new);
@@ -90,7 +90,7 @@ public class JornadaExcecaoController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(createJornadaExcecaoByUsuarioIdAndDataRequest.getUsuarioId()).orElseThrow(NoSuchElementException::new);
 
-        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
+        if (!usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         JornadaExcecao jornadaExcecao = new JornadaExcecao();
@@ -160,7 +160,7 @@ public class JornadaExcecaoController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(jornadaExcecaoFindByUsuarioIdAndDataRequest.getUsuarioId()).orElseThrow(NoSuchElementException::new);
 
-        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_MODULO_MINHA_EQUIPE"))
+        if (!usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_MODULO_MINHA_EQUIPE"))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         JornadaExcecao jornadaExcecao = jornadaExcecaoRepository.findByUsuarioIdAndData(jornadaExcecaoFindByUsuarioIdAndDataRequest.getUsuarioId(), jornadaExcecaoFindByUsuarioIdAndDataRequest.getData()).orElseThrow(NoSuchElementException::new);

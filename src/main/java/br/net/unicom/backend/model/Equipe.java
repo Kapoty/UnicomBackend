@@ -58,6 +58,15 @@ public class Equipe {
     @ToString.Exclude
     private Usuario supervisor;
 
+    @Column(name = "gerente_id")
+    private Integer gerenteId;
+
+    @ManyToOne
+    @JoinColumn(name = "gerente_id", referencedColumnName = "usuarioId", insertable = false, updatable = false)
+    @JsonIgnore
+    @ToString.Exclude
+    private Usuario gerente;
+
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "equipe")
     @JsonIgnore
     @ToString.Exclude

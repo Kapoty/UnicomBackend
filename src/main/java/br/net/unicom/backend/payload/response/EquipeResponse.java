@@ -17,4 +17,6 @@ public class EquipeResponse {
 
     private UsuarioEquipeResponse supervisor;
 
+    private UsuarioEquipeResponse gerente;
+
 }

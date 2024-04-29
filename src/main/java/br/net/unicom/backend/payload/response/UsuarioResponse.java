@@ -1,7 +1,6 @@
 package br.net.unicom.backend.payload.response;
 
 import java.time.LocalDate;
-import java.util.List;
 
 import br.net.unicom.backend.model.Cargo;
 import br.net.unicom.backend.model.Contrato;
@@ -33,7 +32,9 @@ public class UsuarioResponse {
 
     private Empresa empresa;
 
-    private List<Papel> papelList;
+    private Integer papelId;
+
+    private Papel papel;
 
     private Boolean fotoPerfil;
 

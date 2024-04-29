@@ -69,7 +69,7 @@ public class RegistroJornadaCorrecaoController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(registroJornadaCorrecaoFindByUsuarioIdAndDataRequest.getUsuarioId()).orElseThrow(NoSuchElementException::new);
 
-        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
+        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         return ResponseEntity.of(registroJornadaCorrecaoRepository.findByRegistroJornadaCorrecaoKey(new RegistroJornadaCorrecaoKey(usuario.getUsuarioId(), registroJornadaCorrecaoFindByUsuarioIdAndDataRequest.getData())));
@@ -81,7 +81,7 @@ public class RegistroJornadaCorrecaoController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(registroJornadaCorrecaoPatchByUsuarioIdAndDataRequest.getUsuarioId()).orElseThrow(NoSuchElementException::new);
 
-        Boolean isSupervisor = usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) || userDetails.hasAuthority("VER_TODAS_EQUIPES");
+        Boolean isSupervisor = usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) || userDetails.hasAuthority("VER_TODAS_EQUIPES");
 
         if (userDetails.getId() != usuario.getUsuarioId() && !isSupervisor)
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -118,7 +118,7 @@ public class RegistroJornadaCorrecaoController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(registroJornadaCorrecaoFindByUsuarioIdAndDataRequest.getUsuarioId()).orElseThrow(NoSuchElementException::new);
 
-        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
+        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         RegistroJornadaCorrecaoKey registroJornadaCorrecaoKey = new RegistroJornadaCorrecaoKey(registroJornadaCorrecaoFindByUsuarioIdAndDataRequest.getUsuarioId(), registroJornadaCorrecaoFindByUsuarioIdAndDataRequest.getData());
@@ -182,7 +182,7 @@ public class RegistroJornadaCorrecaoController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(registroJornadaCorrecaoFindByUsuarioIdAndDataRequest.getUsuarioId()).orElseThrow(NoSuchElementException::new);
 
-        Boolean isSupervisor = usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) || userDetails.hasAuthority("VER_TODAS_EQUIPES");
+        Boolean isSupervisor = usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) || userDetails.hasAuthority("VER_TODAS_EQUIPES");
 
         if (userDetails.getId() != usuario.getUsuarioId() && !isSupervisor)
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();

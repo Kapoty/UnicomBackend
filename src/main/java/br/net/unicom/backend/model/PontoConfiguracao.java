@@ -48,14 +48,6 @@ public class PontoConfiguracao {
     @JoinColumn(name = "status_ausente_id", referencedColumnName = "jornada_status_id", insertable = false, updatable = false)
     private JornadaStatus statusAusente;
 
-    @Column(name = "status_hora_extra_id", nullable = false)
-    @NotNull
-    private Integer statusHoraExtraId;
-
-    @ManyToOne
-    @JoinColumn(name = "status_hora_extra_id", referencedColumnName = "jornada_status_id", insertable = false, updatable = false)
-    private JornadaStatus statusHoraExtra;
-
     @OneToOne
     @MapsId
     @JoinColumn(name = "empresa_id")

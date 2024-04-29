@@ -37,7 +37,7 @@ public class UsuarioPostRequest {
     private Integer matricula;
 
     @NotNull
-    private List<Integer> papelIdList;
+    private Integer papelId;
 
     private LocalDate dataNascimento;
 

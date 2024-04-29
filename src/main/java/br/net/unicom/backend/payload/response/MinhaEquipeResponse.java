@@ -22,6 +22,8 @@ public class MinhaEquipeResponse {
 
     private Usuario supervisor;
 
+    private Usuario gerente;
+
     private List<UsuarioMinhaEquipeResponse> usuarioList;
 
 }

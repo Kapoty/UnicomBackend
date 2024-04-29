@@ -3,6 +3,9 @@ package br.net.unicom.backend.model;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import org.hibernate.annotations.ColumnTransformer;
+import org.hibernate.annotations.Formula;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
@@ -13,6 +16,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -47,12 +51,6 @@ public class RegistroJornada {
     private LocalTime jornadaSaida;
 
     @NotNull
-    private Boolean horaExtraAuto;
-
-    @NotNull
-    private Boolean emHoraExtra;
-
-    @NotNull
     private Boolean horaExtraPermitida;
 
     @Column(name = "status_atual_id")
@@ -81,5 +79,4 @@ public class RegistroJornada {
     @ManyToOne
     @JoinColumn(name = "contrato_id", insertable = false, updatable = false)
     private Contrato contrato;
-
 }

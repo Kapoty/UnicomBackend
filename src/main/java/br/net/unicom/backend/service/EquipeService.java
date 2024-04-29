@@ -27,6 +27,8 @@ public class EquipeService {
         this.modelMapper.map(equipe, equipeResponse);
         if (equipe.getSupervisor() != null)
             equipeResponse.setSupervisor(usuarioService.usuarioToUsuarioEquipeResponse(equipe.getSupervisor()));
+        if (equipe.getGerente() != null)
+            equipeResponse.setGerente(usuarioService.usuarioToUsuarioEquipeResponse(equipe.getGerente()));
         return equipeResponse;
     }
 

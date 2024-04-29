@@ -20,6 +20,6 @@ public interface PermissaoRepository extends JpaRepository<Permissao, Long> {
     @Query(value = "SELECT * FROM Permissao p WHERE p.permissao_id IN (SELECT permissao_id FROM Papel_Empresa_Permissao p WHERE p.papel_id = :papelId)", nativeQuery = true)    
     List<Permissao> findAllByPapelId(@Param("papelId") Integer papelId);
 
-    @Query(value = "SELECT * FROM Permissao p WHERE p.permissao_id IN (SELECT permissao_id FROM Papel_Empresa_Permissao WHERE papel_id IN (SELECT papel_id FROM Usuario_Papel WHERE usuario_id = :usuarioId))", nativeQuery = true)    
+    @Query(value = "SELECT * FROM Permissao p WHERE p.permissao_id IN (SELECT permissao_id FROM Papel_Empresa_Permissao WHERE papel_id = (SELECT papel_id FROM usuario WHERE usuario_id = :usuarioId))", nativeQuery = true)    
     List<Permissao> findAllByUsuarioId(@Param("usuarioId") Integer usuarioId);
 }

@@ -31,11 +31,9 @@ public class RegistroJornadaResponse {
 
     private LocalTime jornadaSaida;
 
-    private Boolean horaExtraAuto;
+    private Boolean horaExtraPermitida;
 
     private Boolean emHoraExtra;
-
-    private Boolean horaExtraPermitida;
 
     private RegistroJornadaStatusAtualResponse statusAtual;
 
@@ -58,5 +56,9 @@ public class RegistroJornadaResponse {
     private Optional<Integer> statusHoraExtraId;
 
     private Optional<Integer> statusAusenteId;
+
+    private Optional<Integer> horasATrabalhar;
+
+    private Optional<Integer> horasTrabalhadas;
 
 }

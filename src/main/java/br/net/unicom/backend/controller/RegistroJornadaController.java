@@ -115,7 +115,7 @@ public class RegistroJornadaController {
 
         Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
 
-        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
+        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         PontoConfiguracao pontoConfiguracao = pontoConfiguracaoRepository.findByEmpresaId(usuario.getEmpresaId()).orElseThrow(PontoConfiguracaoNaoEncontradoException::new);
@@ -128,14 +128,14 @@ public class RegistroJornadaController {
 
         registroJornadaResponse.setSecondsToAusente(registroJornadaService.getSecondsToAusente(registroJornada));
 
+        registroJornadaResponse.setEmHoraExtra(registroJornadaService.isEmHoraExtra(registroJornada));
+
         registroJornadaResponse.setCompleto(completo);
 
         if (completo) {
             registroJornadaResponse.setCanUsuarioLogar(Optional.of(registroJornadaService.canUsuarioLogar(registroJornada)));
 
             registroJornadaResponse.setCanSupervisorLogar(Optional.of(registroJornadaService.canSupervisorLogar(registroJornada)));
-
-            registroJornadaResponse.setCanUsuarioIniciarHoraExtra(Optional.of(registroJornadaService.canUsuarioIniciarHoraExtra(registroJornada)));
 
             registroJornadaResponse.setCanUsuarioDeslogar(Optional.of(registroJornadaService.canUsuarioDeslogar(registroJornada)));
 
@@ -145,9 +145,11 @@ public class RegistroJornadaController {
 
             registroJornadaResponse.setStatusRegularId(Optional.of(pontoConfiguracao.getStatusRegularId()));
 
-            registroJornadaResponse.setStatusHoraExtraId(Optional.of(pontoConfiguracao.getStatusHoraExtraId()));
-
             registroJornadaResponse.setStatusAusenteId(Optional.of(pontoConfiguracao.getStatusAusenteId()));
+
+            registroJornadaResponse.setHorasATrabalhar(Optional.of(registroJornadaService.calculateHorasATrabalhar(registroJornada)));
+
+            registroJornadaResponse.setHorasTrabalhadas(Optional.of(registroJornadaService.calculateHorasTrabalhadas(registroJornada)));
         }
 
         return ResponseEntity.ok(registroJornadaResponse);
@@ -180,7 +182,7 @@ public class RegistroJornadaController {
 
         Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
 
-        if (usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) || userDetails.hasAuthority("VER_TODAS_EQUIPES")) {
+        if (usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) || userDetails.hasAuthority("VER_TODAS_EQUIPES")) {
             registroJornadaService.logarBySupervisor(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
             return ResponseEntity.noContent().build();
         }
@@ -203,27 +205,10 @@ public class RegistroJornadaController {
 
         Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
 
-        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
+        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         registroJornadaService.deslogar(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
-        return ResponseEntity.noContent().build();
-    }
-
-    @PreAuthorize("hasAuthority('REGISTRAR_JORNADA')")
-    @PostMapping("/{usuarioId}/iniciar-hora-extra")
-    public ResponseEntity<Void> iniciarHoraExtra(@PathVariable("usuarioId") String usuarioId, @Valid @RequestBody RegistroJornadaLogarRequest registroJornadaLogarRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException {
-        if (!pontoJwtUtils.validateJwtToken(registroJornadaLogarRequest.getToken()))
-            throw new RegistroPontoUnauthorizedException();
-
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
-
-        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-
-        registroJornadaService.iniciarHoraExtra(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
         return ResponseEntity.noContent().build();
     }
 
@@ -237,27 +222,10 @@ public class RegistroJornadaController {
 
         Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
 
-        if (!usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
+        if (!usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         registroJornadaService.toggleHoraExtraPermitida(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
-        return ResponseEntity.noContent().build();
-    }
-
-    @PreAuthorize("hasAuthority('REGISTRAR_JORNADA')")
-    @PostMapping("/{usuarioId}/toggle-hora-extra-auto")
-    public ResponseEntity<Void> toggleHoraExtraAuto(@PathVariable("usuarioId") String usuarioId, @Valid @RequestBody RegistroJornadaLogarRequest registroJornadaLogarRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException {
-        if (!pontoJwtUtils.validateJwtToken(registroJornadaLogarRequest.getToken()))
-            throw new RegistroPontoUnauthorizedException();
-
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
-
-        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-
-        registroJornadaService.toggleHoraExtraAuto(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
         return ResponseEntity.noContent().build();
     }
 
@@ -282,7 +250,7 @@ public class RegistroJornadaController {
 
         Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
 
-        if (usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) || userDetails.hasAuthority("VER_TODAS_EQUIPES")) {
+        if (usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) || userDetails.hasAuthority("VER_TODAS_EQUIPES")) {
             registroJornadaService.alterarStatusBySupervisor(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()), registroJornadaAlterarStatusRequest.getJornadaStatusId());
             return ResponseEntity.noContent().build();
         }
@@ -300,7 +268,7 @@ public class RegistroJornadaController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
 
-        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioSupervisorOf(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
+        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         RegistroJornadaReportResponse registroJornadaReportResponse = new RegistroJornadaReportResponse();

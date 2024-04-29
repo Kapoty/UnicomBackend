@@ -30,8 +30,6 @@ public class UsuarioPatchRequest {
 
     private Optional<Integer> matricula;
 
-    private Optional<@NotNull List<Integer>> papelIdList;
-
     private Optional<LocalDate> dataNascimento;
 
     private Optional<@Length(min = 11, max = 11) String> cpf;
@@ -49,6 +47,8 @@ public class UsuarioPatchRequest {
     private Optional<Integer> departamentoId;
 
     private Optional<Integer> equipeId;
+
+    private Optional<Integer> papelId;
 
     private Optional<@Valid JornadaRequest> jornada;
 
