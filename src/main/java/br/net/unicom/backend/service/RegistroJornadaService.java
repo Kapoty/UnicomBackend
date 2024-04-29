@@ -256,7 +256,7 @@ public class RegistroJornadaService {
 
     public void alterarStatusByMe(RegistroJornada registroJornada, Integer jornadaStatusId) throws JornadaStatusNaoEncontradoException, JornadaStatusNaoPermitidoException, PontoConfiguracaoNaoEncontradoException {
 
-        JornadaStatus novoStatus = jornadaStatusRepository.findByJornadaStatusIdAndEmpresaIdAndContratoId(jornadaStatusId, registroJornada.getUsuario().getEmpresaId(), registroJornada.getContratoId()).orElseThrow(JornadaStatusNaoEncontradoException::new);
+        JornadaStatus novoStatus = jornadaStatusRepository.findByJornadaStatusIdAndEmpresaIdAndJornadaStatusGrupoId(jornadaStatusId, registroJornada.getUsuario().getEmpresaId(), registroJornada.getUsuario().getJornadaStatusGrupoId()).orElseThrow(JornadaStatusNaoEncontradoException::new);
 
         if (novoStatus.getJornadaStatusId() == registroJornada.getStatusAtual().getJornadaStatusId())
                 throw new JornadaStatusNaoPermitidoException("novo status não pode ser igual ao atual");
@@ -276,7 +276,7 @@ public class RegistroJornadaService {
 
     public void alterarStatusBySupervisor(RegistroJornada registroJornada, Integer jornadaStatusId) throws JornadaStatusNaoEncontradoException, JornadaStatusNaoPermitidoException, PontoConfiguracaoNaoEncontradoException {
 
-        JornadaStatus novoStatus = jornadaStatusRepository.findByJornadaStatusIdAndEmpresaIdAndContratoId(jornadaStatusId, registroJornada.getUsuario().getEmpresaId(), registroJornada.getContratoId()).orElseThrow(JornadaStatusNaoEncontradoException::new);
+        JornadaStatus novoStatus = jornadaStatusRepository.findByJornadaStatusIdAndEmpresaIdAndJornadaStatusGrupoId(jornadaStatusId, registroJornada.getUsuario().getEmpresaId(), registroJornada.getUsuario().getJornadaStatusGrupoId()).orElseThrow(JornadaStatusNaoEncontradoException::new);
 
         if (novoStatus.getJornadaStatusId() == registroJornada.getStatusAtual().getJornadaStatusId())
                 throw new JornadaStatusNaoPermitidoException("novo status não pode ser igual ao atual");
@@ -319,7 +319,7 @@ public class RegistroJornadaService {
     }
 
     public List<JornadaStatusOptionResponse> getStatusOptionList(RegistroJornada registroJornada) {
-        return jornadaStatusRepository.getJornadaStatusOptionProjectionListByEmpresaIdAndContratoIdAndRegistroJornadaId(registroJornada.getUsuario().getEmpresaId(), registroJornada.getContratoId(), registroJornada.getRegistroJornadaId())
+        return jornadaStatusRepository.getJornadaStatusOptionProjectionListByEmpresaIdAndJornadaStatusGrupoIdAndRegistroJornadaId(registroJornada.getUsuario().getEmpresaId(), registroJornada.getUsuario().getJornadaStatusGrupoId(), registroJornada.getRegistroJornadaId())
             .stream()
             .map(statusGrouped -> modelMapper.map(statusGrouped, JornadaStatusOptionResponse.class))
             .collect(Collectors.toList());

@@ -133,4 +133,11 @@ public class Usuario {
     @PrimaryKeyJoinColumn
     private Jornada jornada;
 
+    @Column(name = "jornada_status_grupo_id")
+    private Integer jornadaStatusGrupoId;
+
+    @ManyToOne
+    @JoinColumn(name = "jornada_status_grupo_id", insertable = false, updatable = false)
+    private JornadaStatusGrupo jornadaStatusGrupo;
+
 }
