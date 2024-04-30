@@ -48,7 +48,7 @@ public class UsuarioPatchRequest {
 
     private Optional<Integer> equipeId;
 
-    private Optional<Integer> papelId;
+    private Optional<@NotNull Integer> papelId;
 
     private Optional<@Valid JornadaRequest> jornada;
 

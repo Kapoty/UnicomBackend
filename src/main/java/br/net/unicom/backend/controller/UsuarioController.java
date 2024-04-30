@@ -33,8 +33,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.net.unicom.backend.model.Equipe;
 import br.net.unicom.backend.model.Jornada;
+import br.net.unicom.backend.model.Papel;
 import br.net.unicom.backend.model.Permissao;
 import br.net.unicom.backend.model.Usuario;
+import br.net.unicom.backend.model.exception.EquipeInvalidaException;
+import br.net.unicom.backend.model.exception.PapelInvalidoException;
 import br.net.unicom.backend.model.exception.RegistroPontoUnauthorizedException;
 import br.net.unicom.backend.model.exception.UsuarioEmailDuplicateException;
 import br.net.unicom.backend.model.exception.UsuarioMatriculaDuplicateException;
@@ -119,22 +122,9 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioResponse);
     }
 
-    @GetMapping("/me/foto-perfil")
-    public ResponseEntity<Resource> getUsuarioFotoPerfilByMe() {
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Usuario usuario = usuarioRepository.findByUsuarioId(userDetails.getId()).orElseThrow(NoSuchElementException::new);
-
-        if (!usuario.getFotoPerfil())
-            return ResponseEntity.notFound().build();
-        
-        Resource file = fileService.load(usuarioService.getUsuarioFotoPerfilFilename(usuario));
-        return ResponseEntity.ok()
-                            .contentType(MediaType.IMAGE_JPEG)
-                            .body(file);
-    }
-
     @GetMapping("/{usuarioId}/foto-perfil")
     public ResponseEntity<Resource> getUsuarioFotoPerfilByUsuarioId(@Valid @PathVariable("usuarioId") Integer usuarioId) {
+
         Usuario usuario = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
 
         if (!usuario.getFotoPerfil())
@@ -224,11 +214,35 @@ public class UsuarioController {
     @GetMapping("/me/minha-equipe")
     public ResponseEntity<List<Equipe>> getMinhaEquipeListByMe() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Usuario usuario = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
 
-        if (userDetails.hasAuthority("VER_TODAS_EQUIPES"))
-            return ResponseEntity.ok(equipeRepository.findAllByEmpresaId(userDetails.getEmpresaId()));
+        return ResponseEntity.ok(usuarioService.getMinhaEquipeListByUsuario(usuario));
+    }
 
-        return ResponseEntity.ok(equipeRepository.findAllBySupervisorIdOrGerenteId(userDetails.getId(), userDetails.getId()));
+    @GetMapping("/me/usuario-list")
+    public ResponseEntity<List<UsuarioResponse>> getUsuarioListLessThanMe() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Usuario usuario = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
+
+        return ResponseEntity.ok(
+            usuarioService.getUsuarioListLessThanUsuario(usuario)
+            .stream()
+            .map(u -> usuarioService.usuarioToUsuarioResponse(u))
+            .collect(Collectors.toList())    
+        );
+    }
+
+    @GetMapping("/me/papel-list")
+    public ResponseEntity<List<Papel>> getPapelListLessThanMe() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Usuario usuario = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
+
+        return ResponseEntity.ok(
+            usuario.getPapel().getPapelMaiorQueList()
+            .stream()
+            .map(papelMaiorQue -> papelMaiorQue.getPapelFilho())
+            .collect(Collectors.toList())
+        );
     }
 
     @PreAuthorize("hasAuthority('CADASTRAR_USUARIOS')")
@@ -237,54 +251,69 @@ public class UsuarioController {
     public ResponseEntity<Void> patchUsuarioByUsuarioId(@Valid @PathVariable Integer usuarioId, @Valid @RequestBody UsuarioPatchRequest patchUsuarioRequest) throws UsuarioEmailDuplicateException, UsuarioMatriculaDuplicateException {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         
-        Usuario userDetailsUsuario = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).get();
+        Usuario usuarioPai = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioFilho = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
 
-        Usuario usuario = usuarioRepository.findByUsuarioIdAndEmpresaId(usuarioId, userDetails.getEmpresaId()).orElseThrow(NoSuchElementException::new);
+        if (!usuarioService.isUsuarioGreaterThan(usuarioPai, usuarioFilho))
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         if (patchUsuarioRequest.getEmail() != null) {
             Integer usuarioIdByEmail = usuarioRepository.getUsuarioIdByEmail(patchUsuarioRequest.getEmail().get());
-            if (usuarioIdByEmail == null || usuarioIdByEmail== usuario.getUsuarioId())
-                usuario.setEmail(patchUsuarioRequest.getEmail().get());
+            if (usuarioIdByEmail == null || usuarioIdByEmail== usuarioFilho.getUsuarioId())
+            usuarioFilho.setEmail(patchUsuarioRequest.getEmail().get());
             else throw new UsuarioEmailDuplicateException();
         }
         if (patchUsuarioRequest.getSenha() != null)
-            usuario.setSenha(encoder.encode(patchUsuarioRequest.getSenha().get()));
+            usuarioFilho.setSenha(encoder.encode(patchUsuarioRequest.getSenha().get()));
         if (patchUsuarioRequest.getNome() != null)
-            usuario.setNome(patchUsuarioRequest.getNome().get());
+            usuarioFilho.setNome(patchUsuarioRequest.getNome().get());
         if (patchUsuarioRequest.getAtivo() != null)
-            usuario.setAtivo(patchUsuarioRequest.getAtivo().get());
+            usuarioFilho.setAtivo(patchUsuarioRequest.getAtivo().get());
         if (patchUsuarioRequest.getMatricula() != null) {
             if (patchUsuarioRequest.getMatricula().isEmpty())
-                usuario.setMatricula(null);
+                usuarioFilho.setMatricula(null);
             else {
-                Integer usuarioIdByMatriculaAndEmpresaId = usuarioRepository.getUsuarioIdByMatriculaAndEmpresaId(patchUsuarioRequest.getMatricula().get(), usuario.getEmpresaId());
-                if (usuarioIdByMatriculaAndEmpresaId == null || usuarioIdByMatriculaAndEmpresaId == usuario.getUsuarioId())
-                    usuario.setMatricula(patchUsuarioRequest.getMatricula().orElse(null));
+                Integer usuarioIdByMatriculaAndEmpresaId = usuarioRepository.getUsuarioIdByMatriculaAndEmpresaId(patchUsuarioRequest.getMatricula().get(), usuarioFilho.getEmpresaId());
+                if (usuarioIdByMatriculaAndEmpresaId == null || usuarioIdByMatriculaAndEmpresaId == usuarioFilho.getUsuarioId())
+                    usuarioFilho.setMatricula(patchUsuarioRequest.getMatricula().orElse(null));
                 else throw new UsuarioMatriculaDuplicateException();
             }
         }
-        if (patchUsuarioRequest.getPapelId() != null)
-        usuario.setPapelId(patchUsuarioRequest.getPapelId().orElse(null));
+        if (patchUsuarioRequest.getPapelId() != null) {
+            Papel papel = papelRepository.findByPapelId(patchUsuarioRequest.getPapelId().get()).get();
+
+            if (usuarioService.getPapelFilhoList(usuarioPai).contains(papel))
+                usuarioFilho.setPapelId(patchUsuarioRequest.getPapelId().get());
+        }
         if (patchUsuarioRequest.getDataNascimento() != null)
-        usuario.setDataNascimento(patchUsuarioRequest.getDataNascimento().orElse(null));
+            usuarioFilho.setDataNascimento(patchUsuarioRequest.getDataNascimento().orElse(null));
         if (patchUsuarioRequest.getCpf() != null)
-        usuario.setCpf(patchUsuarioRequest.getCpf().orElse(null));
+            usuarioFilho.setCpf(patchUsuarioRequest.getCpf().orElse(null));
         if (patchUsuarioRequest.getTelefoneCelular() != null)
-        usuario.setTelefoneCelular(patchUsuarioRequest.getTelefoneCelular().orElse(null));
+            usuarioFilho.setTelefoneCelular(patchUsuarioRequest.getTelefoneCelular().orElse(null));
         if (patchUsuarioRequest.getWhatsapp() != null)
-        usuario.setWhatsapp(patchUsuarioRequest.getWhatsapp().orElse(null));
+            usuarioFilho.setWhatsapp(patchUsuarioRequest.getWhatsapp().orElse(null));
         if (patchUsuarioRequest.getDataContratacao() != null)
-        usuario.setDataContratacao(patchUsuarioRequest.getDataContratacao().orElse(null));
+            usuarioFilho.setDataContratacao(patchUsuarioRequest.getDataContratacao().orElse(null));
         if (patchUsuarioRequest.getCargoId() != null)
-        usuario.setCargoId(patchUsuarioRequest.getCargoId().orElse(null));
+            usuarioFilho.setCargoId(patchUsuarioRequest.getCargoId().orElse(null));
         if (patchUsuarioRequest.getContratoId() != null)
-        usuario.setContratoId(patchUsuarioRequest.getContratoId().orElse(null));
+            usuarioFilho.setContratoId(patchUsuarioRequest.getContratoId().orElse(null));
         if (patchUsuarioRequest.getDepartamentoId() != null)
-        usuario.setDepartamentoId(patchUsuarioRequest.getDepartamentoId().orElse(null));
-        if (patchUsuarioRequest.getEquipeId() != null)
-        usuario.setEquipeId(patchUsuarioRequest.getEquipeId().orElse(null));
+            usuarioFilho.setDepartamentoId(patchUsuarioRequest.getDepartamentoId().orElse(null));
+        if (patchUsuarioRequest.getEquipeId() != null) {
+            if (patchUsuarioRequest.getEquipeId().orElse(null) == null)
+                usuarioFilho.setEquipeId(null);
+            else {
+                Equipe equipe = equipeRepository.findByEquipeId(patchUsuarioRequest.getEquipeId().get()).get();
+                
+                if (usuarioService.getMinhaEquipeListByUsuario(usuarioPai).contains(equipe))
+                    usuarioFilho.setEquipeId(patchUsuarioRequest.getEquipeId().get());
+            }
+        }
+            
         if (patchUsuarioRequest.getJornada() != null) {
-            Jornada jornada = usuario.getJornada();
+            Jornada jornada = usuarioFilho.getJornada();
             if (patchUsuarioRequest.getJornada().orElse(null) == null) {
                 if (jornada != null)
                     jornadaRepository.delete(jornada);
@@ -292,14 +321,14 @@ public class UsuarioController {
             else {
                 if (jornada == null) {
                     jornada = new Jornada();
-                    jornada.setUsuario(usuario);
+                    jornada.setUsuario(usuarioFilho);
                 }
                 modelMapper.map(patchUsuarioRequest.getJornada().get(), jornada);
                 jornadaRepository.saveAndFlush(jornada);
             }
         }
 
-        usuario = usuarioRepository.saveAndFlush(usuario);
+        usuarioRepository.saveAndFlush(usuarioFilho);
 
         return ResponseEntity.noContent().build();
     }
@@ -307,8 +336,10 @@ public class UsuarioController {
     @PreAuthorize("hasAuthority('CADASTRAR_USUARIOS')")
     @PostMapping("/")
     @Transactional
-    public ResponseEntity<UsuarioResponse> postUsuario(@Valid @RequestBody UsuarioPostRequest postUsuarioRequest) throws UsuarioEmailDuplicateException, UsuarioMatriculaDuplicateException {
+    public ResponseEntity<UsuarioResponse> postUsuario(@Valid @RequestBody UsuarioPostRequest postUsuarioRequest) throws UsuarioEmailDuplicateException, UsuarioMatriculaDuplicateException, PapelInvalidoException, EquipeInvalidaException {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Usuario usuarioPai = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
 
         Usuario usuario = modelMapper.map(postUsuarioRequest, Usuario.class);
         usuario.setJornada(null);
@@ -319,6 +350,18 @@ public class UsuarioController {
         usuario.setSenha(encoder.encode(postUsuarioRequest.getSenha()));
         if (usuarioRepository.getUsuarioIdByMatriculaAndEmpresaId(postUsuarioRequest.getMatricula(), usuario.getEmpresaId()) != null)
             throw new UsuarioMatriculaDuplicateException();
+
+        Papel papel = papelRepository.findByPapelId(postUsuarioRequest.getPapelId()).get();
+
+        if (!usuarioService.getPapelFilhoList(usuarioPai).contains(papel))
+            throw new PapelInvalidoException();
+
+        if (postUsuarioRequest.getEquipeId() != null) {
+            Equipe equipe = equipeRepository.findByEquipeId(postUsuarioRequest.getEquipeId()).get();
+                
+            if (!usuarioService.getMinhaEquipeListByUsuario(usuarioPai).contains(equipe))
+                throw new EquipeInvalidaException();
+        }
 
         usuarioRepository.save(usuario);
 
@@ -353,12 +396,13 @@ public class UsuarioController {
     @GetMapping("/{usuarioId}/jornada")
     public ResponseEntity<Jornada> getJornadaByUsuarioId(@Valid @PathVariable("usuarioId") Integer usuarioId) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Usuario usuario = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioPai = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioFilho = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
 
-        if (!usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
+        if (!usuarioService.isUsuarioGreaterThan(usuarioPai, usuarioFilho))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
-        return ResponseEntity.ok(usuario.getJornada());
+        return ResponseEntity.ok(usuarioFilho.getJornada());
     }
 
     @PreAuthorize("hasAuthority('VER_MODULO_MINHA_EQUIPE')")
@@ -366,13 +410,14 @@ public class UsuarioController {
     @Transactional
     public ResponseEntity<Jornada> patchJornadaByUsuarioId(@Valid @PathVariable("usuarioId") Integer usuarioId, @Valid @RequestBody PatchJornadaRequest patchJornadaRequest) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Usuario usuario = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioPai = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioFilho = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
 
-        if (!usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        if (!usuarioService.isUsuarioGreaterThan(usuarioPai, usuarioFilho))
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         if (patchJornadaRequest.getJornada() != null) {
-            Jornada jornada = usuario.getJornada();
+            Jornada jornada = usuarioFilho.getJornada();
             if (patchJornadaRequest.getJornada().orElse(null) == null) {
                 if (jornada != null)
                     jornadaRepository.delete(jornada);
@@ -380,14 +425,14 @@ public class UsuarioController {
             else {
                 if (jornada == null) {
                     jornada = new Jornada();
-                    jornada.setUsuario(usuario);
+                    jornada.setUsuario(usuarioFilho);
                 }
                 modelMapper.map(patchJornadaRequest.getJornada().get(), jornada);
                 jornadaRepository.saveAndFlush(jornada);
             }
         }
 
-        usuario = usuarioRepository.saveAndFlush(usuario);
+        usuarioFilho = usuarioRepository.saveAndFlush(usuarioFilho);
 
         return ResponseEntity.noContent().build();
     }
@@ -396,13 +441,14 @@ public class UsuarioController {
     @GetMapping("/{usuarioId}/jornada-excecao-data-list")
     public ResponseEntity<List<LocalDate>> getJornadaExcecaoDataListByUsuarioId(@Valid @PathVariable("usuarioId") Integer usuarioId) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Usuario usuario = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioPai = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioFilho = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
 
-        if (!usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        if (!usuarioService.isUsuarioGreaterThan(usuarioPai, usuarioFilho))
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         return ResponseEntity.ok(
-            jornadaExcecaoRepository.getDataListByUsuarioId(usuario.getUsuarioId())
+            jornadaExcecaoRepository.getDataListByUsuarioId(usuarioFilho.getUsuarioId())
             .stream()
             .map((data) -> data.getData())
             .collect(Collectors.toList())

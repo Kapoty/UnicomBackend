@@ -2,12 +2,17 @@ package br.net.unicom.backend.service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import br.net.unicom.backend.model.Equipe;
+import br.net.unicom.backend.model.Papel;
 import br.net.unicom.backend.model.RegistroPonto;
 import br.net.unicom.backend.model.Usuario;
 import br.net.unicom.backend.model.exception.RegistroPontoFullException;
@@ -16,8 +21,10 @@ import br.net.unicom.backend.model.exception.RegistroPontoUnauthorizedException;
 import br.net.unicom.backend.payload.response.UsuarioEquipeResponse;
 import br.net.unicom.backend.payload.response.UsuarioMinhaEquipeResponse;
 import br.net.unicom.backend.payload.response.UsuarioResponse;
+import br.net.unicom.backend.repository.EquipeRepository;
 import br.net.unicom.backend.repository.JornadaRepository;
 import br.net.unicom.backend.repository.PapelRepository;
+import br.net.unicom.backend.repository.PermissaoRepository;
 import br.net.unicom.backend.repository.RegistroPontoRepository;
 import br.net.unicom.backend.repository.UsuarioRepository;
 import br.net.unicom.backend.security.service.UserDetailsImpl;
@@ -39,6 +46,12 @@ public class UsuarioService {
 
     @Autowired
     JornadaRepository jornadaRepository;
+
+    @Autowired
+    EquipeRepository equipeRepository;
+
+    @Autowired
+    PermissaoRepository permissaoRepository;
 
     ModelMapper modelMapper;
 
@@ -74,16 +87,49 @@ public class UsuarioService {
         return Integer.valueOf(usuarioId);
     }
 
-    public Boolean isUsuarioSupervisorOf(Integer supervisorId, Usuario usuario) {
-        return (usuario.getEquipe() != null && supervisorId == usuario.getEquipe().getSupervisorId());
+    public Boolean isUsuarioGreaterThan(Usuario usuarioPai, Usuario usuarioFilho) {
+        return getUsuarioListLessThanUsuario(usuarioPai).contains(usuarioFilho);
     }
 
-    public Boolean isUsuarioGerenteOf(Integer gerenteId, Usuario usuario) {
-        return (usuario.getEquipe() != null && gerenteId == usuario.getEquipe().getGerenteId());
+    public List<Usuario> getUsuarioListLessThanUsuario(Usuario usuario) {
+        List<Papel> papelFilhoList = getPapelFilhoList(usuario);
+        List<Equipe> minhaEquipeList = getMinhaEquipeListByUsuario(usuario);
+
+        List<Usuario> usuarioLessThanList = usuarioRepository.findAllByEmpresaId(usuario.getEmpresaId());
+
+        usuarioLessThanList.removeIf(u -> !papelFilhoList.contains(u.getPapel()));
+
+        usuarioLessThanList.removeIf(u -> u.getEquipe() != null && !minhaEquipeList.contains(u.getEquipe()));
+
+        return usuarioLessThanList;
     }
 
-    public Boolean isUsuarioGreaterThan(Integer usuarioId, Usuario usuario) {
-        return isUsuarioSupervisorOf(usuarioId, usuario) || isUsuarioGerenteOf(usuarioId, usuario);
+    public List<Papel> getPapelFilhoList(Usuario usuario) {
+        return usuario.getPapel().getPapelMaiorQueList()
+            .stream()
+            .map(papelMaiorQue -> papelMaiorQue.getPapelFilho())
+            .collect(Collectors.toList());
+    }
+
+    public List<Equipe> getMinhaEquipeListByUsuario(Usuario usuario) {
+
+        if (getPermissaoList(usuario).contains("VER_TODAS_EQUIPES"))
+            return equipeRepository.findAllByEmpresaId(usuario.getEmpresaId());
+
+        return equipeRepository.findAllBySupervisorIdOrGerenteId(usuario.getUsuarioId(), usuario.getUsuarioId());
+    }
+
+    public Boolean isUsuarioSupervisorOf(Usuario usuarioPai, Usuario usuarioFilho) {
+        return (usuarioFilho.getEquipe() != null && usuarioPai.getUsuarioId() == usuarioFilho.getEquipe().getSupervisorId()) ||
+                (usuarioFilho.getEquipe() != null && usuarioPai.getUsuarioId() == usuarioFilho.getEquipe().getGerenteId()) ||
+                (getPermissaoList(usuarioPai).contains("VER_TODAS_EQUIPES"));
+    }
+
+    public List<String> getPermissaoList(Usuario usuario) {
+        return permissaoRepository.findAllByUsuarioId(usuario.getUsuarioId())
+            .stream()
+            .map(permissao -> permissao.getNome())
+            .collect(Collectors.toList());
     }
 
     public String getUsuarioFotoPerfilFilename(Usuario usuario) {

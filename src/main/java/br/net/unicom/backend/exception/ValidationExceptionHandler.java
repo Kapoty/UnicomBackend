@@ -15,8 +15,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import br.net.unicom.backend.model.exception.EquipeInvalidaException;
 import br.net.unicom.backend.model.exception.JornadaStatusNaoEncontradoException;
 import br.net.unicom.backend.model.exception.JornadaStatusNaoPermitidoException;
+import br.net.unicom.backend.model.exception.PapelInvalidoException;
 import br.net.unicom.backend.model.exception.PontoConfiguracaoNaoEncontradoException;
 import br.net.unicom.backend.model.exception.RegistroPontoFullException;
 import br.net.unicom.backend.model.exception.RegistroPontoLockedException;
@@ -160,6 +162,24 @@ public class ValidationExceptionHandler {
         Map<String, Object> response = new HashMap<>();
         Map<String, String> errorMap = new HashMap<>();
         errorMap.put("jornadaStatus", "status não permitido:" + e.getMessage());
+        response.put("errors", errorMap);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(PapelInvalidoException.class)
+    public ResponseEntity<?> handlePapelInvalidoException(PapelInvalidoException e) {
+        Map<String, Object> response = new HashMap<>();
+        Map<String, String> errorMap = new HashMap<>();
+        errorMap.put("papel", "papel inválido");
+        response.put("errors", errorMap);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(EquipeInvalidaException.class)
+    public ResponseEntity<?> handleEquipeInvalidaException(EquipeInvalidaException e) {
+        Map<String, Object> response = new HashMap<>();
+        Map<String, String> errorMap = new HashMap<>();
+        errorMap.put("equipe", "equipe inválida");
         response.put("errors", errorMap);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }

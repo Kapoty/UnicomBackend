@@ -67,28 +67,30 @@ public class RegistroJornadaCorrecaoController {
     @PostMapping("find-by-usuario-id-and-data")
     public ResponseEntity<RegistroJornadaCorrecao> findByUsuarioIdAndData(@Valid @RequestBody RegistroJornadaCorrecaoFindByUsuarioIdAndDataRequest registroJornadaCorrecaoFindByUsuarioIdAndDataRequest ) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Usuario usuario = usuarioRepository.findByUsuarioId(registroJornadaCorrecaoFindByUsuarioIdAndDataRequest.getUsuarioId()).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioPai = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioFilho = usuarioRepository.findByUsuarioId(registroJornadaCorrecaoFindByUsuarioIdAndDataRequest.getUsuarioId()).orElseThrow(NoSuchElementException::new);
 
-        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
+        if (!usuarioPai.equals(usuarioFilho) && !usuarioService.isUsuarioGreaterThan(usuarioPai, usuarioFilho))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
-        return ResponseEntity.of(registroJornadaCorrecaoRepository.findByRegistroJornadaCorrecaoKey(new RegistroJornadaCorrecaoKey(usuario.getUsuarioId(), registroJornadaCorrecaoFindByUsuarioIdAndDataRequest.getData())));
+        return ResponseEntity.of(registroJornadaCorrecaoRepository.findByRegistroJornadaCorrecaoKey(new RegistroJornadaCorrecaoKey(usuarioFilho.getUsuarioId(), registroJornadaCorrecaoFindByUsuarioIdAndDataRequest.getData())));
     }
 
     @PatchMapping("/patch-by-usuario-id-and-data")
     @Transactional
     public ResponseEntity<Jornada> patchByUsuarioIdAndData(@Valid @RequestBody RegistroJornadaCorrecaoPatchByUsuarioIdAndDataRequest registroJornadaCorrecaoPatchByUsuarioIdAndDataRequest) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Usuario usuario = usuarioRepository.findByUsuarioId(registroJornadaCorrecaoPatchByUsuarioIdAndDataRequest.getUsuarioId()).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioPai = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioFilho = usuarioRepository.findByUsuarioId(registroJornadaCorrecaoPatchByUsuarioIdAndDataRequest.getUsuarioId()).orElseThrow(NoSuchElementException::new);
 
-        Boolean isSupervisor = usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) || userDetails.hasAuthority("VER_TODAS_EQUIPES");
+        Boolean isGreaterThan = usuarioService.isUsuarioGreaterThan(usuarioPai, usuarioFilho);
 
-        if (userDetails.getId() != usuario.getUsuarioId() && !isSupervisor)
+        if (!usuarioPai.equals(usuarioFilho) && !isGreaterThan)
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         RegistroJornadaCorrecao registroJornadaCorrecao = registroJornadaCorrecaoRepository.findByRegistroJornadaCorrecaoKey(new RegistroJornadaCorrecaoKey(registroJornadaCorrecaoPatchByUsuarioIdAndDataRequest.getUsuarioId(), registroJornadaCorrecaoPatchByUsuarioIdAndDataRequest.getData())).orElseThrow(NoSuchElementException::new);
 
-        if (registroJornadaCorrecao.getAprovada() && !isSupervisor)
+        if (registroJornadaCorrecao.getAprovada() && !isGreaterThan)
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         registroJornadaCorrecao.setJornadaEntrada(registroJornadaCorrecaoPatchByUsuarioIdAndDataRequest.getJornadaEntrada());
@@ -104,7 +106,7 @@ public class RegistroJornadaCorrecaoController {
         registroJornadaCorrecao.setObservacao(registroJornadaCorrecaoPatchByUsuarioIdAndDataRequest.getObservacao());
         registroJornadaCorrecao.setAjusteHoraExtra(registroJornadaCorrecaoPatchByUsuarioIdAndDataRequest.getAjusteHoraExtra());
 
-        if (isSupervisor)
+        if (isGreaterThan)
             registroJornadaCorrecao.setAprovada(registroJornadaCorrecaoPatchByUsuarioIdAndDataRequest.getAprovada());
 
         registroJornadaCorrecaoRepository.saveAndFlush(registroJornadaCorrecao);
@@ -116,9 +118,10 @@ public class RegistroJornadaCorrecaoController {
     @Transactional
     public ResponseEntity<Jornada> createByUsuarioIdAndData(@Valid @RequestBody RegistroJornadaCorrecaoFindByUsuarioIdAndDataRequest registroJornadaCorrecaoFindByUsuarioIdAndDataRequest) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Usuario usuario = usuarioRepository.findByUsuarioId(registroJornadaCorrecaoFindByUsuarioIdAndDataRequest.getUsuarioId()).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioPai = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioFilho = usuarioRepository.findByUsuarioId(registroJornadaCorrecaoFindByUsuarioIdAndDataRequest.getUsuarioId()).orElseThrow(NoSuchElementException::new);
 
-        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
+        if (!usuarioPai.equals(usuarioFilho) && !usuarioService.isUsuarioGreaterThan(usuarioPai, usuarioFilho))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         RegistroJornadaCorrecaoKey registroJornadaCorrecaoKey = new RegistroJornadaCorrecaoKey(registroJornadaCorrecaoFindByUsuarioIdAndDataRequest.getUsuarioId(), registroJornadaCorrecaoFindByUsuarioIdAndDataRequest.getData());
@@ -128,7 +131,7 @@ public class RegistroJornadaCorrecaoController {
 
         RegistroJornadaCorrecao registroJornadaCorrecao = new RegistroJornadaCorrecao();
         registroJornadaCorrecao.setRegistroJornadaCorrecaoKey(registroJornadaCorrecaoKey);
-        registroJornadaCorrecao.setUsuario(usuario);
+        registroJornadaCorrecao.setUsuario(usuarioFilho);
 
         RegistroJornada registroJornada = registroJornadaRepository.findByUsuarioIdAndData(registroJornadaCorrecaoFindByUsuarioIdAndDataRequest.getUsuarioId(), registroJornadaCorrecaoFindByUsuarioIdAndDataRequest.getData()).orElse(null);
 
@@ -145,11 +148,11 @@ public class RegistroJornadaCorrecaoController {
             registroJornadaCorrecao.setHoraExtraPermitida(registroJornada.getHoraExtraPermitida());
         } else {
 
-            if (usuario.getJornada() != null) {
-                registroJornadaCorrecao.setJornadaEntrada(usuario.getJornada().getEntrada());
-                registroJornadaCorrecao.setJornadaIntervaloInicio(usuario.getJornada().getIntervaloInicio());
-                registroJornadaCorrecao.setJornadaIntervaloFim(usuario.getJornada().getIntervaloFim());
-                registroJornadaCorrecao.setJornadaSaida(usuario.getJornada().getSaida());
+            if (usuarioFilho.getJornada() != null) {
+                registroJornadaCorrecao.setJornadaEntrada(usuarioFilho.getJornada().getEntrada());
+                registroJornadaCorrecao.setJornadaIntervaloInicio(usuarioFilho.getJornada().getIntervaloInicio());
+                registroJornadaCorrecao.setJornadaIntervaloFim(usuarioFilho.getJornada().getIntervaloFim());
+                registroJornadaCorrecao.setJornadaSaida(usuarioFilho.getJornada().getSaida());
             } else {
                 registroJornadaCorrecao.setJornadaEntrada(LocalTime.of(8, 0));
                 registroJornadaCorrecao.setJornadaIntervaloInicio(LocalTime.of(12, 0));
@@ -157,9 +160,9 @@ public class RegistroJornadaCorrecaoController {
                 registroJornadaCorrecao.setJornadaSaida(LocalTime.of(17, 0));
             }
 
-            if (usuario.getContrato() != null) {
-                registroJornadaCorrecao.setContratoId(usuario.getContratoId());
-                registroJornadaCorrecao.setContrato(usuario.getContrato());
+            if (usuarioFilho.getContrato() != null) {
+                registroJornadaCorrecao.setContratoId(usuarioFilho.getContratoId());
+                registroJornadaCorrecao.setContrato(usuarioFilho.getContrato());
             }
 
             registroJornadaCorrecao.setHoraExtraPermitida(false);
@@ -180,16 +183,17 @@ public class RegistroJornadaCorrecaoController {
     @Transactional
     public ResponseEntity<Jornada> deleteByUsuarioIdAndData(@Valid @RequestBody RegistroJornadaCorrecaoFindByUsuarioIdAndDataRequest registroJornadaCorrecaoFindByUsuarioIdAndDataRequest) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Usuario usuario = usuarioRepository.findByUsuarioId(registroJornadaCorrecaoFindByUsuarioIdAndDataRequest.getUsuarioId()).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioPai = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioFilho = usuarioRepository.findByUsuarioId(registroJornadaCorrecaoFindByUsuarioIdAndDataRequest.getUsuarioId()).orElseThrow(NoSuchElementException::new);
 
-        Boolean isSupervisor = usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) || userDetails.hasAuthority("VER_TODAS_EQUIPES");
+        Boolean isGreaterThan = usuarioService.isUsuarioGreaterThan(usuarioPai, usuarioFilho);
 
-        if (userDetails.getId() != usuario.getUsuarioId() && !isSupervisor)
+        if (!usuarioPai.equals(usuarioFilho) && !isGreaterThan)
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         RegistroJornadaCorrecao registroJornadaCorrecao = registroJornadaCorrecaoRepository.findByRegistroJornadaCorrecaoKey(new RegistroJornadaCorrecaoKey(registroJornadaCorrecaoFindByUsuarioIdAndDataRequest.getUsuarioId(), registroJornadaCorrecaoFindByUsuarioIdAndDataRequest.getData())).orElseThrow(NoSuchElementException::new);
 
-        if (registroJornadaCorrecao.getAprovada() && !isSupervisor)
+        if (registroJornadaCorrecao.getAprovada() && !isGreaterThan)
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         registroJornadaCorrecaoRepository.delete(registroJornadaCorrecao);

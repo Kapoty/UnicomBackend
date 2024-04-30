@@ -113,14 +113,15 @@ public class RegistroJornadaController {
 
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioPai = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioFilho = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
 
-        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        if (!usuarioPai.equals(usuarioFilho) && !usuarioService.isUsuarioGreaterThan(usuarioPai, usuarioFilho))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
-        PontoConfiguracao pontoConfiguracao = pontoConfiguracaoRepository.findByEmpresaId(usuario.getEmpresaId()).orElseThrow(PontoConfiguracaoNaoEncontradoException::new);
+        PontoConfiguracao pontoConfiguracao = pontoConfiguracaoRepository.findByEmpresaId(usuarioFilho.getEmpresaId()).orElseThrow(PontoConfiguracaoNaoEncontradoException::new);
 
-        RegistroJornada registroJornada = registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId());
+        RegistroJornada registroJornada = registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuarioFilho.getUsuarioId());
 
         RegistroJornadaResponse registroJornadaResponse = modelMapper.map(registroJornada, RegistroJornadaResponse.class);
 
@@ -180,15 +181,16 @@ public class RegistroJornadaController {
         
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioPai = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioFilho = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
 
-        if (usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) || userDetails.hasAuthority("VER_TODAS_EQUIPES")) {
-            registroJornadaService.logarBySupervisor(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
+        if (usuarioService.isUsuarioGreaterThan(usuarioPai, usuarioFilho)) {
+            registroJornadaService.logarBySupervisor(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuarioFilho.getUsuarioId()));
             return ResponseEntity.noContent().build();
         }
 
-        if (userDetails.getId() == usuario.getUsuarioId()) {
-            registroJornadaService.logarByUsuario(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
+        if (usuarioPai.equals(usuarioFilho)) {
+            registroJornadaService.logarByUsuario(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuarioFilho.getUsuarioId()));
             return ResponseEntity.noContent().build();
         }
         
@@ -203,12 +205,13 @@ public class RegistroJornadaController {
 
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioPai = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioFilho = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
 
-        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
+        if (!usuarioPai.equals(usuarioFilho) && !usuarioService.isUsuarioGreaterThan(usuarioPai, usuarioFilho))
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
-        registroJornadaService.deslogar(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
+        registroJornadaService.deslogar(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuarioFilho.getUsuarioId()));
         return ResponseEntity.noContent().build();
     }
 
@@ -220,12 +223,13 @@ public class RegistroJornadaController {
 
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioPai = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioFilho = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
 
-        if (!usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
+        if (!usuarioService.isUsuarioGreaterThan(usuarioPai, usuarioFilho))
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
-        registroJornadaService.toggleHoraExtraPermitida(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()));
+        registroJornadaService.toggleHoraExtraPermitida(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuarioFilho.getUsuarioId()));
         return ResponseEntity.noContent().build();
     }
 
@@ -248,15 +252,16 @@ public class RegistroJornadaController {
 
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioPai = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioFilho = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
 
-        if (usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) || userDetails.hasAuthority("VER_TODAS_EQUIPES")) {
-            registroJornadaService.alterarStatusBySupervisor(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()), registroJornadaAlterarStatusRequest.getJornadaStatusId());
+        if (usuarioService.isUsuarioGreaterThan(usuarioPai, usuarioFilho)) {
+            registroJornadaService.alterarStatusBySupervisor(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuarioFilho.getUsuarioId()), registroJornadaAlterarStatusRequest.getJornadaStatusId());
             return ResponseEntity.noContent().build();
         }
 
-        if (userDetails.getId() == usuario.getUsuarioId()) {
-            registroJornadaService.alterarStatusByMe(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuario.getUsuarioId()), registroJornadaAlterarStatusRequest.getJornadaStatusId());
+        if (usuarioPai.equals(usuarioFilho)) {
+            registroJornadaService.alterarStatusByMe(registroJornadaService.getRegistroJornadaByUsuarioIdHoje(usuarioFilho.getUsuarioId()), registroJornadaAlterarStatusRequest.getJornadaStatusId());
             return ResponseEntity.noContent().build();
         }
         
@@ -266,9 +271,11 @@ public class RegistroJornadaController {
     @PostMapping("/{usuarioId}/report")
     public ResponseEntity<RegistroJornadaReportResponse> generateReportByUsuarioId(@PathVariable("usuarioId") Integer usuarioId, @Valid @RequestBody RegistroJornadaReportByUsuarioIdRequest registroJornadaReportByUsuarioIdRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException, JornadaStatusNaoEncontradoException, JornadaStatusNaoPermitidoException {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Usuario usuario  = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
 
-        if (userDetails.getId() != usuario.getUsuarioId() && !usuarioService.isUsuarioGreaterThan(userDetails.getId(), usuario) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
+        Usuario usuarioPai = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioFilho = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
+
+        if (!usuarioPai.equals(usuarioFilho) && !usuarioService.isUsuarioGreaterThan(usuarioPai, usuarioFilho))
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         RegistroJornadaReportResponse registroJornadaReportResponse = new RegistroJornadaReportResponse();
@@ -276,7 +283,7 @@ public class RegistroJornadaController {
         registroJornadaReportResponse.setAno(registroJornadaReportByUsuarioIdRequest.getAno());
         registroJornadaReportResponse.setMes(registroJornadaReportByUsuarioIdRequest.getMes());
         
-        registroJornadaReportResponse.setUsuario(modelMapper.map(usuario, RegistroJornadaReportUsuarioResponse.class));
+        registroJornadaReportResponse.setUsuario(modelMapper.map(usuarioFilho, RegistroJornadaReportUsuarioResponse.class));
 
         List<RegistroJornadaReportDayResponse> dayList = new ArrayList<>();
 
