@@ -53,33 +53,4 @@ public class Contrato {
     @JsonIgnore
     @ToString.Exclude
     private List<Usuario> usuarioList;
-
-    @NotNull
-    @Column(name = "r_p_segunda")
-    private Boolean rPSegunda;
-
-    @NotNull
-    @Column(name = "r_p_terca")
-    private Boolean rPTerca;
-
-    @NotNull
-    @Column(name = "r_p_quarta")
-    private Boolean rPQuarta;
-
-    @NotNull
-    @Column(name = "r_p_quinta")
-    private Boolean rPQuinta;
-
-    @NotNull
-    @Column(name = "r_p_sexta")
-    private Boolean rPSexta;
-
-    @NotNull
-    @Column(name = "r_p_sabado")
-    private Boolean rPSabado;
-
-    @NotNull
-    @Column(name = "r_p_domingo")
-    private Boolean rPDomingo;
-
 }

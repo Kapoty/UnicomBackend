@@ -50,6 +50,4 @@ public class UsuarioPatchRequest {
 
     private Optional<@NotNull Integer> papelId;
 
-    private Optional<@Valid JornadaRequest> jornada;
-
 }

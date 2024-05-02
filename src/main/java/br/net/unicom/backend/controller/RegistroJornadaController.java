@@ -49,7 +49,6 @@ import br.net.unicom.backend.payload.response.RegistroJornadaReportResponse;
 import br.net.unicom.backend.payload.response.RegistroJornadaReportUsuarioResponse;
 import br.net.unicom.backend.payload.response.RegistroJornadaResponse;
 import br.net.unicom.backend.payload.response.RegistroPontoTokenResponse;
-import br.net.unicom.backend.repository.JornadaExcecaoRepository;
 import br.net.unicom.backend.repository.JornadaStatusRepository;
 import br.net.unicom.backend.repository.PontoConfiguracaoRepository;
 import br.net.unicom.backend.repository.RegistroJornadaCorrecaoRepository;
@@ -80,9 +79,6 @@ public class RegistroJornadaController {
 
     @Autowired
     RegistroJornadaRepository registroJornadaRepository;
-
-    @Autowired
-    JornadaExcecaoRepository jornadaExcecaoRepository;
 
     @Autowired
     RegistroJornadaService registroJornadaService;

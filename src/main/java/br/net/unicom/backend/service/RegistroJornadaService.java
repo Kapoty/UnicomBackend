@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import br.net.unicom.backend.model.Contrato;
 import br.net.unicom.backend.model.Jornada;
-import br.net.unicom.backend.model.JornadaExcecao;
 import br.net.unicom.backend.model.JornadaStatus;
 import br.net.unicom.backend.model.PontoConfiguracao;
 import br.net.unicom.backend.model.RegistroJornada;
@@ -31,7 +30,7 @@ import br.net.unicom.backend.model.exception.UsuarioSemJornadaException;
 import br.net.unicom.backend.payload.response.JornadaStatusGroupedResponse;
 import br.net.unicom.backend.payload.response.JornadaStatusOptionResponse;
 import br.net.unicom.backend.payload.response.RegistroJornadaStatusAtualResponse;
-import br.net.unicom.backend.repository.JornadaExcecaoRepository;
+import br.net.unicom.backend.repository.JornadaRepository;
 import br.net.unicom.backend.repository.JornadaStatusRepository;
 import br.net.unicom.backend.repository.PontoConfiguracaoRepository;
 import br.net.unicom.backend.repository.RegistroJornadaRepository;
@@ -50,7 +49,7 @@ public class RegistroJornadaService {
     UsuarioRepository usuarioRepository;
 
     @Autowired
-    JornadaExcecaoRepository jornadaExcecaoRepository;
+    JornadaRepository jornadaRepository;
 
     @Autowired
     JornadaStatusRepository jornadaStatusRepository;
@@ -93,11 +92,11 @@ public class RegistroJornadaService {
 
         Contrato contrato = Optional.ofNullable(usuario.getContrato()).orElseThrow(UsuarioSemContratoException::new);
 
-        Optional<JornadaExcecao> jornadaExcecao = jornadaExcecaoRepository.findByUsuarioIdAndData(usuario.getUsuarioId(), data);
+        Optional<Jornada> jornada = jornadaRepository.findByUsuarioIdAndData(usuario.getUsuarioId(), data);
 
-        if (jornadaExcecao.isPresent()) {
+        if (jornada.isPresent()) {
 
-            if (jornadaExcecao.get().getRegistraPonto() == false)
+            if (jornada.get().getEntrada() == null)
                 throw new UsuarioNaoRegistraPontoHojeException();
 
             registroJornada = new RegistroJornada();
@@ -106,63 +105,15 @@ public class RegistroJornadaService {
             registroJornada.setContratoId(contrato.getContratoId());
             registroJornada.setContrato(contrato);
             registroJornada.setData(data);
-            registroJornada.setJornadaEntrada(jornadaExcecao.get().getEntrada());
-            registroJornada.setJornadaIntervaloInicio(jornadaExcecao.get().getIntervaloInicio());
-            registroJornada.setJornadaIntervaloFim(jornadaExcecao.get().getIntervaloFim());
-            registroJornada.setJornadaSaida(jornadaExcecao.get().getSaida());
+            registroJornada.setJornadaEntrada(jornada.get().getEntrada());
+            registroJornada.setJornadaIntervaloInicio(jornada.get().getIntervaloInicio());
+            registroJornada.setJornadaIntervaloFim(jornada.get().getIntervaloFim());
+            registroJornada.setJornadaSaida(jornada.get().getSaida());
             registroJornada.setHoraExtraPermitida(false);
             registroJornadaRepository.save(registroJornada);
 
         } else {
-
-            Jornada jornada = Optional.ofNullable(usuario.getJornada()).orElseThrow(UsuarioSemJornadaException::new);
-
-            Boolean registraPontoHoje = true;
-            switch (data.getDayOfWeek().getValue()) {
-                case 1:
-                    if (!contrato.getRPSegunda())
-                        registraPontoHoje = false;
-                    break;
-                case 2:
-                    if (!contrato.getRPTerca())
-                        registraPontoHoje = false;
-                    break;
-                case 3:
-                    if (!contrato.getRPQuarta())
-                        registraPontoHoje = false;
-                    break;
-                case 4:
-                    if (!contrato.getRPQuinta())
-                        registraPontoHoje = false;
-                    break;
-                case 5:
-                    if (!contrato.getRPSexta())
-                        registraPontoHoje = false;
-                    break;
-                case 6:
-                    if (!contrato.getRPSabado())
-                        registraPontoHoje = false;
-                    break;
-                case 7:
-                    if (!contrato.getRPDomingo())
-                        registraPontoHoje = false;
-                    break;
-            }
-            if (!registraPontoHoje)
-                throw new UsuarioNaoRegistraPontoHojeException();
-
-            registroJornada = new RegistroJornada();
-            registroJornada.setUsuarioId(usuario.getUsuarioId());
-            registroJornada.setUsuario(usuario);
-            registroJornada.setContratoId(contrato.getContratoId());
-            registroJornada.setContrato(contrato);
-            registroJornada.setData(data);
-            registroJornada.setJornadaEntrada(jornada.getEntrada());
-            registroJornada.setJornadaIntervaloInicio(jornada.getIntervaloInicio());
-            registroJornada.setJornadaIntervaloFim(jornada.getIntervaloFim());
-            registroJornada.setJornadaSaida(jornada.getSaida());
-            registroJornada.setHoraExtraPermitida(false);
-            registroJornadaRepository.save(registroJornada);
+            throw new UsuarioSemJornadaException();
         }
         
         return registroJornada;

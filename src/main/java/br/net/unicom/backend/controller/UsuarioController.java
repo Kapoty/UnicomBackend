@@ -50,7 +50,6 @@ import br.net.unicom.backend.payload.response.UsuarioMeResponse;
 import br.net.unicom.backend.payload.response.UsuarioResponse;
 import br.net.unicom.backend.repository.EquipeRepository;
 import br.net.unicom.backend.repository.IframeCategoryRepository;
-import br.net.unicom.backend.repository.JornadaExcecaoRepository;
 import br.net.unicom.backend.repository.JornadaRepository;
 import br.net.unicom.backend.repository.PapelRepository;
 import br.net.unicom.backend.repository.PermissaoRepository;
@@ -91,9 +90,6 @@ public class UsuarioController {
 
     @Autowired
     EquipeRepository equipeRepository;
-
-    @Autowired
-    JornadaExcecaoRepository jornadaExcecaoRepository;
 
     @Autowired
     FileService fileService;
@@ -311,22 +307,6 @@ public class UsuarioController {
                     usuarioFilho.setEquipeId(patchUsuarioRequest.getEquipeId().get());
             }
         }
-            
-        if (patchUsuarioRequest.getJornada() != null) {
-            Jornada jornada = usuarioFilho.getJornada();
-            if (patchUsuarioRequest.getJornada().orElse(null) == null) {
-                if (jornada != null)
-                    jornadaRepository.delete(jornada);
-            }
-            else {
-                if (jornada == null) {
-                    jornada = new Jornada();
-                    jornada.setUsuario(usuarioFilho);
-                }
-                modelMapper.map(patchUsuarioRequest.getJornada().get(), jornada);
-                jornadaRepository.saveAndFlush(jornada);
-            }
-        }
 
         usuarioRepository.saveAndFlush(usuarioFilho);
 
@@ -342,7 +322,6 @@ public class UsuarioController {
         Usuario usuarioPai = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
 
         Usuario usuario = modelMapper.map(postUsuarioRequest, Usuario.class);
-        usuario.setJornada(null);
 
         usuario.setEmpresaId(userDetails.getEmpresaId());
         if (usuarioRepository.getUsuarioIdByEmail(postUsuarioRequest.getEmail()) != null)
@@ -365,17 +344,6 @@ public class UsuarioController {
 
         usuarioRepository.save(usuario);
 
-        if (postUsuarioRequest.getJornada() != null) {
-            Jornada jornada = new Jornada();
-            modelMapper.map(postUsuarioRequest.getJornada(), jornada);
-
-            jornada.setUsuario(usuario);
-            jornadaRepository.save(jornada);
-
-            usuario.setJornada(jornada);
-            usuarioRepository.save(usuario);
-        }
-
         UsuarioResponse usuarioResponse = usuarioService.usuarioToUsuarioResponse(usuario);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioResponse);
@@ -391,68 +359,4 @@ public class UsuarioController {
         usuarioService.ping(usuario);
         return ResponseEntity.noContent().build();
     }
-
-    @PreAuthorize("hasAuthority('VER_MODULO_MINHA_EQUIPE')")
-    @GetMapping("/{usuarioId}/jornada")
-    public ResponseEntity<Jornada> getJornadaByUsuarioId(@Valid @PathVariable("usuarioId") Integer usuarioId) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Usuario usuarioPai = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
-        Usuario usuarioFilho = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
-
-        if (!usuarioService.isUsuarioGreaterThan(usuarioPai, usuarioFilho))
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-
-        return ResponseEntity.ok(usuarioFilho.getJornada());
-    }
-
-    @PreAuthorize("hasAuthority('VER_MODULO_MINHA_EQUIPE')")
-    @PatchMapping("/{usuarioId}/jornada")
-    @Transactional
-    public ResponseEntity<Jornada> patchJornadaByUsuarioId(@Valid @PathVariable("usuarioId") Integer usuarioId, @Valid @RequestBody PatchJornadaRequest patchJornadaRequest) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Usuario usuarioPai = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
-        Usuario usuarioFilho = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
-
-        if (!usuarioService.isUsuarioGreaterThan(usuarioPai, usuarioFilho))
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-
-        if (patchJornadaRequest.getJornada() != null) {
-            Jornada jornada = usuarioFilho.getJornada();
-            if (patchJornadaRequest.getJornada().orElse(null) == null) {
-                if (jornada != null)
-                    jornadaRepository.delete(jornada);
-            }
-            else {
-                if (jornada == null) {
-                    jornada = new Jornada();
-                    jornada.setUsuario(usuarioFilho);
-                }
-                modelMapper.map(patchJornadaRequest.getJornada().get(), jornada);
-                jornadaRepository.saveAndFlush(jornada);
-            }
-        }
-
-        usuarioFilho = usuarioRepository.saveAndFlush(usuarioFilho);
-
-        return ResponseEntity.noContent().build();
-    }
-
-    @PreAuthorize("hasAuthority('VER_MODULO_MINHA_EQUIPE')")
-    @GetMapping("/{usuarioId}/jornada-excecao-data-list")
-    public ResponseEntity<List<LocalDate>> getJornadaExcecaoDataListByUsuarioId(@Valid @PathVariable("usuarioId") Integer usuarioId) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Usuario usuarioPai = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
-        Usuario usuarioFilho = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
-
-        if (!usuarioService.isUsuarioGreaterThan(usuarioPai, usuarioFilho))
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-
-        return ResponseEntity.ok(
-            jornadaExcecaoRepository.getDataListByUsuarioId(usuarioFilho.getUsuarioId())
-            .stream()
-            .map((data) -> data.getData())
-            .collect(Collectors.toList())
-            );
-    }
-    
 }

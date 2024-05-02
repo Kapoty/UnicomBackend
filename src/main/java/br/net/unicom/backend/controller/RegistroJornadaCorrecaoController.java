@@ -24,6 +24,7 @@ import br.net.unicom.backend.model.key.RegistroJornadaCorrecaoKey;
 import br.net.unicom.backend.payload.request.RegistroJornadaCorrecaoFindByUsuarioIdAndDataRequest;
 import br.net.unicom.backend.payload.request.RegistroJornadaCorrecaoPatchByUsuarioIdAndDataRequest;
 import br.net.unicom.backend.repository.ContratoRepository;
+import br.net.unicom.backend.repository.JornadaRepository;
 import br.net.unicom.backend.repository.RegistroJornadaCorrecaoRepository;
 import br.net.unicom.backend.repository.RegistroJornadaRepository;
 import br.net.unicom.backend.repository.UsuarioRepository;
@@ -60,6 +61,9 @@ public class RegistroJornadaCorrecaoController {
 
     @Autowired
     RegistroJornadaService registroJornadaService;
+
+    @Autowired
+    JornadaRepository jornadaRepository;
 
     @Autowired
     ModelMapper modelMapper;
@@ -148,16 +152,18 @@ public class RegistroJornadaCorrecaoController {
             registroJornadaCorrecao.setHoraExtraPermitida(registroJornada.getHoraExtraPermitida());
         } else {
 
-            if (usuarioFilho.getJornada() != null) {
-                registroJornadaCorrecao.setJornadaEntrada(usuarioFilho.getJornada().getEntrada());
-                registroJornadaCorrecao.setJornadaIntervaloInicio(usuarioFilho.getJornada().getIntervaloInicio());
-                registroJornadaCorrecao.setJornadaIntervaloFim(usuarioFilho.getJornada().getIntervaloFim());
-                registroJornadaCorrecao.setJornadaSaida(usuarioFilho.getJornada().getSaida());
+            Jornada jornada = jornadaRepository.findByUsuarioIdAndData(usuarioFilho.getUsuarioId(), registroJornadaCorrecaoKey.getData()).orElse(null);
+
+            if (jornada != null && jornada.getEntrada() != null) {
+                registroJornadaCorrecao.setJornadaEntrada(jornada.getEntrada());
+                registroJornadaCorrecao.setJornadaIntervaloInicio(jornada.getIntervaloInicio());
+                registroJornadaCorrecao.setJornadaIntervaloFim(jornada.getIntervaloFim());
+                registroJornadaCorrecao.setJornadaSaida(jornada.getSaida());
             } else {
-                registroJornadaCorrecao.setJornadaEntrada(LocalTime.of(8, 0));
-                registroJornadaCorrecao.setJornadaIntervaloInicio(LocalTime.of(12, 0));
-                registroJornadaCorrecao.setJornadaIntervaloFim(LocalTime.of(14, 0));
-                registroJornadaCorrecao.setJornadaSaida(LocalTime.of(17, 0));
+                registroJornadaCorrecao.setJornadaEntrada(LocalTime.of(1, 0));
+                registroJornadaCorrecao.setJornadaIntervaloInicio(LocalTime.of(2, 0));
+                registroJornadaCorrecao.setJornadaIntervaloFim(LocalTime.of(3, 0));
+                registroJornadaCorrecao.setJornadaSaida(LocalTime.of(4, 0));
             }
 
             if (usuarioFilho.getContrato() != null) {

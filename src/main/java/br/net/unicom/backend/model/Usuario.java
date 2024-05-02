@@ -129,10 +129,6 @@ public class Usuario {
     @JoinColumn(name = "papel_id", insertable = false, updatable = false)
     private Papel papel;
 
-    @OneToOne(mappedBy = "usuario")
-    @PrimaryKeyJoinColumn
-    private Jornada jornada;
-
     @Column(name = "jornada_status_grupo_id")
     private Integer jornadaStatusGrupoId;
 

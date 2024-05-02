@@ -60,7 +60,4 @@ public class UsuarioPostRequest {
 
     private Integer equipeId;
 
-    @Valid
-    private JornadaRequest jornada;
-
 }
