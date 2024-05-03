@@ -1,6 +1,5 @@
 package br.net.unicom.backend.controller;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -32,7 +31,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.net.unicom.backend.model.Equipe;
-import br.net.unicom.backend.model.Jornada;
 import br.net.unicom.backend.model.Papel;
 import br.net.unicom.backend.model.Permissao;
 import br.net.unicom.backend.model.Usuario;
@@ -41,7 +39,6 @@ import br.net.unicom.backend.model.exception.PapelInvalidoException;
 import br.net.unicom.backend.model.exception.RegistroPontoUnauthorizedException;
 import br.net.unicom.backend.model.exception.UsuarioEmailDuplicateException;
 import br.net.unicom.backend.model.exception.UsuarioMatriculaDuplicateException;
-import br.net.unicom.backend.payload.request.PatchJornadaRequest;
 import br.net.unicom.backend.payload.request.UsuarioPatchRequest;
 import br.net.unicom.backend.payload.request.UsuarioPingRequest;
 import br.net.unicom.backend.payload.request.UsuarioPostRequest;

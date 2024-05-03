@@ -3,44 +3,44 @@ package br.net.unicom.backend.payload.request;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import org.hibernate.validator.constraints.Length;
+
 import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-@Getter @Setter @NoArgsConstructor @ToString
-public class PatchJornadaExcecaoByUsuarioIdAndDataRequest {
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @ToString
+public class JornadaPatchRequest {
 
-    @NotNull
-    private Integer usuarioId;
+    @NotBlank
+    @Length(max = 100)
+    private String nome;
 
-    @NotNull
-    private LocalDate data;
-
-    @NotNull
-    private Boolean registraPonto;
-
-    @NotNull
     private LocalTime entrada;
 
-    @NotNull
     private LocalTime intervaloInicio;
 
-    @NotNull
     private LocalTime intervaloFim;
 
-    @NotNull
     private LocalTime saida;
 
     @AssertTrue(message = "os horários devem ser sucessivos")
     private boolean isJornadaOrderValid() {
+        if (entrada == null &&
+            intervaloInicio == null &&
+            intervaloFim == null &&
+            saida == null)
+            return true;
         if (entrada == null ||
             intervaloInicio == null ||
             intervaloFim == null ||
             saida == null)
-            return true;
+            return false;
         if (entrada.compareTo(intervaloInicio) >= 0)
             return false;
         if (intervaloInicio.compareTo(intervaloFim) >= 0)
@@ -49,5 +49,26 @@ public class PatchJornadaExcecaoByUsuarioIdAndDataRequest {
             return false;
         return true;
     }
+
+    @NotNull
+    private Integer prioridade;
+
+    private LocalDate dataInicio;
+
+    private LocalDate dataFim;
+
+    private Boolean segunda;
+
+    private Boolean terca;
+
+    private Boolean quarta;
+
+    private Boolean quinta;
+
+    private Boolean sexta;
+
+    private Boolean sabado;
+
+    private Boolean domingo;
 
 }

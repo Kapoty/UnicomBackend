@@ -13,7 +13,7 @@ public interface JornadaRepository extends JpaRepository<Jornada, Long> {
 
     List<Jornada> findAll();
 
-    Optional<Jornada> findByUsuarioId(Integer usuarioId);
+    Optional<Jornada> findByJornadaId(Integer jornadaId);
 
     @Query(value = "SELECT * FROM jornada WHERE empresa_id = (SELECT empresa_id FROM usuario WHERE usuario_id = :usuarioId) and (usuario_id is null OR usuario_id = :usuarioId)", nativeQuery = true)
     List<Jornada> findAllByUsuarioId(Integer usuarioId);

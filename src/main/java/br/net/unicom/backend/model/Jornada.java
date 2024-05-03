@@ -63,19 +63,19 @@ public class Jornada {
 
     private LocalDate dataFim;
 
-    private Boolean segunda;
+    private Boolean segunda = false;
 
-    private Boolean terca;
+    private Boolean terca = false;
 
-    private Boolean quarta;
+    private Boolean quarta = false;
 
-    private Boolean quinta;
+    private Boolean quinta = false;
 
-    private Boolean sexta;
+    private Boolean sexta = false;
 
-    private Boolean sabado;
+    private Boolean sabado = false;
 
-    private Boolean domingo;
+    private Boolean domingo = false;
 
     @NotBlank
     @Length(max = 100)
