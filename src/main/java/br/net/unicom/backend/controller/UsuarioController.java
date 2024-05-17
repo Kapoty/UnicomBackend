@@ -3,6 +3,7 @@ package br.net.unicom.backend.controller;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -126,6 +128,7 @@ public class UsuarioController {
         Resource file = fileService.load(usuarioService.getUsuarioFotoPerfilFilename(usuario));
         return ResponseEntity.ok()
                             .contentType(MediaType.IMAGE_JPEG)
+                            .cacheControl(CacheControl.maxAge(30, TimeUnit.DAYS))
                             .body(file);
     }
 
@@ -304,6 +307,8 @@ public class UsuarioController {
                     usuarioFilho.setEquipeId(patchUsuarioRequest.getEquipeId().get());
             }
         }
+        if (patchUsuarioRequest.getJornadaStatusGrupoId() != null)
+            usuarioFilho.setJornadaStatusGrupoId(patchUsuarioRequest.getJornadaStatusGrupoId().orElse(null));
 
         usuarioRepository.saveAndFlush(usuarioFilho);
 

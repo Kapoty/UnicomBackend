@@ -7,7 +7,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,9 +18,11 @@ import br.net.unicom.backend.model.Contrato;
 import br.net.unicom.backend.model.Departamento;
 import br.net.unicom.backend.model.Equipe;
 import br.net.unicom.backend.model.JornadaStatus;
+import br.net.unicom.backend.model.JornadaStatusGrupo;
 import br.net.unicom.backend.model.Papel;
+import br.net.unicom.backend.model.Produto;
 import br.net.unicom.backend.model.Usuario;
-import br.net.unicom.backend.model.Venda;
+import br.net.unicom.backend.model.VendaStatus;
 import br.net.unicom.backend.payload.response.EquipeResponse;
 import br.net.unicom.backend.payload.response.UsuarioResponse;
 import br.net.unicom.backend.repository.CargoRepository;
@@ -30,11 +31,14 @@ import br.net.unicom.backend.repository.DepartamentoRepository;
 import br.net.unicom.backend.repository.EmpresaRepository;
 import br.net.unicom.backend.repository.EquipeRepository;
 import br.net.unicom.backend.repository.JornadaRepository;
+import br.net.unicom.backend.repository.JornadaStatusGrupoRepository;
 import br.net.unicom.backend.repository.JornadaStatusRepository;
 import br.net.unicom.backend.repository.PapelRepository;
 import br.net.unicom.backend.repository.PermissaoRepository;
+import br.net.unicom.backend.repository.ProdutoRepository;
 import br.net.unicom.backend.repository.UsuarioRepository;
 import br.net.unicom.backend.repository.VendaRepository;
+import br.net.unicom.backend.repository.VendaStatusRepository;
 import br.net.unicom.backend.security.service.UserDetailsImpl;
 import br.net.unicom.backend.service.EmpresaService;
 import br.net.unicom.backend.service.EquipeService;
@@ -88,10 +92,19 @@ public class EmpresaController {
     JornadaStatusRepository jornadaStatusRepository;
 
     @Autowired
+    VendaStatusRepository vendaStatusRepository;
+
+    @Autowired
+    JornadaStatusGrupoRepository jornadaStatusGrupoRepository;
+
+    @Autowired
     EmpresaService empresaService;
 
     @Autowired
     VendaRepository vendaRepository;
+
+    @Autowired
+    ProdutoRepository produtoRepository;
 
     @Autowired
     ModelMapper modelMapper;
@@ -131,6 +144,13 @@ public class EmpresaController {
         return ResponseEntity.ok(departamentoRepository.findAllByEmpresaId(userDetails.getEmpresaId()));
     }
 
+    @GetMapping("/me/jornada-status-grupo")
+    public ResponseEntity<List<JornadaStatusGrupo>> getJornadaStatusGrupoListByEmpresaMe() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return ResponseEntity.ok(jornadaStatusGrupoRepository.findAllByEmpresaId(userDetails.getEmpresaId()));
+    }
+
     @GetMapping("/me/equipe")
     public ResponseEntity<List<EquipeResponse>> getEquipeListByEmpresaMe() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -150,10 +170,15 @@ public class EmpresaController {
         return ResponseEntity.ok(jornadaStatusRepository.findAllByEmpresaId(userDetails.getEmpresaId()));
     }
 
-    @PreAuthorize("hasAuthority('CADASTRAR_VENDAS')")
-    @GetMapping("/me/venda")
-    public ResponseEntity<List<Venda>> getVendaListByEmpresaMe() {
+    @GetMapping("/me/venda-status")
+    public ResponseEntity<List<VendaStatus>> getVendaStatusListByEmpresaMe() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return ResponseEntity.ok(vendaRepository.findAllByEmpresaId(userDetails.getEmpresaId()));
+        return ResponseEntity.ok(vendaStatusRepository.findAllByEmpresaId(userDetails.getEmpresaId()));
+    }
+
+    @GetMapping("/me/produto")
+    public ResponseEntity<List<Produto>> getProdutoListByEmpresaMe() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(produtoRepository.findAllByEmpresaId(userDetails.getEmpresaId()));
     }
 }

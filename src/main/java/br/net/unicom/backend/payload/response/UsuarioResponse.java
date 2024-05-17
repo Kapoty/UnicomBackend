@@ -8,6 +8,7 @@ import br.net.unicom.backend.model.Departamento;
 import br.net.unicom.backend.model.Empresa;
 import br.net.unicom.backend.model.Equipe;
 import br.net.unicom.backend.model.Jornada;
+import br.net.unicom.backend.model.JornadaStatusGrupo;
 import br.net.unicom.backend.model.Papel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -66,6 +67,8 @@ public class UsuarioResponse {
 
     private Equipe equipe;
 
-    private Jornada jornada;
+    private Integer jornadaStatusGrupoId;
+
+    private JornadaStatusGrupo jornadaStatusGrupo;
 
 }

@@ -60,4 +60,6 @@ public class UsuarioPostRequest {
 
     private Integer equipeId;
 
+    private Integer jornadaStatusGrupoId;
+
 }

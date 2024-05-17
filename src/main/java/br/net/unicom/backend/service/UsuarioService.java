@@ -88,7 +88,16 @@ public class UsuarioService {
     }
 
     public Boolean isUsuarioGreaterThan(Usuario usuarioPai, Usuario usuarioFilho) {
-        return getUsuarioListLessThanUsuario(usuarioPai).contains(usuarioFilho);
+        List<Papel> papelFilhoList = getPapelFilhoList(usuarioPai);
+        List<Equipe> minhaEquipeList = getMinhaEquipeListByUsuario(usuarioPai);
+
+        if (!papelFilhoList.contains(usuarioFilho.getPapel()))
+            return false;
+
+        if (usuarioFilho.getEquipe() != null && !minhaEquipeList.contains(usuarioFilho.getEquipe()))        
+            return false;
+
+        return true;
     }
 
     public List<Usuario> getUsuarioListLessThanUsuario(Usuario usuario) {
