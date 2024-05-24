@@ -17,4 +17,6 @@ public class UsuarioEquipeResponse {
 
     private Integer fotoPerfilVersao;
 
+    private Integer matricula;
+
 }

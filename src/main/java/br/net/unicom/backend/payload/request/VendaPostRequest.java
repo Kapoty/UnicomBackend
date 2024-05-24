@@ -6,10 +6,12 @@ import java.util.List;
 
 import org.hibernate.validator.constraints.Length;
 
+import br.net.unicom.backend.model.VendaBrscanEnum;
 import br.net.unicom.backend.model.VendaFormaDePagamentoEnum;
 import br.net.unicom.backend.model.VendaGeneroEnum;
 import br.net.unicom.backend.model.VendaPorteEnum;
 import br.net.unicom.backend.model.VendaSistemaEnum;
+import br.net.unicom.backend.model.VendaSuporteEnum;
 import br.net.unicom.backend.model.VendaTipoPessoaEnum;
 import br.net.unicom.backend.model.VendaTipoProdutoEnum;
 import jakarta.validation.constraints.NotBlank;
@@ -82,7 +84,7 @@ public class VendaPostRequest {
     private String email;
 
     @NotNull
-    @Length(max = 18)
+    @Length(max = 14)
     private String cnpj;
     
     private VendaPorteEnum porte;
@@ -139,6 +141,10 @@ public class VendaPostRequest {
     @Length(max = 50)
     private String os;
 
+    @NotNull
+    @Length(max = 50)
+    private String custcode;
+
     private VendaSistemaEnum sistema;
 
     @NotNull
@@ -166,7 +172,10 @@ public class VendaPostRequest {
     private Boolean vendaOriginal;
 
     @NotNull
-    private Boolean brscan;
+    private VendaBrscanEnum brscan;
+
+    @NotNull
+    private VendaSuporteEnum suporte;
 
     @NotNull
     @Length(max = 50)

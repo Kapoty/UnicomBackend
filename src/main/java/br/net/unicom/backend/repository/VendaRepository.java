@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import br.net.unicom.backend.model.Venda;
+import br.net.unicom.backend.model.projection.VendaAtoresProjection;
 import br.net.unicom.backend.model.projection.VendaResumidaProjection;
 
 public interface VendaRepository extends JpaRepository<Venda, Long> {
@@ -24,14 +25,40 @@ public interface VendaRepository extends JpaRepository<Venda, Long> {
                 "vendedor_id as vendedorId,\n" + //
                 "supervisor_id as supervisorId\n" + //
                 "FROM venda\n" + //
-                "WHERE ((data_venda BETWEEN :dataInicio AND :dataFim) OR (:tipoData <> \"DATA_VENDA\")) AND\n" + //
-                "((data_agendamento BETWEEN :dataInicio AND :dataFim) OR (:tipoData <> \"DATA_AGENDAMENTO\")) AND\n" + //
-                "((data_ativacao BETWEEN :dataInicio AND :dataFim) OR (:tipoData <> \"DATA_ATIVACAO\")) AND\n" + //
-                "((data_instalacao BETWEEN :dataInicio AND :dataFim) OR (:tipoData <> \"DATA_INSTALACAO\")) AND\n" + //
-                "((data_cadastro BETWEEN :dataInicio AND :dataFim) OR (:tipoData <> \"DATA_CADASTRO\")) AND\n" + //
-                "((data_status BETWEEN :dataInicio AND :dataFim) OR (:tipoData <> \"DATA_STATUS\")) AND\n" + //
-                "empresa_id = :empresaId AND status_id IN (:statusIdList)", nativeQuery = true)
-    List<VendaResumidaProjection> findAllByEmpresaIdAndTipoDataAndDataInicioAndDataFimAndStatusIdList(Integer empresaId, String tipoData, LocalDate dataInicio, LocalDate dataFim, List<Integer> statusIdList);
+                "WHERE " + //
+                "(:tipoProduto OR :pdv OR :os OR :cpf OR :nome OR 1) AND" + //
+                "((:tipoProduto is NULL) OR (tipo_produto = :tipoProduto)) AND\n" + //
+                "(LOWER(pdv) LIKE CONCAT('%',:pdv,'%') ) AND\n" + //
+                "((:safra is NULL) OR (year(safra) = year(:safra) AND month(safra) = month(:safra))) AND\n" + //
+                "((:tipoData <> \"DATA_VENDA\") OR (data_venda BETWEEN :dataInicio AND :dataFim)) AND\n" + //
+                "((:tipoData <> \"DATA_AGENDAMENTO\") OR (data_agendamento BETWEEN :dataInicio AND :dataFim)) AND\n" + //
+                "((:tipoData <> \"DATA_ATIVACAO\") OR (data_ativacao BETWEEN :dataInicio AND :dataFim)) AND\n" + //
+                "((:tipoData <> \"DATA_INSTALACAO\") OR (data_instalacao BETWEEN :dataInicio AND :dataFim)) AND\n" + //
+                "((:tipoData <> \"DATA_CADASTRO\") OR (data_cadastro BETWEEN :dataInicio AND :dataFim)) AND\n" + //
+                "((:tipoData <> \"DATA_STATUS\") OR (data_status BETWEEN :dataInicio AND :dataFim)) AND\n" + //
+                "(LOWER(os) LIKE CONCAT('%',:os,'%') ) AND\n" + //
+                "(LOWER(cpf) LIKE CONCAT('%',:cpf,'%') OR LOWER(cnpj) LIKE CONCAT('%',:cpf,'%')) AND\n" + //
+                "(LOWER(nome) LIKE CONCAT('%',:nome,'%') OR LOWER(razao_social) LIKE CONCAT('%',:nome,'%')) AND\n" + //
+                "empresa_id = :empresaId AND status_id IN (:statusIdList) LIMIT 2000", nativeQuery = true)
+    List<VendaAtoresProjection> findAllByEmpresaIdAndFilters(
+        Integer empresaId,
+        String tipoProduto,
+        String pdv,
+        LocalDate safra,
+        String tipoData,
+        LocalDate dataInicio,
+        LocalDate dataFim,
+        List<Integer> statusIdList,
+        String os,
+        String cpf,
+        String nome
+    );
+
+    Optional<VendaResumidaProjection> getVendaResumidaProjectionByVendaId(Integer vendaId);
+
+    List<VendaResumidaProjection> getVendaResumidaProjectionByVendaIdIn(List<Integer> vendaId);
+
+    List<Venda> findAllByVendaIdIn(List<Integer> vendaId);
 
     /*@Query(value = "", nativeQuery = true)
     List<VendaResumidaProjection> findAllByEmpresaId();*/

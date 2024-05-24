@@ -29,6 +29,7 @@ public class ModelMapperConfiguration {
             mapper.skip(Venda::setVendedorId);
             mapper.skip(Venda::setSupervisorId);
             mapper.skip(Venda::setAuditorId);
+            mapper.skip(Venda::setCadastradorId);
             mapper.skip(Venda::setProdutoList);
             mapper.skip(Venda::setFaturaList);
         });

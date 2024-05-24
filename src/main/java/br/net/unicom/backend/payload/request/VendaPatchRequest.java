@@ -6,12 +6,15 @@ import java.util.List;
 
 import org.hibernate.validator.constraints.Length;
 
+import br.net.unicom.backend.model.VendaBrscanEnum;
 import br.net.unicom.backend.model.VendaFormaDePagamentoEnum;
 import br.net.unicom.backend.model.VendaGeneroEnum;
 import br.net.unicom.backend.model.VendaPorteEnum;
 import br.net.unicom.backend.model.VendaSistemaEnum;
+import br.net.unicom.backend.model.VendaSuporteEnum;
 import br.net.unicom.backend.model.VendaTipoPessoaEnum;
 import br.net.unicom.backend.model.VendaTipoProdutoEnum;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,7 +24,7 @@ import lombok.ToString;
 @Getter @Setter @NoArgsConstructor @ToString
 public class VendaPatchRequest {
 
-    @NotNull
+    @NotBlank
     @Length(max = 200)
     private String relato;
 
@@ -85,7 +88,7 @@ public class VendaPatchRequest {
     private String email;
 
     @NotNull
-    @Length(max = 18)
+    @Length(max = 14)
     private String cnpj;
     
     private VendaPorteEnum porte;
@@ -142,6 +145,10 @@ public class VendaPatchRequest {
     @Length(max = 50)
     private String os;
 
+    @NotNull
+    @Length(max = 50)
+    private String custcode;
+
     private VendaSistemaEnum sistema;
 
     @NotNull
@@ -156,6 +163,8 @@ public class VendaPatchRequest {
     private LocalDateTime dataAtivacao;
 
     private Integer auditorId;
+
+    private Integer cadastradorId;
 
     @NotNull
     private Boolean prints;
@@ -172,7 +181,10 @@ public class VendaPatchRequest {
     private Boolean vendaOriginal;
 
     @NotNull
-    private Boolean brscan;
+    private VendaBrscanEnum brscan;
+
+    @NotNull
+    private VendaSuporteEnum suporte;
 
     @NotNull
     @Length(max = 50)

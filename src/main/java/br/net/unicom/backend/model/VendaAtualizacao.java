@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -40,15 +41,19 @@ public class VendaAtualizacao {
     @Column(name = "status_id", nullable = false)
     private Integer statusId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "status_id", insertable = false, updatable = false)
+    @JsonIgnore
+    @ToString.Exclude
     VendaStatus status;
 
     @Column(name = "usuario_id", nullable = false)
     private Integer usuarioId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", insertable = false, updatable = false)
+    @JsonIgnore
+    @ToString.Exclude
     Usuario usuario;
 
     @NotNull

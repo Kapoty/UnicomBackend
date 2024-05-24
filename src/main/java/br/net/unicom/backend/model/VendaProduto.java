@@ -42,18 +42,16 @@ public class VendaProduto {
     @ToString.Exclude
     Venda venda;
 
-    @Enumerated(EnumType.STRING)
-    private VendaTipoProdutoEnum tipo;
-
     @NotBlank
     @Length(max = 100)
     private String nome;
 
     @NotNull
-    private Double valor;
+    @Length(max = 100)
+    private String adicionais;
 
     @NotNull
-    private Integer quantidade;
+    private Double valor;
 
     @NotNull
     private Boolean telefoneFixo;
@@ -62,7 +60,19 @@ public class VendaProduto {
     private Double valorTelefoneFixo;
 
     @NotNull
-    private Boolean portabilidade;
+    @Enumerated(EnumType.STRING)
+    private VendaProdutoTipoDeLinhaEnum tipoDeLinha;
+
+    @NotNull
+    @Length(max = 2)
+    private String ddd;
+
+    @NotNull
+    @Length(max = 20)
+    private String operadora;
+
+    @NotNull
+    private Integer quantidade;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "vendaProduto", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("vendaProdutoPortabilidadeId.portabilidadeId")

@@ -51,7 +51,7 @@ public class Venda {
     @Column(name = "vendedor_id")
     private Integer vendedorId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vendedor_id", insertable = false, updatable = false)
     @JsonIgnore
     @ToString.Exclude
@@ -60,7 +60,7 @@ public class Venda {
     @Column(name = "supervisor_id")
     private Integer supervisorId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supervisor_id", insertable = false, updatable = false)
     @JsonIgnore
     @ToString.Exclude
@@ -80,8 +80,10 @@ public class Venda {
     @Column(name = "status_id")
     private Integer statusId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "status_id", insertable = false, updatable = false)
+    @JsonIgnore
+    @ToString.Exclude
     VendaStatus status;
 
     @NotNull
@@ -132,7 +134,7 @@ public class Venda {
     private String email;
 
     @NotNull
-    @Length(max = 18)
+    @Length(max = 14)
     private String cnpj;
     
     @Enumerated(EnumType.STRING)
@@ -190,6 +192,10 @@ public class Venda {
     @Length(max = 50)
     private String os;
 
+    @NotNull
+    @Length(max = 50)
+    private String custcode;
+
     @Enumerated(EnumType.STRING)
     private VendaSistemaEnum sistema;
 
@@ -207,11 +213,20 @@ public class Venda {
     @Column(name = "auditor_id")
     private Integer auditorId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "auditor_id", insertable = false, updatable = false)
     @JsonIgnore
     @ToString.Exclude
     Usuario auditor;
+
+    @Column(name = "cadastrador_id")
+    private Integer cadastradorId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cadastrador_id", insertable = false, updatable = false)
+    @JsonIgnore
+    @ToString.Exclude
+    Usuario cadastrador;
 
     @NotNull
     private Boolean prints;
@@ -228,7 +243,12 @@ public class Venda {
     private Boolean vendaOriginal;
 
     @NotNull
-    private Boolean brscan;
+    @Enumerated(EnumType.STRING)
+    private VendaBrscanEnum brscan;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private VendaSuporteEnum suporte;
 
     @NotNull
     @Length(max = 50)

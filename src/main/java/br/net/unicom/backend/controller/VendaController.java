@@ -1,10 +1,13 @@
 package br.net.unicom.backend.controller;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -31,6 +34,7 @@ import br.net.unicom.backend.model.VendaAtualizacao;
 import br.net.unicom.backend.model.VendaFatura;
 import br.net.unicom.backend.model.VendaProduto;
 import br.net.unicom.backend.model.VendaProdutoPortabilidade;
+import br.net.unicom.backend.model.projection.VendaAtoresProjection;
 import br.net.unicom.backend.model.projection.VendaResumidaProjection;
 import br.net.unicom.backend.payload.request.VendaFaturaRequest;
 import br.net.unicom.backend.payload.request.VendaListRequest;
@@ -41,6 +45,7 @@ import br.net.unicom.backend.payload.request.VendaProdutoRequest;
 import br.net.unicom.backend.repository.UsuarioRepository;
 import br.net.unicom.backend.repository.VendaRepository;
 import br.net.unicom.backend.security.service.UserDetailsImpl;
+import br.net.unicom.backend.service.UsuarioService;
 import br.net.unicom.backend.service.VendaService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -65,34 +70,81 @@ public class VendaController {
     VendaService vendaService;
 
     @Autowired
+    UsuarioService usuarioService;
+
+    @Autowired
     ModelMapper modelMapper;
 
     Logger logger = LoggerFactory.getLogger(VendaController.class);
 
     @PreAuthorize("hasAuthority('CADASTRAR_VENDAS')")
     @PostMapping("/venda-list")
-    public ResponseEntity<List<Venda>> getVendaList(@Valid @RequestBody VendaListRequest vendaListRequest) {
+    public ResponseEntity<List<?>> getVendaList(@Valid @RequestBody VendaListRequest vendaListRequest) {
+
+        logger.info(vendaListRequest.toString());
+
+        Instant start = Instant.now();
+        Instant finish;
+        long timeElapsed;
+
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Usuario usuario = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).get();
 
-        List<VendaResumidaProjection> vendaResumidaList = vendaRepository.findAllByEmpresaIdAndTipoDataAndDataInicioAndDataFimAndStatusIdList(
+        finish = Instant.now();
+        timeElapsed = Duration.between(start, finish).toMillis();
+        logger.info("1: " + String.valueOf(timeElapsed));
+
+        // Carregar atores da venda
+
+        List<VendaAtoresProjection> vendaAtoresList = vendaRepository.findAllByEmpresaIdAndFilters(
             userDetails.getEmpresaId(),
-            vendaListRequest.getTipoData().toString(),
+            vendaListRequest.getTipoProduto() != null ? vendaListRequest.getTipoProduto().toString() : null,
+            vendaListRequest.getPdv().toLowerCase(),
+            vendaListRequest.getSafra(),
+            vendaListRequest.getTipoData() != null ? vendaListRequest.getTipoData().toString() : "",
             vendaListRequest.getDataInicio(),
             vendaListRequest.getDataFim().plusDays(1),
-            vendaListRequest.getStatusIdList()
+            vendaListRequest.getStatusIdList(),
+            vendaListRequest.getOs().toLowerCase(),
+            vendaListRequest.getCpf().toLowerCase(),
+            vendaListRequest.getNome().toLowerCase()
         );
 
-        logger.info(vendaListRequest.toString());
+        finish = Instant.now();
+        timeElapsed = Duration.between(start, finish).toMillis();
+        logger.info("2: " + String.valueOf(timeElapsed));
 
-        if (!userDetails.hasAuthority("VER_TODAS_VENDAS"))
-            vendaResumidaList.removeIf(vendaResumida -> !vendaService.usuarioPodeVerVenda(usuario, vendaResumida));    
-        
-        List<Venda> vendaList = vendaResumidaList
-            .stream()
-            .map((vendaResumida) -> vendaRepository.findByVendaId(vendaResumida.getVendaId()).get())
-            .collect(Collectors.toList());
+        // Filtrar vendas por permissão dos atores
+
+        if (!userDetails.hasAuthority("VER_TODAS_VENDAS")) {
+            Set<Integer> usuarioIdList = usuarioService.getUsuarioListLessThanUsuario(usuario).stream().map(u -> u.getUsuarioId()).collect(Collectors.toSet());
+            usuarioIdList.add(usuario.getUsuarioId());
+
+            vendaAtoresList.removeIf(vendaAtor -> {
+                if (vendaAtor.getVendedorId() == null)
+                    return false;
+                if (usuarioIdList.contains(vendaAtor.getVendedorId()) || usuarioIdList.contains(vendaAtor.getSupervisorId()))
+                    return false;
+                return true;
+            } );
+        }
+
+        finish = Instant.now();
+        timeElapsed = Duration.between(start, finish).toMillis();
+        logger.info("3: " + String.valueOf(timeElapsed));
+
+        // Carregar vendas
+
+        List<Integer> vendaIdList = vendaAtoresList.stream().map(vendaAtores -> vendaAtores.getVendaId()).collect(Collectors.toList());
+
+        List<VendaResumidaProjection> vendaList = vendaRepository.getVendaResumidaProjectionByVendaIdIn(vendaIdList);
+
+        //List<Venda> vendaList = vendaRepository.findAllByVendaIdIn(vendaIdList);
+
+        finish = Instant.now();
+        timeElapsed = Duration.between(start, finish).toMillis();
+        logger.info("4: " + String.valueOf(timeElapsed));
         
         return ResponseEntity.ok(vendaList);
     }
@@ -200,7 +252,7 @@ public class VendaController {
 
         venda.setFaturaList(faturaList);
 
-        // alterar vendedor/supervisor/auditor se houver permissao
+        // alterar vendedor/supervisor/auditor/cadastrador se houver permissao
 
         if (userDetails.hasAuthority("ALTERAR_VENDEDOR")) {
             venda.setVendedorId(vendaPatchRequest.getVendedorId());
@@ -209,6 +261,7 @@ public class VendaController {
         
         if (userDetails.hasAuthority("ALTERAR_AUDITOR")) {
             venda.setAuditorId(vendaPatchRequest.getAuditorId());
+            venda.setCadastradorId(vendaPatchRequest.getCadastradorId());
         }
 
         vendaRepository.saveAndFlush(venda);

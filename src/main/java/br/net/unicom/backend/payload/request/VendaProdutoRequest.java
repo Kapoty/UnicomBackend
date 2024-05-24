@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.hibernate.validator.constraints.Length;
 
-import br.net.unicom.backend.model.VendaTipoProdutoEnum;
+import br.net.unicom.backend.model.VendaProdutoTipoDeLinhaEnum;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -14,17 +14,17 @@ import lombok.ToString;
 
 @Getter @Setter @NoArgsConstructor @ToString
 public class VendaProdutoRequest {
-    private VendaTipoProdutoEnum tipo;
 
     @NotBlank
     @Length(max = 100)
     private String nome;
 
     @NotNull
-    private Double valor;
+    @Length(max = 100)
+    private String adicionais;
 
     @NotNull
-    private Integer quantidade;
+    private Double valor;
 
     @NotNull
     private Boolean telefoneFixo;
@@ -33,7 +33,18 @@ public class VendaProdutoRequest {
     private Double valorTelefoneFixo;
 
     @NotNull
-    private Boolean portabilidade;
+    private VendaProdutoTipoDeLinhaEnum tipoDeLinha;
+
+    @NotNull
+    @Length(max = 2)
+    private String ddd;
+
+    @NotNull
+    @Length(max = 20)
+    private String operadora;
+
+    @NotNull
+    private Integer quantidade;
 
     private List<VendaProdutoPortabilidadeRequest> portabilidadeList;
 

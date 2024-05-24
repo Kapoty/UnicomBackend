@@ -38,12 +38,8 @@ public class VendaProdutoPortabilidade {
     VendaProduto vendaProduto;
 
     @NotBlank
-    @Length(max = 11)
+    @Length(max = 9)
     private String telefone;
-
-    @NotBlank
-    @Length(max = 20)
-    private String operadora;
 
     public VendaProdutoPortabilidade(VendaProduto vendaProduto, Integer portabilidadeId) {
         this.setVendaProdutoPortabilidadeId(new VendaProdutoPortabilidadeKey(vendaProduto.getVendaProdutoId(), portabilidadeId));

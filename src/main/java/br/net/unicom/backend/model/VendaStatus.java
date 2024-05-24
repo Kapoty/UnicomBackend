@@ -49,4 +49,8 @@ public class VendaStatus {
 
     private Integer ordem;
 
+    @NotBlank
+    @Length(max = 6)
+    private String cor;
+
 }

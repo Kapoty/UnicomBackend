@@ -184,4 +184,15 @@ public class ValidationExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
+    /*@ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleException(Exception e) {
+
+        logger.error(e.getMessage());
+
+        Map<String, Object> response = new HashMap<>();
+        Map<String, String> errorMap = new HashMap<>();
+        errorMap.put("excecao", e.getMessage());
+        response.put("errors", errorMap);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }*/
 }

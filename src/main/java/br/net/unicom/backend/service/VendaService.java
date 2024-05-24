@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 import br.net.unicom.backend.model.Usuario;
 import br.net.unicom.backend.model.Venda;
-import br.net.unicom.backend.model.projection.VendaResumidaProjection;
+import br.net.unicom.backend.model.projection.VendaAtoresProjection;
 import br.net.unicom.backend.repository.UsuarioRepository;
 
 @Service
@@ -45,10 +45,10 @@ public class VendaService {
         return this.usuarioPodeVerVenda(usuario, venda.getVendedor(), venda.getSupervisor());
     }
 
-    public Boolean usuarioPodeVerVenda(Usuario usuario, VendaResumidaProjection vendaResumidaProjection) {
+    public Boolean usuarioPodeVerVenda(Usuario usuario, VendaAtoresProjection vendaAtoresProjection) {
 
-        Usuario vendedor = usuarioRepository.findByUsuarioId(vendaResumidaProjection.getVendedorId()).orElse(null);
-        Usuario supervisor = usuarioRepository.findByUsuarioId(vendaResumidaProjection.getSupervisorId()).orElse(null);
+        Usuario vendedor = usuarioRepository.findByUsuarioId(vendaAtoresProjection.getVendedorId()).orElse(null);
+        Usuario supervisor = usuarioRepository.findByUsuarioId(vendaAtoresProjection.getSupervisorId()).orElse(null);
 
         return this.usuarioPodeVerVenda(usuario, vendedor, supervisor);
     }

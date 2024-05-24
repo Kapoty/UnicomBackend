@@ -1,9 +1,9 @@
 package br.net.unicom.backend.payload.request;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+import br.net.unicom.backend.model.VendaTipoProdutoEnum;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -14,7 +14,13 @@ import lombok.ToString;
 @Getter @Setter @NoArgsConstructor @ToString
 public class VendaListRequest {
 
+    private VendaTipoProdutoEnum tipoProduto;
+
     @NotNull
+    private String pdv;
+
+    private LocalDate safra;
+
     private VendaListRequestTipoDataEnum tipoData;
 
     @NotNull
@@ -26,12 +32,21 @@ public class VendaListRequest {
     @NotNull
     private List<Integer> statusIdList;
 
-    @AssertTrue(message = "o intervalo máximo é de 3 meses")
+    @NotNull
+    private String os;
+
+    @NotNull
+    private String cpf;
+
+    @NotNull
+    private String nome;
+
+    /*@AssertTrue(message = "o intervalo máximo é de 3 meses")
     private boolean isDataRangeValid() {
         if (ChronoUnit.DAYS.between(dataInicio, dataFim) > 93)
             return false;
         return true;
-    }
+    }*/
 
     @AssertTrue(message = "data inválida")
     private boolean isDataValid() {
