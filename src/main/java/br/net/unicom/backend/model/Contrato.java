@@ -43,7 +43,7 @@ public class Contrato {
     @Column(name = "empresa_id")
     private Integer empresaId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "empresa_id", insertable = false, updatable = false)
     @JsonIgnore
     @ToString.Exclude

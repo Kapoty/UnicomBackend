@@ -35,7 +35,7 @@ public class VendaProduto {
     @EqualsAndHashCode.Include
     VendaProdutoKey vendaProdutoId;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("vendaId")
     @JoinColumn(name = "venda_id")
     @JsonIgnore
@@ -74,7 +74,7 @@ public class VendaProduto {
     @NotNull
     private Integer quantidade;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "vendaProduto", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "vendaProduto", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("vendaProdutoPortabilidadeId.portabilidadeId")
     private List<VendaProdutoPortabilidade> portabilidadeList = null;
 

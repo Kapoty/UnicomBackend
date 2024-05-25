@@ -8,6 +8,7 @@ import java.util.List;
 import org.hibernate.validator.constraints.Length;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -39,7 +40,7 @@ public class Venda {
     @Column(name = "empresa_id", nullable = false)
     private Integer empresaId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "empresa_id", insertable = false, updatable = false)
     @JsonIgnore
     @ToString.Exclude
@@ -276,15 +277,15 @@ public class Venda {
     @Length(max = 200)
     private String observacao;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "venda", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "venda", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("vendaProdutoId.produtoId")
     private List<VendaProduto> produtoList = null;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "venda", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "venda", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("vendaFaturaId.vendaFaturaId")
     private List<VendaFatura> faturaList = null;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "venda", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "venda", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("vendaAtualizacaoId")
     private List<VendaAtualizacao> atualizacaoList = null;
 

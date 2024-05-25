@@ -87,7 +87,7 @@ public class Usuario {
     @Column(name = "empresa_id")
     private Integer empresaId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "empresa_id", insertable = false, updatable = false)
     @JsonIgnore
     @ToString.Exclude
@@ -96,28 +96,28 @@ public class Usuario {
     @Column(name = "cargo_id")
     private Integer cargoId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cargo_id", insertable = false, updatable = false)
     private Cargo cargo;
 
     @Column(name = "contrato_id")
     private Integer contratoId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contrato_id", insertable = false, updatable = false)
     private Contrato contrato;
 
     @Column(name = "departamento_id")
     private Integer departamentoId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "departamento_id", insertable = false, updatable = false)
     private Departamento departamento;
 
     @Column(name = "equipe_id")
     private Integer equipeId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "equipe_id", insertable = false, updatable = false)
     private Equipe equipe;
 
@@ -125,14 +125,14 @@ public class Usuario {
     @NotNull
     private Integer papelId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "papel_id", insertable = false, updatable = false)
     private Papel papel;
 
     @Column(name = "jornada_status_grupo_id")
     private Integer jornadaStatusGrupoId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "jornada_status_grupo_id", insertable = false, updatable = false)
     private JornadaStatusGrupo jornadaStatusGrupo;
 

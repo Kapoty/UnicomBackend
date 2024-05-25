@@ -5,6 +5,8 @@ import java.util.List;
 
 import br.net.unicom.backend.model.VendaTipoProdutoEnum;
 import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -40,6 +42,12 @@ public class VendaListRequest {
 
     @NotNull
     private String nome;
+
+    private Integer offset = 0;
+
+    @Min(1)
+    @Max(10000)
+    private Integer limit = 2000;
 
     /*@AssertTrue(message = "o intervalo máximo é de 3 meses")
     private boolean isDataRangeValid() {

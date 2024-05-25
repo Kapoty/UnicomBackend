@@ -3,6 +3,7 @@ package br.net.unicom.backend.model;
 import br.net.unicom.backend.model.key.JornadaStatusGrupoMapKey;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
@@ -18,12 +19,12 @@ public class JornadaStatusGrupoMap {
     @EmbeddedId
     JornadaStatusGrupoMapKey jornadaStatusGrupoMapKey;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("jornadaStatusId")
     @JoinColumn(name = "jornada_status_id")
     JornadaStatus jornadaStatus;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("jornadaStatusGrupoId")
     @JoinColumn(name = "jornada_status_grupo_id")
     JornadaStatusGrupo jornadaStatusGrupo;

@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.hibernate.Hibernate;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +36,6 @@ import br.net.unicom.backend.model.VendaFatura;
 import br.net.unicom.backend.model.VendaProduto;
 import br.net.unicom.backend.model.VendaProdutoPortabilidade;
 import br.net.unicom.backend.model.projection.VendaAtoresProjection;
-import br.net.unicom.backend.model.projection.VendaResumidaProjection;
 import br.net.unicom.backend.payload.request.VendaFaturaRequest;
 import br.net.unicom.backend.payload.request.VendaListRequest;
 import br.net.unicom.backend.payload.request.VendaPatchRequest;
@@ -43,6 +43,7 @@ import br.net.unicom.backend.payload.request.VendaPostRequest;
 import br.net.unicom.backend.payload.request.VendaProdutoPortabilidadeRequest;
 import br.net.unicom.backend.payload.request.VendaProdutoRequest;
 import br.net.unicom.backend.repository.UsuarioRepository;
+import br.net.unicom.backend.repository.VendaProdutoRepository;
 import br.net.unicom.backend.repository.VendaRepository;
 import br.net.unicom.backend.security.service.UserDetailsImpl;
 import br.net.unicom.backend.service.UsuarioService;
@@ -65,6 +66,9 @@ public class VendaController {
 
     @Autowired
     UsuarioRepository usuarioRepository;
+
+    @Autowired
+    VendaProdutoRepository vendaProdutoRepository;
 
     @Autowired
     VendaService vendaService;
@@ -108,7 +112,9 @@ public class VendaController {
             vendaListRequest.getStatusIdList(),
             vendaListRequest.getOs().toLowerCase(),
             vendaListRequest.getCpf().toLowerCase(),
-            vendaListRequest.getNome().toLowerCase()
+            vendaListRequest.getNome().toLowerCase(),
+            vendaListRequest.getOffset(),
+            vendaListRequest.getLimit()
         );
 
         finish = Instant.now();
@@ -138,9 +144,14 @@ public class VendaController {
 
         List<Integer> vendaIdList = vendaAtoresList.stream().map(vendaAtores -> vendaAtores.getVendaId()).collect(Collectors.toList());
 
-        List<VendaResumidaProjection> vendaList = vendaRepository.getVendaResumidaProjectionByVendaIdIn(vendaIdList);
+        List<Venda> vendaList = vendaRepository.findAllByVendaIdIn(vendaIdList);
 
-        //List<Venda> vendaList = vendaRepository.findAllByVendaIdIn(vendaIdList);
+        vendaList.forEach(venda -> {
+            Hibernate.initialize(venda.getProdutoList());
+            venda.getProdutoList().forEach(produto -> Hibernate.initialize(produto.getPortabilidadeList()));
+            Hibernate.initialize(venda.getFaturaList());
+            Hibernate.initialize(venda.getAtualizacaoList());
+        });
 
         finish = Instant.now();
         timeElapsed = Duration.between(start, finish).toMillis();

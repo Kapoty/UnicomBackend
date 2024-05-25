@@ -13,6 +13,7 @@ import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
@@ -29,7 +30,7 @@ public class RegistroJornadaCorrecao {
     @EmbeddedId
     RegistroJornadaCorrecaoKey registroJornadaCorrecaoKey;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("usuarioId")
     @JoinColumn(name = "usuario_id")
     @JsonIgnore
@@ -44,7 +45,7 @@ public class RegistroJornadaCorrecao {
     @Column(name = "contrato_id")
     private Integer contratoId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contrato_id", insertable = false, updatable = false, nullable = true)
     @JsonIgnore
     @ToString.Exclude

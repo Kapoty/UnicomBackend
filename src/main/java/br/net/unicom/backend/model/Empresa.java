@@ -44,7 +44,7 @@ public class Empresa {
     @Column(name = "grupo_id")
     private int grupoId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "grupo_id", insertable = false, updatable = false)
     @JsonIgnore
     @ToString.Exclude
@@ -60,7 +60,7 @@ public class Empresa {
     @ToString.Exclude
     private List<Papel> papelList;
 
-    @OneToOne(mappedBy = "empresa")
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "empresa")
     @PrimaryKeyJoinColumn
     @JsonIgnore
     @ToString.Exclude

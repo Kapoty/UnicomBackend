@@ -3,6 +3,7 @@ package br.net.unicom.backend.model;
 import br.net.unicom.backend.model.key.PapelMaiorQueKey;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
@@ -18,12 +19,12 @@ public class PapelMaiorQue {
     @EmbeddedId
     PapelMaiorQueKey papelMaiorQueKey;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("papelPaiId")
     @JoinColumn(name = "papel_pai_id")
     Papel papelPai;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("papelFilhoId")
     @JoinColumn(name = "papel_filho_id")
     Papel papelFilho;

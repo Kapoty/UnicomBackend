@@ -14,7 +14,7 @@ public class RegistroJornadaScheduledTasks {
     @Autowired
     RegistroJornadaService registroJornadaService;
 
-    @Scheduled(fixedRate = 5, timeUnit = TimeUnit.SECONDS)
+    @Scheduled(fixedRate = 60, timeUnit = TimeUnit.SECONDS)
 	public void gerenciarUsuarios() {
         registroJornadaService.gerenciarUsuarios();
     }

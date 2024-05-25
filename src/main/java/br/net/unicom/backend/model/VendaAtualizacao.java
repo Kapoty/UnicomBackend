@@ -32,7 +32,7 @@ public class VendaAtualizacao {
     @Column(name = "venda_id", nullable = false)
     private Integer vendaId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "venda_id", insertable = false, updatable = false)
     @JsonIgnore
     @ToString.Exclude

@@ -39,7 +39,7 @@ public interface VendaRepository extends JpaRepository<Venda, Long> {
                 "(LOWER(os) LIKE CONCAT('%',:os,'%') ) AND\n" + //
                 "(LOWER(cpf) LIKE CONCAT('%',:cpf,'%') OR LOWER(cnpj) LIKE CONCAT('%',:cpf,'%')) AND\n" + //
                 "(LOWER(nome) LIKE CONCAT('%',:nome,'%') OR LOWER(razao_social) LIKE CONCAT('%',:nome,'%')) AND\n" + //
-                "empresa_id = :empresaId AND status_id IN (:statusIdList) LIMIT 2000", nativeQuery = true)
+                "empresa_id = :empresaId AND status_id IN (:statusIdList) LIMIT :limit OFFSET :offset", nativeQuery = true)
     List<VendaAtoresProjection> findAllByEmpresaIdAndFilters(
         Integer empresaId,
         String tipoProduto,
@@ -51,7 +51,9 @@ public interface VendaRepository extends JpaRepository<Venda, Long> {
         List<Integer> statusIdList,
         String os,
         String cpf,
-        String nome
+        String nome,
+        Integer offset,
+        Integer limit
     );
 
     Optional<VendaResumidaProjection> getVendaResumidaProjectionByVendaId(Integer vendaId);
@@ -59,6 +61,9 @@ public interface VendaRepository extends JpaRepository<Venda, Long> {
     List<VendaResumidaProjection> getVendaResumidaProjectionByVendaIdIn(List<Integer> vendaId);
 
     List<Venda> findAllByVendaIdIn(List<Integer> vendaId);
+
+    @Query(value = "SELECT venda_id as vendaId FROM venda WHERE venda_id IN :vendaId", nativeQuery = true)
+    List<VendaResumidaProjection> getVendaResumidaProjectionListByVendaIdIn(List<Integer> vendaId);
 
     /*@Query(value = "", nativeQuery = true)
     List<VendaResumidaProjection> findAllByEmpresaId();*/

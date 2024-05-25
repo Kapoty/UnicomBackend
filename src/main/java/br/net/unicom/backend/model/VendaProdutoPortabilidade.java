@@ -8,6 +8,7 @@ import br.net.unicom.backend.model.key.VendaProdutoKey;
 import br.net.unicom.backend.model.key.VendaProdutoPortabilidadeKey;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinColumns;
 import jakarta.persistence.ManyToOne;
@@ -27,7 +28,7 @@ public class VendaProdutoPortabilidade {
     @EqualsAndHashCode.Include
     VendaProdutoPortabilidadeKey vendaProdutoPortabilidadeId;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("vendaProdutoId")
     @JoinColumns({
         @JoinColumn(name="venda_id", referencedColumnName = "venda_id"),

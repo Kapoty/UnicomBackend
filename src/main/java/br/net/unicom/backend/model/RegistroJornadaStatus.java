@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -29,7 +30,7 @@ public class RegistroJornadaStatus {
     @Column(name = "registro_jornada_id", nullable = false)
     private Integer registroJornadaId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "registro_jornada_id", insertable = false, updatable = false)
     @JsonIgnore
     @ToString.Exclude
@@ -38,7 +39,7 @@ public class RegistroJornadaStatus {
     @Column(name = "jornada_status_id", nullable = false)
     private Integer jornadaStatusId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "jornada_status_id", insertable = false, updatable = false)
     @JsonIgnore
     @ToString.Exclude

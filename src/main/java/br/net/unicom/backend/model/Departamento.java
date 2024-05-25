@@ -43,7 +43,7 @@ public class Departamento {
     @Column(name = "empresa_id")
     private int empresaId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "empresa_id", insertable = false, updatable = false)
     @JsonIgnore
     @ToString.Exclude

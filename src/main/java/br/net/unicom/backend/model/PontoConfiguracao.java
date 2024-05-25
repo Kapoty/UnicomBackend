@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -36,7 +37,7 @@ public class PontoConfiguracao {
     @NotNull
     private Integer statusRegularId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "status_regular_id", referencedColumnName = "jornada_status_id", insertable = false, updatable = false)
     private JornadaStatus statusRegular;
 
@@ -44,11 +45,11 @@ public class PontoConfiguracao {
     @NotNull
     private Integer statusAusenteId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "status_ausente_id", referencedColumnName = "jornada_status_id", insertable = false, updatable = false)
     private JornadaStatus statusAusente;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @MapsId
     @JoinColumn(name = "empresa_id")
     @JsonIgnore

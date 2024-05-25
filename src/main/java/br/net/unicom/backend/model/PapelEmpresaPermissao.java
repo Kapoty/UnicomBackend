@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import br.net.unicom.backend.model.key.PapelEmpresaPermissaoKey;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinColumns;
 import jakarta.persistence.ManyToOne;
@@ -21,7 +22,7 @@ public class PapelEmpresaPermissao {
     @EmbeddedId
     PapelEmpresaPermissaoKey papelEmpresaPermissaoId;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("empresaPermissaoId")
     @JoinColumns({
         @JoinColumn(name="empresa_id"),
@@ -29,7 +30,7 @@ public class PapelEmpresaPermissao {
     })
     EmpresaPermissao empresaPermissao;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "papel_id", insertable = false, updatable = false)
     @JsonIgnore
     @ToString.Exclude

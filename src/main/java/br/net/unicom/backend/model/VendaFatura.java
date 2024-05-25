@@ -9,6 +9,7 @@ import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
@@ -27,7 +28,7 @@ public class VendaFatura {
     @EqualsAndHashCode.Include
     VendaFaturaKey vendaFaturaId;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("vendaId")
     @JoinColumn(name = "venda_id")
     @JsonIgnore

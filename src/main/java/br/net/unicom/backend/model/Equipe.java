@@ -45,7 +45,7 @@ public class Equipe {
     @Column(name = "empresa_id")
     private int empresaId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "empresa_id", insertable = false, updatable = false)
     @JsonIgnore
     @ToString.Exclude
@@ -54,7 +54,7 @@ public class Equipe {
     @Column(name = "supervisor_id")
     private Integer supervisorId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supervisor_id", referencedColumnName = "usuarioId", insertable = false, updatable = false)
     @JsonIgnore
     @ToString.Exclude
@@ -63,7 +63,7 @@ public class Equipe {
     @Column(name = "gerente_id")
     private Integer gerenteId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gerente_id", referencedColumnName = "usuarioId", insertable = false, updatable = false)
     @JsonIgnore
     @ToString.Exclude
