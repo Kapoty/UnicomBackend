@@ -1,9 +1,9 @@
 package br.net.unicom.backend.exception;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -41,8 +41,8 @@ public class ValidationExceptionHandler {
         Map<String, Object> response = new HashMap<>();
         Map<String,String> errorMap = e.getAllErrors()
                 .stream()
-                .collect(Collectors.toMap(x -> ((FieldError)x).getField(), 
-                 b -> b.getDefaultMessage(),(p,q) -> p, LinkedHashMap::new));
+                .collect(Collectors.toMap(x -> ((FieldError)x).getField().replace("Valid", ""), 
+                 b -> b.getDefaultMessage(),(p,q) -> p, TreeMap::new));
         response.put("errors", errorMap);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
@@ -52,7 +52,7 @@ public class ValidationExceptionHandler {
         Map<String, Object> response = new HashMap<>();
         Map<String, String> errorMap = e.getConstraintViolations()
                 .stream()
-                .collect(Collectors.toMap(x -> ((ConstraintViolation<?>)x).getPropertyPath().toString(), b -> b.getMessage(), (p, q) -> p, LinkedHashMap::new));
+                .collect(Collectors.toMap(x -> ((ConstraintViolation<?>)x).getPropertyPath().toString().replace("Valid", ""), b -> b.getMessage(), (p, q) -> p, TreeMap::new));
         response.put("errors", errorMap);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }

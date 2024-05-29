@@ -14,6 +14,8 @@ import br.net.unicom.backend.model.VendaSistemaEnum;
 import br.net.unicom.backend.model.VendaSuporteEnum;
 import br.net.unicom.backend.model.VendaTipoPessoaEnum;
 import br.net.unicom.backend.model.VendaTipoProdutoEnum;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -41,17 +43,53 @@ public class VendaPostRequest {
     @Length(max = 11)
     private String cpf;
 
+    @AssertTrue(message = "inválido")
+    private boolean isCpfValid() {
+        if (this.tipoPessoa == null || this.tipoPessoa.equals(VendaTipoPessoaEnum.CNPJ))
+            return true;
+        if (this.cpf.length() != 11)
+            return false;
+        return true;
+    }
+
     @NotNull
     @Length(max = 200)
     private String nome;
 
+    @AssertTrue(message = "não deve ser vazio")
+    private boolean isNomeValid() {
+        if (this.tipoPessoa == null || this.tipoPessoa.equals(VendaTipoPessoaEnum.CNPJ))
+            return true;
+        if (this.nome.isBlank())
+            return false;
+        return true;
+    }
+
     private LocalDate dataNascimento;
+
+    @AssertTrue(message = "não pode ser nula")
+    private boolean isDataNascimentoValid() {
+        if (this.tipoPessoa == null || this.tipoPessoa.equals(VendaTipoPessoaEnum.CNPJ))
+            return true;
+        if (this.dataNascimento == null)
+            return false;
+        return true;
+    }
 
     private VendaGeneroEnum genero;
 
     @NotNull
     @Length(max = 20)
     private String rg;
+
+    @AssertTrue(message = "não deve ser vazio")
+    private boolean isRgValid() {
+        if (this.tipoPessoa == null || this.tipoPessoa.equals(VendaTipoPessoaEnum.CNPJ))
+            return true;
+        if (this.rg.isBlank())
+            return false;
+        return true;
+    }
 
     @NotNull
     @Length(max = 50)
@@ -63,12 +101,12 @@ public class VendaPostRequest {
     @Length(max = 200)
     private String nomeDaMae;
 
-    @NotNull
+    @NotBlank
     @Length(max = 200)
     private String nomeContato;
 
     @NotNull
-    @Length(max = 11)
+    @Length(min= 11, max = 11)
     private String telefoneCelular;
 
     @NotNull
@@ -86,12 +124,30 @@ public class VendaPostRequest {
     @NotNull
     @Length(max = 14)
     private String cnpj;
+
+    @AssertTrue(message = "inválido")
+    private boolean isCnpjValid() {
+        if (this.tipoPessoa == null || this.tipoPessoa.equals(VendaTipoPessoaEnum.CPF))
+            return true;
+        if (this.cnpj.length() != 14)
+            return false;
+        return true;
+    }
     
     private VendaPorteEnum porte;
 
     @NotNull
     @Length(max = 200)
     private String razaoSocial;
+    
+    @AssertTrue(message = "não deve ser vazio")
+    private boolean isRazaoSocialValid() {
+        if (this.tipoPessoa == null || this.tipoPessoa.equals(VendaTipoPessoaEnum.CPF))
+            return true;
+        if (this.razaoSocial.isBlank())
+            return false;
+        return true;
+    }
 
     private LocalDate dataConstituicao;
 
@@ -101,19 +157,37 @@ public class VendaPostRequest {
     @Length(max = 200)
     private String representanteLegal;
 
+    @AssertTrue(message = "não deve ser vazio")
+    private boolean isRepresentanteLegalValid() {
+        if (this.tipoPessoa == null || this.tipoPessoa.equals(VendaTipoPessoaEnum.CPF))
+            return true;
+        if (this.representanteLegal.isBlank())
+            return false;
+        return true;
+    }
+
     @NotNull
     @Length(max = 11)
     private String cpfRepresentanteLegal;
 
-    @NotNull
-    @Length(max = 8)
-    private String cep;
+    @AssertTrue(message = "inválido")
+    private boolean isCpfRepresentanteLegalValid() {
+        if (this.tipoPessoa == null || this.tipoPessoa.equals(VendaTipoPessoaEnum.CPF))
+            return true;
+        if (this.cpfRepresentanteLegal.length() != 11)
+            return false;
+        return true;
+    }
 
     @NotNull
+    @Length(min = 8, max = 8)
+    private String cep;
+
+    @NotBlank
     @Length(max = 100)
     private String logradouro;
 
-    @NotNull
+    @NotBlank
     @Length(max = 10)
     private String numero;
 
@@ -153,6 +227,10 @@ public class VendaPostRequest {
 
     private LocalDateTime dataVenda;
 
+    @NotNull
+    private Boolean reimputado;
+
+    @NotNull
     private LocalDate safra;
 
     private LocalDateTime dataAtivacao;
@@ -202,8 +280,8 @@ public class VendaPostRequest {
     @Length(max = 200)
     private String observacao;
 
-    private List<VendaProdutoRequest> produtoList;
+    private List<@Valid VendaProdutoRequest> produtoList;
 
-    private List<VendaFaturaRequest> faturaList;
+    private List<@Valid VendaFaturaRequest> faturaList;
 
 }

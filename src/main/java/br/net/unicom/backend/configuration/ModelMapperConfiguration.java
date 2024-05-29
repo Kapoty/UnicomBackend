@@ -1,13 +1,17 @@
 package br.net.unicom.backend.configuration;
 
+import java.util.stream.Collectors;
+
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import br.net.unicom.backend.model.FiltroVenda;
 import br.net.unicom.backend.model.Venda;
 import br.net.unicom.backend.model.VendaProduto;
+import br.net.unicom.backend.payload.request.VendaListRequest;
 import br.net.unicom.backend.payload.request.VendaPatchRequest;
 import br.net.unicom.backend.payload.request.VendaPostRequest;
 import br.net.unicom.backend.payload.request.VendaProdutoRequest;
@@ -41,6 +45,10 @@ public class ModelMapperConfiguration {
         modelMapper.typeMap(VendaPostRequest.class, Venda.class).addMappings(mapper -> {
             mapper.skip(Venda::setProdutoList);
             mapper.skip(Venda::setFaturaList);
+        });
+
+        modelMapper.typeMap(VendaListRequest.class, FiltroVenda.class).addMappings(mapper -> {
+            mapper.skip(FiltroVenda::setStatusIdList);
         });
         
         return modelMapper;

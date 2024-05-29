@@ -12,7 +12,7 @@ import lombok.ToString;
 public class VendaProdutoPortabilidadeRequest {
 
     @NotBlank
-    @Length(max = 9)
+    @Length(min = 9, max = 9)
     private String telefone;
 
 }

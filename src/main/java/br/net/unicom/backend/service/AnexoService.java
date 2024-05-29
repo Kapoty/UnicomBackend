@@ -25,14 +25,14 @@ public class AnexoService {
 
     Logger logger = LoggerFactory.getLogger(AnexoService.class);
 
-    public List<File> getAllFiles(Empresa empresa) throws IOException, GeneralSecurityException {
-        return googleDriveService.listFolderContent(empresa.getGoogledriveFolderId());
+    public List<File> getAllFiles(Empresa empresa, Boolean includeTrashed) throws IOException, GeneralSecurityException {
+        return googleDriveService.listFolderContent(empresa.getGoogledriveFolderId(), includeTrashed);
     }
 
-    public List<File> listAllFilesByVendaId(Empresa empresa, Integer vendaId) throws Exception {
+    public List<File> listAllFilesByVendaId(Empresa empresa, Integer vendaId, Boolean includeTrashed) throws Exception {
         String folderId = googleDriveService.getFolderId(empresa.getGoogledriveFolderId(), "venda/" + vendaId.toString());
 
-        return googleDriveService.listFolderContent(folderId);
+        return googleDriveService.listFolderContent(folderId, includeTrashed);
     }
 
     public String uploadByVendaId(Empresa empresa, Integer vendaId, MultipartFile file) {
@@ -40,7 +40,16 @@ public class AnexoService {
     }
 
     public void downloadByFileId(String fileId, HttpServletResponse response) throws IOException, GeneralSecurityException {
-        googleDriveService.downloadFile(fileId, response);
+        //googleDriveService.downloadFile(fileId, response);
+        response.sendRedirect(googleDriveService.getWebViewLink(fileId));
+    }
+
+    public void trashByFileId(String fileId) throws Exception {
+        googleDriveService.trashFile(fileId);
+    }
+
+    public void untrashByFileId(String fileId) throws Exception {
+        googleDriveService.untrashFile(fileId);
     }
 
     public void deleteByFileId(String fileId) throws Exception {

@@ -42,17 +42,25 @@ public class GoogleDriveService {
     @Value("${unicom.backend.googledrive.credentialsFile}")
     public void setCredentialsFile(Resource credentialsFile) {
         GoogleDriveService.CREDENTIALS_FILE = credentialsFile;
-    } 
+    }
 
     private static String APPLICATION_NAME;
     
     @Value("${unicom.backend.googledrive.applicationName}")
     public void setApplicationName(String applicationName) {
         GoogleDriveService.APPLICATION_NAME = applicationName;
-    } 
+    }
+
+	private static String USER;
+
+	@Value("${unicom.backend.googledrive.user}")
+    public void setUser(String user) {
+        GoogleDriveService.USER = user;
+    }
 
     private static HttpCredentialsAdapter getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws FileNotFoundException, IOException {
         GoogleCredentials credentials = GoogleCredentials.fromStream(CREDENTIALS_FILE.getInputStream())
+			.createDelegated("pedro@unisystem.app.br")
             .createScoped(SCOPES);
         credentials.refreshIfExpired();
         return new HttpCredentialsAdapter(credentials);
@@ -75,17 +83,26 @@ public class GoogleDriveService {
 		return result.getFiles();
 	}
 
-	public List<File> listFolderContent(String parentId) throws IOException, GeneralSecurityException {
+	public List<File> listFolderContent(String parentId, Boolean includeTrashed) throws IOException, GeneralSecurityException {
 		if (parentId == null) {
 			parentId = "root";
 		}
-		String query = "'" + parentId + "' in parents";
+		String query;
+		if (includeTrashed)
+			query = "'" + parentId + "' in parents";
+		else
+			query = "'" + parentId + "' in parents and trashed=false";
 		FileList result = getInstance().files().list()
 				.setQ(query)
 				.setPageSize(100)
-				.setFields("nextPageToken, files(id, name)")
+				.setFields("nextPageToken, files(id, name, trashed)")
 				.execute();
 		return result.getFiles();
+	}
+
+	public String getWebViewLink(String fileId) throws IOException, GeneralSecurityException {
+		File file = getInstance().files().get(fileId).setFields("webViewLink").execute();
+		return file.getWebViewLink();
 	}
 
 	public void downloadFile(String fileId, HttpServletResponse response) throws IOException, GeneralSecurityException {
@@ -98,6 +115,12 @@ public class GoogleDriveService {
 	public void trashFile(String fileId) throws Exception {
 		File newContent = new File();
 		newContent.setTrashed(true);
+		getInstance().files().update(fileId, newContent).setSupportsAllDrives(true).execute();
+	}
+
+	public void untrashFile(String fileId) throws Exception {
+		File newContent = new File();
+		newContent.setTrashed(false);
 		getInstance().files().update(fileId, newContent).setSupportsAllDrives(true).execute();
 	}
 

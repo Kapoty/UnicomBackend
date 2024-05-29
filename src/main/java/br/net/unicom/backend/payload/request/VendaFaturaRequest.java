@@ -15,6 +15,7 @@ public class VendaFaturaRequest {
     @NotNull
     private LocalDate mes;
 
+    @NotNull
     private VendaFaturaStatusEnum status;
 
     @NotNull

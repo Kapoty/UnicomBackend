@@ -2,6 +2,7 @@ package br.net.unicom.backend.controller;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import br.net.unicom.backend.model.FiltroVenda;
 import br.net.unicom.backend.model.Usuario;
 import br.net.unicom.backend.model.Venda;
 import br.net.unicom.backend.model.VendaAtualizacao;
@@ -42,14 +46,18 @@ import br.net.unicom.backend.payload.request.VendaPatchRequest;
 import br.net.unicom.backend.payload.request.VendaPostRequest;
 import br.net.unicom.backend.payload.request.VendaProdutoPortabilidadeRequest;
 import br.net.unicom.backend.payload.request.VendaProdutoRequest;
+import br.net.unicom.backend.repository.FiltroVendaRepository;
 import br.net.unicom.backend.repository.UsuarioRepository;
 import br.net.unicom.backend.repository.VendaProdutoRepository;
 import br.net.unicom.backend.repository.VendaRepository;
 import br.net.unicom.backend.security.service.UserDetailsImpl;
+import br.net.unicom.backend.service.JsonService;
 import br.net.unicom.backend.service.UsuarioService;
 import br.net.unicom.backend.service.VendaService;
 import jakarta.transaction.Transactional;
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
+import jakarta.validation.Validator;
 
 
 
@@ -71,6 +79,9 @@ public class VendaController {
     VendaProdutoRepository vendaProdutoRepository;
 
     @Autowired
+    FiltroVendaRepository filtroVendaRepository;
+
+    @Autowired
     VendaService vendaService;
 
     @Autowired
@@ -79,10 +90,20 @@ public class VendaController {
     @Autowired
     ModelMapper modelMapper;
 
+    @Autowired
+    ObjectMapper objectMapper;
+
+    @Autowired
+    JsonService jsonService;
+
+    @Autowired
+    Validator validator;
+
     Logger logger = LoggerFactory.getLogger(VendaController.class);
 
     @PreAuthorize("hasAuthority('CADASTRAR_VENDAS')")
     @PostMapping("/venda-list")
+    @Transactional
     public ResponseEntity<List<?>> getVendaList(@Valid @RequestBody VendaListRequest vendaListRequest) {
 
         logger.info(vendaListRequest.toString());
@@ -94,6 +115,14 @@ public class VendaController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Usuario usuario = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).get();
+
+        // Salvar filtro venda do usuario
+
+        FiltroVenda filtroVenda = filtroVendaRepository.findByUsuarioId(usuario.getUsuarioId()).orElseGet(() -> new FiltroVenda(usuario));
+
+        modelMapper.map(vendaListRequest, filtroVenda);
+        filtroVenda.setStatusIdList(vendaListRequest.getStatusIdList().stream().map(String::valueOf).collect(Collectors.joining(",")));
+        filtroVendaRepository.save(filtroVenda);
 
         finish = Instant.now();
         timeElapsed = Duration.between(start, finish).toMillis();
@@ -107,8 +136,8 @@ public class VendaController {
             vendaListRequest.getPdv().toLowerCase(),
             vendaListRequest.getSafra(),
             vendaListRequest.getTipoData() != null ? vendaListRequest.getTipoData().toString() : "",
-            vendaListRequest.getDataInicio(),
-            vendaListRequest.getDataFim().plusDays(1),
+            vendaListRequest.getDataInicio() != null ? vendaListRequest.getDataInicio() : LocalDate.of(1990, 1, 1),
+            vendaListRequest.getDataFim() != null ? vendaListRequest.getDataFim().plusDays(1) : LocalDate.of(2100, 1, 1),
             vendaListRequest.getStatusIdList(),
             vendaListRequest.getOs().toLowerCase(),
             vendaListRequest.getCpf().toLowerCase(),
@@ -185,6 +214,11 @@ public class VendaController {
         Usuario usuario = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).get();
 
         Venda venda = vendaRepository.findByVendaIdAndEmpresaId(vendaId, userDetails.getEmpresaId()).orElseThrow(NoSuchElementException::new);
+
+        // jackson
+
+        /*JsonNode node = objectMapper.valueToTree(venda);
+        HashMap<String, String> before = jsonService.flatten(node, "");*/
 
         // mapear atributos
 
@@ -277,6 +311,25 @@ public class VendaController {
 
         vendaRepository.saveAndFlush(venda);
 
+        // jackson
+
+        /*node = objectMapper.valueToTree(venda);
+        HashMap<String, String> after = jsonService.flatten(node, "");
+
+        HashMap<String, String> difference = new HashMap<>();
+
+        for (String key : before.keySet()) {
+            if (!after.containsKey(key) || !after.get(key).equals(before.get(key)))
+                difference.put(key, after.get(key));
+        }
+
+        for (String key : after.keySet()) {
+            if (!before.containsKey(key))
+                difference.put(key, after.get(key));
+        }
+
+        logger.info(difference.toString());*/
+
         return ResponseEntity.noContent().build();
     }
 
@@ -315,7 +368,7 @@ public class VendaController {
 
         // salvar venda para obter vendaId
 
-        logger.info(venda.toString());
+        //logger.info(venda.toString());
 
         vendaRepository.saveAndFlush(venda);
 

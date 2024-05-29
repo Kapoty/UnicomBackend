@@ -52,7 +52,7 @@ public class AnexoController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Empresa empresa = empresaRepository.findByEmpresaId(userDetails.getEmpresaId()).orElseThrow(NoSuchElementException::new);
 
-        return anexoService.listAllFilesByVendaId(empresa, vendaId);
+        return anexoService.listAllFilesByVendaId(empresa, vendaId, userDetails.hasAuthority("VER_LIXEIRA"));
     }
     
     @PreAuthorize("hasAuthority('CADASTRAR_VENDAS')")
@@ -75,6 +75,22 @@ public class AnexoController {
     }
 
     @PreAuthorize("hasAuthority('CADASTRAR_VENDAS')")
+    @PostMapping("/trash/{fileId}")
+    public ResponseEntity<Void> trashByFileId(@Valid @PathVariable("fileId") String fileId) throws Exception {
+        anexoService.trashByFileId(fileId);
+        
+        return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasAuthority('CADASTRAR_VENDAS') && hasAuthority('VER_LIXEIRA')")
+    @PostMapping("/untrash/{fileId}")
+    public ResponseEntity<Void> untrashByFileId(@Valid @PathVariable("fileId") String fileId) throws Exception {
+        anexoService.untrashByFileId(fileId);
+        
+        return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasAuthority('CADASTRAR_VENDAS') && hasAuthority('VER_LIXEIRA')")
     @DeleteMapping("/delete/{fileId}")
     public ResponseEntity<Void> deleteByFileId(@Valid @PathVariable("fileId") String fileId) throws Exception {
         anexoService.deleteByFileId(fileId);

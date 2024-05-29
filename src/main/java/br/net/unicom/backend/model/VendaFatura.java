@@ -39,6 +39,7 @@ public class VendaFatura {
     private LocalDate mes;
 
     @Enumerated(EnumType.STRING)
+    @NotNull
     private VendaFaturaStatusEnum status;
 
     @NotNull

@@ -6,7 +6,6 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.hibernate.Hibernate;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.net.unicom.backend.model.Equipe;
+import br.net.unicom.backend.model.FiltroVenda;
 import br.net.unicom.backend.model.Papel;
 import br.net.unicom.backend.model.Permissao;
 import br.net.unicom.backend.model.Usuario;
@@ -49,6 +49,7 @@ import br.net.unicom.backend.payload.response.IframeCategoryResponse;
 import br.net.unicom.backend.payload.response.UsuarioMeResponse;
 import br.net.unicom.backend.payload.response.UsuarioResponse;
 import br.net.unicom.backend.repository.EquipeRepository;
+import br.net.unicom.backend.repository.FiltroVendaRepository;
 import br.net.unicom.backend.repository.IframeCategoryRepository;
 import br.net.unicom.backend.repository.JornadaRepository;
 import br.net.unicom.backend.repository.PapelRepository;
@@ -90,6 +91,9 @@ public class UsuarioController {
 
     @Autowired
     EquipeRepository equipeRepository;
+
+    @Autowired
+    FiltroVendaRepository filtroVendaRepository;
 
     @Autowired
     FileService fileService;
@@ -240,6 +244,13 @@ public class UsuarioController {
             .map(papelMaiorQue -> papelMaiorQue.getPapelFilho())
             .collect(Collectors.toList())
         );
+    }
+
+    @GetMapping("/me/filtro-venda")
+    public ResponseEntity<FiltroVenda> getFiltroVendaListByMe() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return ResponseEntity.of(filtroVendaRepository.findByUsuarioId(userDetails.getUsuarioId()));
     }
 
     @PreAuthorize("hasAuthority('CADASTRAR_USUARIOS')")

@@ -136,4 +136,9 @@ public class Usuario {
     @JoinColumn(name = "jornada_status_grupo_id", insertable = false, updatable = false)
     private JornadaStatusGrupo jornadaStatusGrupo;
 
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "usuario")
+    @PrimaryKeyJoinColumn
+    @JsonIgnore
+    @ToString.Exclude
+    private FiltroVenda filtroVenda;
 }

@@ -39,7 +39,7 @@ public class VendaProdutoPortabilidade {
     VendaProduto vendaProduto;
 
     @NotBlank
-    @Length(max = 9)
+    @Length(min = 9, max = 9)
     private String telefone;
 
     public VendaProdutoPortabilidade(VendaProduto vendaProduto, Integer portabilidadeId) {

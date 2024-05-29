@@ -3,6 +3,7 @@ package br.net.unicom.backend.payload.request;
 import java.time.LocalDate;
 import java.util.List;
 
+import br.net.unicom.backend.model.FiltroVendaTipoDataEnum;
 import br.net.unicom.backend.model.VendaTipoProdutoEnum;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Max;
@@ -23,12 +24,10 @@ public class VendaListRequest {
 
     private LocalDate safra;
 
-    private VendaListRequestTipoDataEnum tipoData;
+    private FiltroVendaTipoDataEnum tipoData;
 
-    @NotNull
     private LocalDate dataInicio;
 
-    @NotNull
     private LocalDate dataFim;
 
     @NotNull
@@ -58,6 +57,8 @@ public class VendaListRequest {
 
     @AssertTrue(message = "data inválida")
     private boolean isDataValid() {
+        if (dataInicio == null || dataFim == null)
+            return true;
         if (dataInicio.compareTo(dataFim) > 0)
             return false;
         return true;
