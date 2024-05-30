@@ -19,10 +19,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.annotation.JsonView;
+
 import br.net.unicom.backend.model.Equipe;
 import br.net.unicom.backend.payload.request.EquipePatchRequest;
 import br.net.unicom.backend.payload.request.EquipePostRequest;
-import br.net.unicom.backend.payload.response.EquipeResponse;
 import br.net.unicom.backend.repository.EquipeRepository;
 import br.net.unicom.backend.security.service.UserDetailsImpl;
 import br.net.unicom.backend.service.EquipeService;
@@ -75,7 +76,7 @@ public class EquipeController {
     @PreAuthorize("hasAuthority('CADASTRAR_EQUIPES')")
     @PostMapping("/")
     @Transactional
-    public ResponseEntity<EquipeResponse> postEquipe(@Valid @RequestBody EquipePostRequest equipePostRequest) {
+    public ResponseEntity<Equipe> postEquipe(@Valid @RequestBody EquipePostRequest equipePostRequest) {
         
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
@@ -85,15 +86,13 @@ public class EquipeController {
         
         equipeRepository.saveAndFlush(equipe);
 
-        EquipeResponse equipeResponse = equipeService.equipeToEquipeResponse(equipe);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(equipeResponse);
+        return ResponseEntity.status(HttpStatus.CREATED).body(equipe);
     }
 
     @PreAuthorize("hasAuthority('CADASTRAR_EQUIPES')")
     @DeleteMapping("/{equipeId}")
     @Transactional
-    public ResponseEntity<EquipeResponse> deleteEquipe(@Valid @PathVariable("equipeId") Integer equipeId) {
+    public ResponseEntity<Void> deleteEquipe(@Valid @PathVariable("equipeId") Integer equipeId) {
         
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 

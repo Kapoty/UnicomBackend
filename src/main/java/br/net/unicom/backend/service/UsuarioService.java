@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import br.net.unicom.backend.model.Equipe;
@@ -18,9 +17,6 @@ import br.net.unicom.backend.model.Usuario;
 import br.net.unicom.backend.model.exception.RegistroPontoFullException;
 import br.net.unicom.backend.model.exception.RegistroPontoLockedException;
 import br.net.unicom.backend.model.exception.RegistroPontoUnauthorizedException;
-import br.net.unicom.backend.payload.response.UsuarioEquipeResponse;
-import br.net.unicom.backend.payload.response.UsuarioMinhaEquipeResponse;
-import br.net.unicom.backend.payload.response.UsuarioResponse;
 import br.net.unicom.backend.repository.EquipeRepository;
 import br.net.unicom.backend.repository.JornadaRepository;
 import br.net.unicom.backend.repository.PapelRepository;
@@ -53,32 +49,8 @@ public class UsuarioService {
     @Autowired
     PermissaoRepository permissaoRepository;
 
-    ModelMapper modelMapper;
-
     @Autowired
-    public void setModelMapper(ModelMapper modelMapper) {
-        this.modelMapper = modelMapper;
-        //this.modelMapper.typeMap(Usuario.class, UsuarioResponse.class)
-        //    .addMapping(usuario -> papelRepository.findAllByUsuarioId(usuario.getUsuarioId()), UsuarioResponse::setPapelList);
-    }
-
-    public UsuarioResponse usuarioToUsuarioResponse(Usuario usuario) {
-        UsuarioResponse usuarioResponse = new UsuarioResponse();
-        this.modelMapper.map(usuario, usuarioResponse);
-        return usuarioResponse;
-    }
-
-    public UsuarioMinhaEquipeResponse usuarioToUsuarioMinhaEquipeResponse(Usuario usuario) {
-        UsuarioMinhaEquipeResponse usuarioMinhaEquipeResponse = new UsuarioMinhaEquipeResponse();
-        this.modelMapper.map(usuario, usuarioMinhaEquipeResponse);
-        return usuarioMinhaEquipeResponse;
-    }
-
-    public UsuarioEquipeResponse usuarioToUsuarioEquipeResponse(Usuario usuario) {
-        UsuarioEquipeResponse usuarioEquipeResponse = new UsuarioEquipeResponse();
-        this.modelMapper.map(usuario, usuarioEquipeResponse);
-        return usuarioEquipeResponse;
-    }
+    ModelMapper modelMapper;
 
     public Integer parseUsuarioIdString(UserDetailsImpl userDetails, String usuarioId) {
         if (usuarioId.equals("me")) {

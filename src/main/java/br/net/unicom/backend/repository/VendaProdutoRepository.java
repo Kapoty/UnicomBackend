@@ -22,4 +22,7 @@ public interface VendaProdutoRepository extends JpaRepository<VendaProduto, Vend
 
     List<VendaProduto> findAllByVendaVendaIdIn(List<Integer> vendaId);
 
+    @Query(value = "SELECT * FROM venda_produto WHERE venda_id IN (SELECT venda_id FROM venda WHERE empresa_id = :empresaId) LIMIT :limit OFFSET :offset", nativeQuery = true)
+    List<VendaProduto> findAllByEmpresaIdAndLimit(Integer empresaId, Integer offset, Integer limit);
+
 }

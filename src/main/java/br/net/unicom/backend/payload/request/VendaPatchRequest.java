@@ -111,15 +111,15 @@ public class VendaPatchRequest {
 
     @NotNull
     @Length(min= 11, max = 11)
-    private String telefoneCelular;
+    private String contato1;
 
     @NotNull
     @Length(max = 11)
-    private String telefoneWhatsapp;
+    private String contato2;
 
     @NotNull
     @Length(max = 11)
-    private String telefoneResidencial;
+    private String contato3;
 
     @NotNull
     @Length(max = 200)

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.net.unicom.backend.model.Equipe;
 import br.net.unicom.backend.payload.response.MinhaEquipeResponse;
+import br.net.unicom.backend.payload.response.UsuarioPublicResponse;
 import br.net.unicom.backend.repository.EquipeRepository;
 import br.net.unicom.backend.repository.UsuarioRepository;
 import br.net.unicom.backend.security.service.UserDetailsImpl;
@@ -59,7 +60,7 @@ public class MinhaEquipeController {
         minhaEquipeResponse.setUsuarioList(
             usuarioRepository.findAllByEquipeId(equipeId)
             .stream()
-            .map(usuario -> usuarioService.usuarioToUsuarioMinhaEquipeResponse(usuario))
+            .map(usuario -> modelMapper.map(usuario, UsuarioPublicResponse.class))
             .collect(Collectors.toList())
             );
         return ResponseEntity.ok(minhaEquipeResponse);

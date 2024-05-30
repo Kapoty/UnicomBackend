@@ -5,6 +5,7 @@ import java.util.List;
 import org.hibernate.validator.constraints.Length;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -56,8 +57,8 @@ public class Equipe {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supervisor_id", referencedColumnName = "usuarioId", insertable = false, updatable = false)
-    @JsonIgnore
     @ToString.Exclude
+    @JsonIgnore
     private Usuario supervisor;
 
     @Column(name = "gerente_id")
@@ -65,13 +66,13 @@ public class Equipe {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gerente_id", referencedColumnName = "usuarioId", insertable = false, updatable = false)
-    @JsonIgnore
     @ToString.Exclude
+    @JsonIgnore
     private Usuario gerente;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "equipe")
-    @JsonIgnore
     @ToString.Exclude
+    @JsonIgnore
     private List<Usuario> usuarioList;
 
 }

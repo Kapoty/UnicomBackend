@@ -36,6 +36,13 @@ import lombok.ToString;
 @Getter @Setter @NoArgsConstructor @ToString
 public class Venda {
 
+    public interface DefaultView {};
+    public interface WithProdutoListView {};
+    public interface WithFaturaListView {};
+    public interface WithAtualizacaoListView {};
+    public interface WithProdutoAndFaturaListView extends WithProdutoListView, WithFaturaListView{};
+    public interface WithAllListView extends WithProdutoListView, WithFaturaListView, WithAtualizacaoListView{};
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer vendaId;
@@ -159,15 +166,15 @@ public class Venda {
 
     @NotBlank
     @Length(min= 11, max = 11)
-    private String telefoneCelular;
+    private String contato1;
 
     @NotNull
     @Length(max = 11)
-    private String telefoneWhatsapp;
+    private String contato2;
 
     @NotNull
     @Length(max = 11)
-    private String telefoneResidencial;
+    private String contato3;
 
     @NotNull
     @Length(max = 200)
@@ -359,14 +366,17 @@ public class Venda {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "venda", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("vendaProdutoId.produtoId")
+    @JsonView(WithProdutoListView.class)
     private List<VendaProduto> produtoList = null;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "venda", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("vendaFaturaId.vendaFaturaId")
+    @OrderBy("vendaFaturaId.faturaId")
+    @JsonView(WithFaturaListView.class)
     private List<VendaFatura> faturaList = null;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "venda", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("vendaAtualizacaoId")
+    @JsonView(WithAtualizacaoListView.class)
     private List<VendaAtualizacao> atualizacaoList = null;
 
     public List<VendaProduto> getProdutoList() {

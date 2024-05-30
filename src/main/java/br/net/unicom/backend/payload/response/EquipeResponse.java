@@ -13,10 +13,14 @@ public class EquipeResponse {
 
     private String nome;
 
-    private int empresaId;
+    private Integer empresaId;
 
-    private UsuarioEquipeResponse supervisor;
+    private Integer supervisorId;
 
-    private UsuarioEquipeResponse gerente;
+    private UsuarioPublicResponse supervisor;
+
+    private Integer gerenteId;
+
+    private UsuarioPublicResponse gerente;
 
 }

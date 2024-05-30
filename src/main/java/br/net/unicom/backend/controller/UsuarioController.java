@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.net.unicom.backend.model.Equipe;
@@ -47,7 +48,6 @@ import br.net.unicom.backend.payload.request.UsuarioPingRequest;
 import br.net.unicom.backend.payload.request.UsuarioPostRequest;
 import br.net.unicom.backend.payload.response.IframeCategoryResponse;
 import br.net.unicom.backend.payload.response.UsuarioMeResponse;
-import br.net.unicom.backend.payload.response.UsuarioResponse;
 import br.net.unicom.backend.repository.EquipeRepository;
 import br.net.unicom.backend.repository.FiltroVendaRepository;
 import br.net.unicom.backend.repository.IframeCategoryRepository;
@@ -115,11 +115,12 @@ public class UsuarioController {
 
     @PreAuthorize("hasAuthority('CADASTRAR_USUARIOS')")
     @GetMapping("/{usuarioId}")
-    public ResponseEntity<UsuarioResponse> getUsuarioByEmpresaIdAndUsuarioId(@Valid @PathVariable("usuarioId") Integer usuarioId) {
+    @JsonView(Usuario.DefaultView.class)
+    public ResponseEntity<Usuario> getUsuarioByEmpresaIdAndUsuarioId(@Valid @PathVariable("usuarioId") Integer usuarioId) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioIdAndEmpresaId(usuarioId, userDetails.getEmpresaId()).orElseThrow(NoSuchElementException::new);
-        UsuarioResponse usuarioResponse = usuarioService.usuarioToUsuarioResponse(usuario);
-        return ResponseEntity.ok(usuarioResponse);
+
+        return ResponseEntity.ok(usuario);
     }
 
     @GetMapping("/{usuarioId}/foto-perfil")
@@ -221,16 +222,12 @@ public class UsuarioController {
     }
 
     @GetMapping("/me/usuario-list")
-    public ResponseEntity<List<UsuarioResponse>> getUsuarioListLessThanMe() {
+    @JsonView(Usuario.ExpandedView.class)
+    public ResponseEntity<List<Usuario>> getUsuarioListLessThanMe() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
 
-        return ResponseEntity.ok(
-            usuarioService.getUsuarioListLessThanUsuario(usuario)
-            .stream()
-            .map(u -> usuarioService.usuarioToUsuarioResponse(u))
-            .collect(Collectors.toList())    
-        );
+        return ResponseEntity.ok(usuarioService.getUsuarioListLessThanUsuario(usuario));
     }
 
     @GetMapping("/me/papel-list")
@@ -330,7 +327,8 @@ public class UsuarioController {
     @PreAuthorize("hasAuthority('CADASTRAR_USUARIOS')")
     @PostMapping("/")
     @Transactional
-    public ResponseEntity<UsuarioResponse> postUsuario(@Valid @RequestBody UsuarioPostRequest postUsuarioRequest) throws UsuarioEmailDuplicateException, UsuarioMatriculaDuplicateException, PapelInvalidoException, EquipeInvalidaException {
+    @JsonView(Usuario.DefaultView.class)
+    public ResponseEntity<Usuario> postUsuario(@Valid @RequestBody UsuarioPostRequest postUsuarioRequest) throws UsuarioEmailDuplicateException, UsuarioMatriculaDuplicateException, PapelInvalidoException, EquipeInvalidaException {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Usuario usuarioPai = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
@@ -358,9 +356,7 @@ public class UsuarioController {
 
         usuarioRepository.save(usuario);
 
-        UsuarioResponse usuarioResponse = usuarioService.usuarioToUsuarioResponse(usuario);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioResponse);
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuario);
     }
 
     @PostMapping("/me/ping")

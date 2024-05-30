@@ -7,11 +7,15 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.annotation.JsonView;
 
 import br.net.unicom.backend.model.Cargo;
 import br.net.unicom.backend.model.Contrato;
@@ -22,9 +26,12 @@ import br.net.unicom.backend.model.JornadaStatusGrupo;
 import br.net.unicom.backend.model.Papel;
 import br.net.unicom.backend.model.Produto;
 import br.net.unicom.backend.model.Usuario;
+import br.net.unicom.backend.model.Venda;
+import br.net.unicom.backend.model.VendaFatura;
+import br.net.unicom.backend.model.VendaProduto;
+import br.net.unicom.backend.model.VendaProdutoPortabilidade;
 import br.net.unicom.backend.model.VendaStatus;
 import br.net.unicom.backend.payload.response.EquipeResponse;
-import br.net.unicom.backend.payload.response.UsuarioResponse;
 import br.net.unicom.backend.repository.CargoRepository;
 import br.net.unicom.backend.repository.ContratoRepository;
 import br.net.unicom.backend.repository.DepartamentoRepository;
@@ -37,6 +44,9 @@ import br.net.unicom.backend.repository.PapelRepository;
 import br.net.unicom.backend.repository.PermissaoRepository;
 import br.net.unicom.backend.repository.ProdutoRepository;
 import br.net.unicom.backend.repository.UsuarioRepository;
+import br.net.unicom.backend.repository.VendaFaturaRepository;
+import br.net.unicom.backend.repository.VendaProdutoPortabilidadeRepository;
+import br.net.unicom.backend.repository.VendaProdutoRepository;
 import br.net.unicom.backend.repository.VendaRepository;
 import br.net.unicom.backend.repository.VendaStatusRepository;
 import br.net.unicom.backend.security.service.UserDetailsImpl;
@@ -107,17 +117,23 @@ public class EmpresaController {
     ProdutoRepository produtoRepository;
 
     @Autowired
+    VendaProdutoRepository vendaProdutoRepository;
+
+    @Autowired
+    VendaProdutoPortabilidadeRepository vendaProdutoPortabilidadeRepository;
+
+    @Autowired
+    VendaFaturaRepository vendaFaturaRepository;
+
+    @Autowired
     ModelMapper modelMapper;
 
     @GetMapping("/me/usuario")
-    public ResponseEntity<List<UsuarioResponse>> getUsuarioListByEmpresaMe() {
+    @JsonView(Usuario.DefaultView.class)
+    public ResponseEntity<List<Usuario>> getUsuarioListByEmpresaMe() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<Usuario> usuarioList = usuarioRepository.findAllByEmpresaId(userDetails.getEmpresaId());
-        return ResponseEntity.ok(
-            usuarioList.stream().
-                        map(usuario -> usuarioService.usuarioToUsuarioResponse(usuario)).
-                        collect(Collectors.toList())
-            );
+        return ResponseEntity.ok(usuarioList);
     }
 
     @GetMapping("/me/papel")
@@ -159,7 +175,7 @@ public class EmpresaController {
 
         return ResponseEntity.ok(
             equipeList.stream().
-                        map(equipe -> equipeService.equipeToEquipeResponse(equipe)).
+                        map(equipe -> modelMapper.map(equipe, EquipeResponse.class)).
                         collect(Collectors.toList())
             );
     }
@@ -180,5 +196,35 @@ public class EmpresaController {
     public ResponseEntity<List<Produto>> getProdutoListByEmpresaMe() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(produtoRepository.findAllByEmpresaId(userDetails.getEmpresaId()));
+    }
+
+    @PreAuthorize("hasAuthority('VER_TODAS_VENDAS')")
+    @GetMapping("/me/venda")
+    @JsonView(Venda.DefaultView.class)
+    public ResponseEntity<List<Venda>> getVendaListByEmpresaMe(@RequestParam(defaultValue = "0") Integer offset, @RequestParam(defaultValue = "2000") Integer limit) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(vendaRepository.findAllByEmpresaIdAndLimit(userDetails.getEmpresaId(), offset, limit));
+    }
+
+    @PreAuthorize("hasAuthority('VER_TODAS_VENDAS')")
+    @GetMapping("/me/venda-produto")
+    @JsonView(VendaProduto.DefaultView.class)
+    public ResponseEntity<List<VendaProduto>> getVendaProdutoListByEmpresaMe(@RequestParam(defaultValue = "0") Integer offset, @RequestParam(defaultValue = "2000") Integer limit) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(vendaProdutoRepository.findAllByEmpresaIdAndLimit(userDetails.getEmpresaId(), offset, limit));
+    }
+
+    @PreAuthorize("hasAuthority('VER_TODAS_VENDAS')")
+    @GetMapping("/me/venda-produto-portabilidade")
+    public ResponseEntity<List<VendaProdutoPortabilidade>> getVendaProdutoPortabilidadeListByEmpresaMe(@RequestParam(defaultValue = "0") Integer offset, @RequestParam(defaultValue = "2000") Integer limit) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(vendaProdutoPortabilidadeRepository.findAllByEmpresaIdAndLimit(userDetails.getEmpresaId(), offset, limit));
+    }
+
+    @PreAuthorize("hasAuthority('VER_TODAS_VENDAS')")
+    @GetMapping("/me/venda-fatura")
+    public ResponseEntity<List<VendaFatura>> getVendaFaturaListByEmpresaMe(@RequestParam(defaultValue = "0") Integer offset, @RequestParam(defaultValue = "2000") Integer limit) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(vendaFaturaRepository.findAllByEmpresaIdAndLimit(userDetails.getEmpresaId(), offset, limit));
     }
 }

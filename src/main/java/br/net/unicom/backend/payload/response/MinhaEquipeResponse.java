@@ -20,10 +20,10 @@ public class MinhaEquipeResponse {
 
     private int supervisorId;
 
-    private Usuario supervisor;
+    private UsuarioPublicResponse supervisor;
 
-    private Usuario gerente;
+    private UsuarioPublicResponse gerente;
 
-    private List<UsuarioMinhaEquipeResponse> usuarioList;
+    private List<UsuarioPublicResponse> usuarioList;
 
 }

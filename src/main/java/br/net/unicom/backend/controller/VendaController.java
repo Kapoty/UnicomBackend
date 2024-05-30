@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.net.unicom.backend.model.FiltroVenda;
@@ -55,7 +56,6 @@ import br.net.unicom.backend.service.JsonService;
 import br.net.unicom.backend.service.UsuarioService;
 import br.net.unicom.backend.service.VendaService;
 import jakarta.transaction.Transactional;
-import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 
@@ -104,7 +104,8 @@ public class VendaController {
     @PreAuthorize("hasAuthority('CADASTRAR_VENDAS')")
     @PostMapping("/venda-list")
     @Transactional
-    public ResponseEntity<List<?>> getVendaList(@Valid @RequestBody VendaListRequest vendaListRequest) {
+    @JsonView(Venda.WithProdutoAndFaturaListView.class)
+    public ResponseEntity<List<Venda>> getVendaList(@Valid @RequestBody VendaListRequest vendaListRequest) {
 
         logger.info(vendaListRequest.toString());
 
@@ -179,7 +180,7 @@ public class VendaController {
             Hibernate.initialize(venda.getProdutoList());
             venda.getProdutoList().forEach(produto -> Hibernate.initialize(produto.getPortabilidadeList()));
             Hibernate.initialize(venda.getFaturaList());
-            Hibernate.initialize(venda.getAtualizacaoList());
+            //Hibernate.initialize(venda.getAtualizacaoList());
         });
 
         finish = Instant.now();

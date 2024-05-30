@@ -16,6 +16,6 @@ public class VendaFaturaKey implements Serializable {
 
     Integer vendaId;
 
-    Integer vendaFaturaId;
+    Integer faturaId;
 
 }

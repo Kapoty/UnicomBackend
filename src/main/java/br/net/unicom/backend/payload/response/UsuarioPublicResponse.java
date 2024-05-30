@@ -7,7 +7,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @ToString
-public class UsuarioMinhaEquipeResponse {
+public class UsuarioPublicResponse {
 
     private Integer usuarioId;
 

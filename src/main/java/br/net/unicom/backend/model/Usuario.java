@@ -7,6 +7,7 @@ import java.util.List;
 import org.hibernate.validator.constraints.Length;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,7 +17,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
@@ -36,6 +36,9 @@ import lombok.ToString;
     })
 @Getter @Setter @NoArgsConstructor @ToString @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Usuario {
+
+    public interface DefaultView {};
+    public interface ExpandedView {};
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -89,8 +92,8 @@ public class Usuario {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "empresa_id", insertable = false, updatable = false)
-    @JsonIgnore
     @ToString.Exclude
+    @JsonView(ExpandedView.class)
     private Empresa empresa;
 
     @Column(name = "cargo_id")
@@ -98,6 +101,7 @@ public class Usuario {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cargo_id", insertable = false, updatable = false)
+    @JsonView(ExpandedView.class)
     private Cargo cargo;
 
     @Column(name = "contrato_id")
@@ -105,6 +109,7 @@ public class Usuario {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contrato_id", insertable = false, updatable = false)
+    @JsonView(ExpandedView.class)
     private Contrato contrato;
 
     @Column(name = "departamento_id")
@@ -112,6 +117,7 @@ public class Usuario {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "departamento_id", insertable = false, updatable = false)
+    @JsonView(ExpandedView.class)
     private Departamento departamento;
 
     @Column(name = "equipe_id")
@@ -119,6 +125,7 @@ public class Usuario {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "equipe_id", insertable = false, updatable = false)
+    @JsonView(ExpandedView.class)
     private Equipe equipe;
 
     @Column(name = "papel_id")
@@ -127,6 +134,7 @@ public class Usuario {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "papel_id", insertable = false, updatable = false)
+    @JsonView(ExpandedView.class)
     private Papel papel;
 
     @Column(name = "jornada_status_grupo_id")
@@ -134,6 +142,7 @@ public class Usuario {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "jornada_status_grupo_id", insertable = false, updatable = false)
+    @JsonView(ExpandedView.class)
     private JornadaStatusGrupo jornadaStatusGrupo;
 
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "usuario")

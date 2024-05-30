@@ -6,6 +6,7 @@ import java.util.List;
 import org.hibernate.validator.constraints.Length;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
 
 import br.net.unicom.backend.model.key.VendaProdutoKey;
 import jakarta.persistence.CascadeType;
@@ -30,6 +31,9 @@ import lombok.ToString;
 @Entity
 @Getter @Setter @NoArgsConstructor @ToString @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class VendaProduto {
+
+    public interface DefaultView {};
+    public interface WithPortabilidadeListView {};
 
     @EmbeddedId
     @EqualsAndHashCode.Include
@@ -76,6 +80,7 @@ public class VendaProduto {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "vendaProduto", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("vendaProdutoPortabilidadeId.portabilidadeId")
+    @JsonView(WithPortabilidadeListView.class)
     private List<VendaProdutoPortabilidade> portabilidadeList = null;
 
     public VendaProduto(Venda venda, Integer produtoId) {

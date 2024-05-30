@@ -1,10 +1,7 @@
 package br.net.unicom.backend.configuration;
 
-import java.util.stream.Collectors;
-
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -15,13 +12,9 @@ import br.net.unicom.backend.payload.request.VendaListRequest;
 import br.net.unicom.backend.payload.request.VendaPatchRequest;
 import br.net.unicom.backend.payload.request.VendaPostRequest;
 import br.net.unicom.backend.payload.request.VendaProdutoRequest;
-import br.net.unicom.backend.repository.PapelRepository;
 
 @Configuration
 public class ModelMapperConfiguration {
-
-    @Autowired
-    PapelRepository papelRepository;
 
     @Bean
     public ModelMapper modelMapper() {
@@ -50,7 +43,7 @@ public class ModelMapperConfiguration {
         modelMapper.typeMap(VendaListRequest.class, FiltroVenda.class).addMappings(mapper -> {
             mapper.skip(FiltroVenda::setStatusIdList);
         });
-        
+
         return modelMapper;
     }
 

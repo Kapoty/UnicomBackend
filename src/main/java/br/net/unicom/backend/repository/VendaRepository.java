@@ -65,6 +65,9 @@ public interface VendaRepository extends JpaRepository<Venda, Long> {
     @Query(value = "SELECT venda_id as vendaId FROM venda WHERE venda_id IN :vendaId", nativeQuery = true)
     List<VendaResumidaProjection> getVendaResumidaProjectionListByVendaIdIn(List<Integer> vendaId);
 
+    @Query(value = "SELECT * FROM venda WHERE empresa_id = :empresaId LIMIT :limit OFFSET :offset", nativeQuery = true)
+    List<Venda> findAllByEmpresaIdAndLimit(Integer empresaId, Integer offset, Integer limit);
+
     /*@Query(value = "", nativeQuery = true)
     List<VendaResumidaProjection> findAllByEmpresaId();*/
 
