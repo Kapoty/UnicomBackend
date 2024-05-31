@@ -1,9 +1,14 @@
 package br.net.unicom.backend.controller;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +29,9 @@ import br.net.unicom.backend.model.Equipe;
 import br.net.unicom.backend.model.JornadaStatus;
 import br.net.unicom.backend.model.JornadaStatusGrupo;
 import br.net.unicom.backend.model.Papel;
+import br.net.unicom.backend.model.PontoDeVenda;
 import br.net.unicom.backend.model.Produto;
+import br.net.unicom.backend.model.Sistema;
 import br.net.unicom.backend.model.Usuario;
 import br.net.unicom.backend.model.Venda;
 import br.net.unicom.backend.model.VendaFatura;
@@ -32,6 +39,7 @@ import br.net.unicom.backend.model.VendaProduto;
 import br.net.unicom.backend.model.VendaProdutoPortabilidade;
 import br.net.unicom.backend.model.VendaStatus;
 import br.net.unicom.backend.payload.response.EquipeResponse;
+import br.net.unicom.backend.payload.response.UsuarioPBIResponse;
 import br.net.unicom.backend.repository.CargoRepository;
 import br.net.unicom.backend.repository.ContratoRepository;
 import br.net.unicom.backend.repository.DepartamentoRepository;
@@ -42,7 +50,9 @@ import br.net.unicom.backend.repository.JornadaStatusGrupoRepository;
 import br.net.unicom.backend.repository.JornadaStatusRepository;
 import br.net.unicom.backend.repository.PapelRepository;
 import br.net.unicom.backend.repository.PermissaoRepository;
+import br.net.unicom.backend.repository.PontoDeVendaRepository;
 import br.net.unicom.backend.repository.ProdutoRepository;
+import br.net.unicom.backend.repository.SistemaRepository;
 import br.net.unicom.backend.repository.UsuarioRepository;
 import br.net.unicom.backend.repository.VendaFaturaRepository;
 import br.net.unicom.backend.repository.VendaProdutoPortabilidadeRepository;
@@ -117,6 +127,12 @@ public class EmpresaController {
     ProdutoRepository produtoRepository;
 
     @Autowired
+    SistemaRepository sistemaRepository;
+
+    @Autowired
+    PontoDeVendaRepository pontoDeVendaRepository;
+
+    @Autowired
     VendaProdutoRepository vendaProdutoRepository;
 
     @Autowired
@@ -128,12 +144,44 @@ public class EmpresaController {
     @Autowired
     ModelMapper modelMapper;
 
+    Logger logger = LoggerFactory.getLogger(EmpresaController.class);
+
     @GetMapping("/me/usuario")
     @JsonView(Usuario.DefaultView.class)
     public ResponseEntity<List<Usuario>> getUsuarioListByEmpresaMe() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<Usuario> usuarioList = usuarioRepository.findAllByEmpresaId(userDetails.getEmpresaId());
         return ResponseEntity.ok(usuarioList);
+    }
+
+    @PreAuthorize("hasAuthority('POWER_BI')")
+    @GetMapping("/me/pbi/usuario")
+    public ResponseEntity<List<UsuarioPBIResponse>> getUsuarioListByEmpresaMeForPowerBi() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        List<Usuario> usuarioList = usuarioRepository.findAllByEmpresaId(userDetails.getEmpresaId());
+
+        List<UsuarioPBIResponse> usuarioPBIList = new ArrayList<>();
+        usuarioList.forEach(usuario -> {
+            UsuarioPBIResponse usuarioPBIResponse = modelMapper.map(usuario, UsuarioPBIResponse.class);
+
+            String usuariosAbaixo = 
+                usuarioService.getUsuarioListLessThanUsuario(usuario)
+                .stream()
+                .map(u -> "[" + u.getUsuarioId() + "]")
+                .collect(Collectors.joining());
+
+            if (usuariosAbaixo.indexOf("[" + usuario.getUsuarioId() + "]") < 0)
+                usuariosAbaixo += "[" + usuario.getUsuarioId() + "]";
+
+            usuarioPBIResponse.setUsuariosAbaixo(usuariosAbaixo);
+
+            usuarioPBIResponse.setVerTodasVendas(usuarioService.getPermissaoList(usuario).contains("VER_TODAS_VENDAS"));
+
+            usuarioPBIList.add(usuarioPBIResponse);
+        });
+
+        return ResponseEntity.ok(usuarioPBIList);
     }
 
     @GetMapping("/me/papel")
@@ -196,6 +244,18 @@ public class EmpresaController {
     public ResponseEntity<List<Produto>> getProdutoListByEmpresaMe() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(produtoRepository.findAllByEmpresaId(userDetails.getEmpresaId()));
+    }
+
+    @GetMapping("/me/sistema")
+    public ResponseEntity<List<Sistema>> getSistemaListByEmpresaMe() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(sistemaRepository.findAllByEmpresaId(userDetails.getEmpresaId()));
+    }
+
+    @GetMapping("/me/ponto-de-venda")
+    public ResponseEntity<List<PontoDeVenda>> getPontoDeVendaListByEmpresaMe() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(pontoDeVendaRepository.findAllByEmpresaId(userDetails.getEmpresaId()));
     }
 
     @PreAuthorize("hasAuthority('VER_TODAS_VENDAS')")

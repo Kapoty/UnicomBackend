@@ -303,11 +303,15 @@ public class VendaController {
         if (userDetails.hasAuthority("ALTERAR_VENDEDOR")) {
             venda.setVendedorId(vendaPatchRequest.getVendedorId());
             venda.setSupervisorId(vendaPatchRequest.getSupervisorId());
+            venda.setVendedorExterno(vendaPatchRequest.getVendedorExterno());
+            venda.setSupervisorExterno(vendaPatchRequest.getSupervisorExterno());
         }
         
         if (userDetails.hasAuthority("ALTERAR_AUDITOR")) {
             venda.setAuditorId(vendaPatchRequest.getAuditorId());
             venda.setCadastradorId(vendaPatchRequest.getCadastradorId());
+            venda.setAuditorExterno(vendaPatchRequest.getAuditorExterno());
+            venda.setCadastradorExterno(vendaPatchRequest.getCadastradorExterno());
         }
 
         vendaRepository.saveAndFlush(venda);

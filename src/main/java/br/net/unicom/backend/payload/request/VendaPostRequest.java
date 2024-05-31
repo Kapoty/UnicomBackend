@@ -219,7 +219,7 @@ public class VendaPostRequest {
     @Length(max = 50)
     private String custcode;
 
-    private VendaSistemaEnum sistema;
+    private Integer sistemaId;
 
     @NotNull
     @Length(max = 100)

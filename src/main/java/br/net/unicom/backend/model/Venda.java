@@ -279,8 +279,14 @@ public class Venda {
     @Length(max = 50)
     private String custcode;
 
-    @Enumerated(EnumType.STRING)
-    private VendaSistemaEnum sistema;
+    @Column(name = "sistema_id")
+    private Integer sistemaId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sistema_id", insertable = false, updatable = false)
+    @JsonIgnore
+    @ToString.Exclude
+    Sistema sistema;
 
     @NotNull
     @Length(max = 100)
@@ -342,7 +348,6 @@ public class Venda {
     private String loginVendedor;
 
     @Enumerated(EnumType.STRING)
-    @NotNull
     private VendaFormaDePagamentoEnum formaDePagamento;
 
     @NotNull
@@ -363,6 +368,22 @@ public class Venda {
     @NotNull
     @Length(max = 200)
     private String observacao;
+
+    @NotNull
+    @Length(max = 100)
+    private String vendedorExterno = "";
+
+    @NotNull
+    @Length(max = 100)
+    private String supervisorExterno = "";
+
+    @NotNull
+    @Length(max = 100)
+    private String auditorExterno = "";
+
+    @NotNull
+    @Length(max = 100)
+    private String cadastradorExterno = "";
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "venda", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("vendaProdutoId.produtoId")

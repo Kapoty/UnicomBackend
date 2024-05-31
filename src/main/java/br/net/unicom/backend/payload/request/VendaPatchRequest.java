@@ -223,7 +223,7 @@ public class VendaPatchRequest {
     @Length(max = 50)
     private String custcode;
 
-    private VendaSistemaEnum sistema;
+    private Integer sistemaId;
 
     @NotNull
     @Length(max = 100)
@@ -288,6 +288,22 @@ public class VendaPatchRequest {
     @NotNull
     @Length(max = 200)
     private String observacao;
+
+    @NotNull
+    @Length(max = 100)
+    private String vendedorExterno;
+
+    @NotNull
+    @Length(max = 100)
+    private String supervisorExterno;
+
+    @NotNull
+    @Length(max = 100)
+    private String auditorExterno;
+
+    @NotNull
+    @Length(max = 100)
+    private String cadastradorExterno;
 
     private List<@Valid VendaProdutoRequest> produtoList;
 

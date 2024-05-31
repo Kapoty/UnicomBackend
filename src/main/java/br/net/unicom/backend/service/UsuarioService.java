@@ -24,6 +24,7 @@ import br.net.unicom.backend.repository.PermissaoRepository;
 import br.net.unicom.backend.repository.RegistroPontoRepository;
 import br.net.unicom.backend.repository.UsuarioRepository;
 import br.net.unicom.backend.security.service.UserDetailsImpl;
+import jakarta.transaction.Transactional;
 
 @Service
 public class UsuarioService {
