@@ -13,6 +13,8 @@ public class UsuarioPublicResponse {
 
     private String nome;
 
+    private String nomeCompleto;
+
     private Boolean fotoPerfil;
 
     private Integer fotoPerfilVersao;

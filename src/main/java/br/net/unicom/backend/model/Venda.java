@@ -11,6 +11,13 @@ import org.hibernate.validator.constraints.Length;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 
+import br.net.unicom.backend.model.enums.VendaBrscanEnum;
+import br.net.unicom.backend.model.enums.VendaFormaDePagamentoEnum;
+import br.net.unicom.backend.model.enums.VendaGeneroEnum;
+import br.net.unicom.backend.model.enums.VendaPorteEnum;
+import br.net.unicom.backend.model.enums.VendaSuporteEnum;
+import br.net.unicom.backend.model.enums.VendaTipoPessoaEnum;
+import br.net.unicom.backend.model.enums.VendaTipoProdutoEnum;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

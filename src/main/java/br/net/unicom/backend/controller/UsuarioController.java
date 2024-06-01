@@ -272,6 +272,8 @@ public class UsuarioController {
             usuarioFilho.setSenha(encoder.encode(patchUsuarioRequest.getSenha().get()));
         if (patchUsuarioRequest.getNome() != null)
             usuarioFilho.setNome(patchUsuarioRequest.getNome().get());
+        if (patchUsuarioRequest.getNomeCompleto() != null)
+            usuarioFilho.setNomeCompleto(patchUsuarioRequest.getNomeCompleto().get());
         if (patchUsuarioRequest.getAtivo() != null)
             usuarioFilho.setAtivo(patchUsuarioRequest.getAtivo().get());
         if (patchUsuarioRequest.getMatricula() != null) {

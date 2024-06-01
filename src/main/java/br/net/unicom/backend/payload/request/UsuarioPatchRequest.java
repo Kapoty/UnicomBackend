@@ -26,6 +26,8 @@ public class UsuarioPatchRequest {
 
     private Optional<@NotBlank @Length(max = 200) String> nome;
 
+    private Optional<@NotBlank @Length(max = 200) String> nomeCompleto;
+
     private Optional<@NotNull Boolean> ativo;
 
     private Optional<Integer> matricula;

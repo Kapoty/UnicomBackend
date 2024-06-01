@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.hibernate.Hibernate;
+import org.hibernate.Session;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +32,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.net.unicom.backend.model.FiltroVenda;
@@ -55,6 +58,7 @@ import br.net.unicom.backend.security.service.UserDetailsImpl;
 import br.net.unicom.backend.service.JsonService;
 import br.net.unicom.backend.service.UsuarioService;
 import br.net.unicom.backend.service.VendaService;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
@@ -98,6 +102,9 @@ public class VendaController {
 
     @Autowired
     Validator validator;
+
+    @Autowired
+    EntityManager entityManager;
 
     Logger logger = LoggerFactory.getLogger(VendaController.class);
 
@@ -186,6 +193,8 @@ public class VendaController {
         finish = Instant.now();
         timeElapsed = Duration.between(start, finish).toMillis();
         logger.info("4: " + String.valueOf(timeElapsed));
+
+        //logger.info(String.valueOf((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / (1024 * 1024)));
         
         return ResponseEntity.ok(vendaList);
     }

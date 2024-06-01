@@ -7,6 +7,7 @@ import org.hibernate.validator.constraints.Length;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import br.net.unicom.backend.model.enums.RegistroJornadaCorrecaoObservacaoEnum;
 import br.net.unicom.backend.model.key.RegistroJornadaCorrecaoKey;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;

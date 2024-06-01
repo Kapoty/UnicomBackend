@@ -31,6 +31,10 @@ public class UsuarioPostRequest {
     @Length(max = 200)
     private String nome;
 
+    @NotBlank
+    @Length(max = 200)
+    private String nomeCompleto;
+
     @NotNull
     private Boolean ativo;
 

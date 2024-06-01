@@ -8,6 +8,7 @@ import org.hibernate.validator.constraints.Length;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 
+import br.net.unicom.backend.model.enums.VendaProdutoTipoDeLinhaEnum;
 import br.net.unicom.backend.model.key.VendaProdutoKey;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.EmbeddedId;

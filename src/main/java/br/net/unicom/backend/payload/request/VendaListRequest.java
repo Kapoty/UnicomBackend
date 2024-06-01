@@ -3,8 +3,8 @@ package br.net.unicom.backend.payload.request;
 import java.time.LocalDate;
 import java.util.List;
 
-import br.net.unicom.backend.model.FiltroVendaTipoDataEnum;
-import br.net.unicom.backend.model.VendaTipoProdutoEnum;
+import br.net.unicom.backend.model.enums.FiltroVendaTipoDataEnum;
+import br.net.unicom.backend.model.enums.VendaTipoProdutoEnum;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -45,7 +45,7 @@ public class VendaListRequest {
     private Integer offset = 0;
 
     @Min(1)
-    @Max(10000)
+    @Max(2000)
     private Integer limit = 2000;
 
     /*@AssertTrue(message = "o intervalo máximo é de 3 meses")

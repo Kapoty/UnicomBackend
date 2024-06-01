@@ -6,14 +6,13 @@ import java.util.List;
 
 import org.hibernate.validator.constraints.Length;
 
-import br.net.unicom.backend.model.VendaBrscanEnum;
-import br.net.unicom.backend.model.VendaFormaDePagamentoEnum;
-import br.net.unicom.backend.model.VendaGeneroEnum;
-import br.net.unicom.backend.model.VendaPorteEnum;
-import br.net.unicom.backend.model.VendaSistemaEnum;
-import br.net.unicom.backend.model.VendaSuporteEnum;
-import br.net.unicom.backend.model.VendaTipoPessoaEnum;
-import br.net.unicom.backend.model.VendaTipoProdutoEnum;
+import br.net.unicom.backend.model.enums.VendaBrscanEnum;
+import br.net.unicom.backend.model.enums.VendaFormaDePagamentoEnum;
+import br.net.unicom.backend.model.enums.VendaGeneroEnum;
+import br.net.unicom.backend.model.enums.VendaPorteEnum;
+import br.net.unicom.backend.model.enums.VendaSuporteEnum;
+import br.net.unicom.backend.model.enums.VendaTipoPessoaEnum;
+import br.net.unicom.backend.model.enums.VendaTipoProdutoEnum;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;

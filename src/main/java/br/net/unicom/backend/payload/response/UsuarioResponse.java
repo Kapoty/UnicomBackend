@@ -24,6 +24,8 @@ public class UsuarioResponse {
 
     private String nome;
 
+    private String nomeCompleto;
+
     private Boolean ativo;
 
     private Integer matricula;

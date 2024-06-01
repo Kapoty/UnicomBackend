@@ -4,15 +4,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import br.net.unicom.backend.model.VendaBrscanEnum;
 import br.net.unicom.backend.model.VendaFatura;
-import br.net.unicom.backend.model.VendaFormaDePagamentoEnum;
-import br.net.unicom.backend.model.VendaPorteEnum;
 import br.net.unicom.backend.model.VendaProduto;
-import br.net.unicom.backend.model.VendaSistemaEnum;
-import br.net.unicom.backend.model.VendaSuporteEnum;
-import br.net.unicom.backend.model.VendaTipoPessoaEnum;
-import br.net.unicom.backend.model.VendaTipoProdutoEnum;
+import br.net.unicom.backend.model.enums.VendaBrscanEnum;
+import br.net.unicom.backend.model.enums.VendaFormaDePagamentoEnum;
+import br.net.unicom.backend.model.enums.VendaPorteEnum;
+import br.net.unicom.backend.model.enums.VendaSuporteEnum;
+import br.net.unicom.backend.model.enums.VendaTipoPessoaEnum;
+import br.net.unicom.backend.model.enums.VendaTipoProdutoEnum;
 
 public interface VendaResumidaProjection {
 
@@ -52,7 +51,7 @@ public interface VendaResumidaProjection {
 
     Integer getCadastradorId();
 
-    VendaSistemaEnum getSistema();
+    Integer getSistemaId();
 
     Integer getAuditorId();
 

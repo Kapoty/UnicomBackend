@@ -3,7 +3,7 @@ package br.net.unicom.backend.payload.request;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import br.net.unicom.backend.model.RegistroJornadaCorrecaoObservacaoEnum;
+import br.net.unicom.backend.model.enums.RegistroJornadaCorrecaoObservacaoEnum;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.AssertTrue;

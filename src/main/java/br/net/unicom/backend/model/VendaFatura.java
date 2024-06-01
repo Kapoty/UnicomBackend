@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import br.net.unicom.backend.model.enums.VendaFaturaStatusEnum;
 import br.net.unicom.backend.model.key.VendaFaturaKey;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
