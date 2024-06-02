@@ -14,6 +14,8 @@ public class RegistroJornadaReportUsuarioResponse {
 
     private String nome;
 
+    private String nomeCompleto;
+
     private String cpf;
 
     private Cargo cargo;

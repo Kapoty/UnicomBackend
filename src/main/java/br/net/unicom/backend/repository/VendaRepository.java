@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import br.net.unicom.backend.model.Venda;
 import br.net.unicom.backend.model.projection.VendaAtoresProjection;
+import br.net.unicom.backend.model.projection.VendaDataStatusProjection;
 import br.net.unicom.backend.model.projection.VendaResumidaProjection;
 
 public interface VendaRepository extends JpaRepository<Venda, Long> {
@@ -56,9 +57,11 @@ public interface VendaRepository extends JpaRepository<Venda, Long> {
         Integer limit
     );
 
-    Optional<VendaResumidaProjection> getVendaResumidaProjectionByVendaId(Integer vendaId);
+    List<VendaDataStatusProjection> findAllVendaDataStatusProjectionByEmpresaId(Integer empresaId);
 
-    List<VendaResumidaProjection> getVendaResumidaProjectionByVendaIdIn(List<Integer> vendaId);
+    Optional<VendaDataStatusProjection> findVendaDataStatusProjectionByEmpresaIdAndVendaId(Integer empresaId, Integer vendaId);
+
+    List<VendaDataStatusProjection> findAllVendaDataStatusProjectionByEmpresaIdAndVendaIdIn(Integer empresaId, List<Integer> vendaIdList);
 
     List<Venda> findAllByVendaIdIn(List<Integer> vendaId);
 

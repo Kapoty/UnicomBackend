@@ -57,7 +57,7 @@ import br.net.unicom.backend.repository.PermissaoRepository;
 import br.net.unicom.backend.repository.UsuarioRepository;
 import br.net.unicom.backend.security.jwt.PontoJwtUtils;
 import br.net.unicom.backend.security.service.UserDetailsImpl;
-import br.net.unicom.backend.service.FileService;
+import br.net.unicom.backend.service.UploadService;
 import br.net.unicom.backend.service.UsuarioService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -96,7 +96,7 @@ public class UsuarioController {
     FiltroVendaRepository filtroVendaRepository;
 
     @Autowired
-    FileService fileService;
+    UploadService uploadService;
     
     @Autowired
     UsuarioService usuarioService;
@@ -131,7 +131,7 @@ public class UsuarioController {
         if (!usuario.getFotoPerfil())
             return ResponseEntity.notFound().build();
         
-        Resource file = fileService.load(usuarioService.getUsuarioFotoPerfilFilename(usuario));
+        Resource file = uploadService.load(usuarioService.getUsuarioFotoPerfilFilename(usuario));
         return ResponseEntity.ok()
                             .contentType(MediaType.IMAGE_JPEG)
                             .cacheControl(CacheControl.maxAge(30, TimeUnit.DAYS))
@@ -144,12 +144,12 @@ public class UsuarioController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioIdAndEmpresaId(usuarioId, userDetails.getEmpresaId()).orElseThrow(NoSuchElementException::new);
 
-        String extension = fileService.getFilenameExtension(file.getOriginalFilename());
+        String extension = uploadService.getFilenameExtension(file.getOriginalFilename());
         if (!extension.equals(".jpg"))
             return ResponseEntity.badRequest().build();
         
         try {
-            fileService.save(file, usuarioService.getUsuarioFotoPerfilFilename(usuario));
+            uploadService.save(file, usuarioService.getUsuarioFotoPerfilFilename(usuario));
 
             usuario.setFotoPerfil(true);
             usuario.setFotoPerfilVersao(usuario.getFotoPerfilVersao() + 1);
@@ -169,7 +169,7 @@ public class UsuarioController {
         Usuario usuario = usuarioRepository.findByUsuarioIdAndEmpresaId(usuarioId, userDetails.getEmpresaId()).orElseThrow(NoSuchElementException::new);
 
         try {
-            fileService.delete(usuarioService.getUsuarioFotoPerfilFilename(usuario));
+            uploadService.delete(usuarioService.getUsuarioFotoPerfilFilename(usuario));
 
             usuario.setFotoPerfil(false);
             usuarioRepository.save(usuario);

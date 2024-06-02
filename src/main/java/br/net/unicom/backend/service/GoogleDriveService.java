@@ -3,9 +3,11 @@ package br.net.unicom.backend.service;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +62,7 @@ public class GoogleDriveService {
 
     private static HttpCredentialsAdapter getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws FileNotFoundException, IOException {
         GoogleCredentials credentials = GoogleCredentials.fromStream(CREDENTIALS_FILE.getInputStream())
-			.createDelegated("pedro@unisystem.app.br")
+			.createDelegated(USER)
             .createScoped(SCOPES);
         credentials.refreshIfExpired();
         return new HttpCredentialsAdapter(credentials);
@@ -94,10 +96,22 @@ public class GoogleDriveService {
 			query = "'" + parentId + "' in parents and trashed=false";
 		FileList result = getInstance().files().list()
 				.setQ(query)
-				.setPageSize(100)
+				.setPageSize(1000)
 				.setFields("nextPageToken, files(id, name, trashed)")
 				.execute();
 		return result.getFiles();
+	}
+	
+	public Optional<File> getFile(String parentId, String filename, Boolean trashed) throws IOException, GeneralSecurityException {
+		String query = "'" + parentId + "' in parents and name='" + filename + "' and trashed=" + trashed.toString() + "";
+		FileList result = getInstance().files().list()
+				.setQ(query)
+				.setPageSize(1)
+				.setFields("nextPageToken, files(id, name, trashed)")
+				.execute();
+		if (result.getFiles().size() > 0)
+			return Optional.of(result.getFiles().get(0));
+		return Optional.empty();
 	}
 
 	public String getWebViewLink(String fileId) throws IOException, GeneralSecurityException {
@@ -140,6 +154,28 @@ public class GoogleDriveService {
 						.create(fileMetadata, new InputStreamContent(
 								file.getContentType(),
 								new ByteArrayInputStream(file.getBytes()))
+						)
+						.setFields("id").execute();
+				return uploadFile.getId();
+			}
+		} catch (Exception e) {
+			logger.error("Error: ", e);
+		}
+		return null;
+	}
+
+	public String uploadFile(Resource file, String parentId, String filePath) {
+		try {
+			String folderId = getFolderId(parentId, filePath);
+			if (null != file) {
+				File fileMetadata = new File();
+				fileMetadata.setParents(Collections.singletonList(folderId));
+				fileMetadata.setName(file.getFilename());
+				File uploadFile = getInstance()
+						.files()
+						.create(fileMetadata, new InputStreamContent(
+								Files.probeContentType(file.getFile().toPath()),
+								new ByteArrayInputStream(file.getContentAsByteArray()))
 						)
 						.setFields("id").execute();
 				return uploadFile.getId();
@@ -212,22 +248,4 @@ public class GoogleDriveService {
 
 		return folderId;
 	}
-
-    /*public List<File> getFilesByPath(String googledriveFolderId) throws IOException, GeneralSecurityException {
-
-        Drive service = getInstance();
-
-        FileList result = service.files().list()
-            .setPageSize(100)
-            .setSupportsAllDrives(true)
-            .setIncludeItemsFromAllDrives(true)
-            .setQ(String.format("'%s' in parents", googledriveFolderId))
-            .setFields("nextPageToken, files(id, name)")
-            .execute();
-
-        List<File> files = result.getFiles();
-
-        return files;
-    }*/
-
 }
