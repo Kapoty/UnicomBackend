@@ -1,9 +1,7 @@
 package br.net.unicom.backend.controller;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -63,6 +61,9 @@ import br.net.unicom.backend.security.service.UserDetailsImpl;
 import br.net.unicom.backend.service.EmpresaService;
 import br.net.unicom.backend.service.EquipeService;
 import br.net.unicom.backend.service.UsuarioService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
 
 
@@ -261,7 +262,7 @@ public class EmpresaController {
     @PreAuthorize("hasAuthority('VER_TODAS_VENDAS')")
     @GetMapping("/me/venda")
     @JsonView(Venda.DefaultView.class)
-    public ResponseEntity<List<Venda>> getVendaListByEmpresaMe(@RequestParam(defaultValue = "0") Integer offset, @RequestParam(defaultValue = "2000") Integer limit) {
+    public ResponseEntity<List<Venda>> getVendaListByEmpresaMe(@RequestParam(defaultValue = "0") Integer offset, @Valid @RequestParam(defaultValue = "2000") @Min(1) @Max(2000) Integer limit) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(vendaRepository.findAllByEmpresaIdAndLimit(userDetails.getEmpresaId(), offset, limit));
     }
@@ -269,21 +270,21 @@ public class EmpresaController {
     @PreAuthorize("hasAuthority('VER_TODAS_VENDAS')")
     @GetMapping("/me/venda-produto")
     @JsonView(VendaProduto.DefaultView.class)
-    public ResponseEntity<List<VendaProduto>> getVendaProdutoListByEmpresaMe(@RequestParam(defaultValue = "0") Integer offset, @RequestParam(defaultValue = "2000") Integer limit) {
+    public ResponseEntity<List<VendaProduto>> getVendaProdutoListByEmpresaMe(@RequestParam(defaultValue = "0") Integer offset, @Valid @RequestParam(defaultValue = "2000") @Min(1) @Max(2000)  Integer limit) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(vendaProdutoRepository.findAllByEmpresaIdAndLimit(userDetails.getEmpresaId(), offset, limit));
     }
 
     @PreAuthorize("hasAuthority('VER_TODAS_VENDAS')")
     @GetMapping("/me/venda-produto-portabilidade")
-    public ResponseEntity<List<VendaProdutoPortabilidade>> getVendaProdutoPortabilidadeListByEmpresaMe(@RequestParam(defaultValue = "0") Integer offset, @RequestParam(defaultValue = "2000") Integer limit) {
+    public ResponseEntity<List<VendaProdutoPortabilidade>> getVendaProdutoPortabilidadeListByEmpresaMe(@RequestParam(defaultValue = "0") Integer offset, @Valid @RequestParam(defaultValue = "2000") @Min(1) @Max(2000) Integer limit) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(vendaProdutoPortabilidadeRepository.findAllByEmpresaIdAndLimit(userDetails.getEmpresaId(), offset, limit));
     }
 
     @PreAuthorize("hasAuthority('VER_TODAS_VENDAS')")
     @GetMapping("/me/venda-fatura")
-    public ResponseEntity<List<VendaFatura>> getVendaFaturaListByEmpresaMe(@RequestParam(defaultValue = "0") Integer offset, @RequestParam(defaultValue = "2000") Integer limit) {
+    public ResponseEntity<List<VendaFatura>> getVendaFaturaListByEmpresaMe(@RequestParam(defaultValue = "0") Integer offset, @Valid @RequestParam(defaultValue = "2000") @Min(1) @Max(2000) Integer limit) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(vendaFaturaRepository.findAllByEmpresaIdAndLimit(userDetails.getEmpresaId(), offset, limit));
     }
