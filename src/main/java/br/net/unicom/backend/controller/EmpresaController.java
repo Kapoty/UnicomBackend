@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
+import br.net.unicom.backend.model.Adicional;
 import br.net.unicom.backend.model.Cargo;
 import br.net.unicom.backend.model.Contrato;
 import br.net.unicom.backend.model.Departamento;
@@ -38,6 +39,7 @@ import br.net.unicom.backend.model.VendaProdutoPortabilidade;
 import br.net.unicom.backend.model.VendaStatus;
 import br.net.unicom.backend.payload.response.EquipeResponse;
 import br.net.unicom.backend.payload.response.UsuarioPBIResponse;
+import br.net.unicom.backend.repository.AdicionalRepository;
 import br.net.unicom.backend.repository.CargoRepository;
 import br.net.unicom.backend.repository.ContratoRepository;
 import br.net.unicom.backend.repository.DepartamentoRepository;
@@ -132,6 +134,9 @@ public class EmpresaController {
 
     @Autowired
     PontoDeVendaRepository pontoDeVendaRepository;
+
+    @Autowired
+    AdicionalRepository adicionalRepository;
 
     @Autowired
     VendaProdutoRepository vendaProdutoRepository;
@@ -257,6 +262,12 @@ public class EmpresaController {
     public ResponseEntity<List<PontoDeVenda>> getPontoDeVendaListByEmpresaMe() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(pontoDeVendaRepository.findAllByEmpresaId(userDetails.getEmpresaId()));
+    }
+
+    @GetMapping("/me/adicional")
+    public ResponseEntity<List<Adicional>> getAdicionalListByEmpresaMe() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(adicionalRepository.findAllByEmpresaId(userDetails.getEmpresaId()));
     }
 
     @PreAuthorize("hasAuthority('VER_TODAS_VENDAS')")
