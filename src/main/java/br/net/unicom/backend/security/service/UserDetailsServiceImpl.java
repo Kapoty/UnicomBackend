@@ -25,9 +25,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
   @Override
   @Transactional
-  public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-    Usuario usuario = usuarioRepository.findByEmailAndAtivo(email, true)
-        .orElseThrow(() -> new UsernameNotFoundException("User Not Found with email or is not active: " + email));
+  public UserDetails loadUserByUsername(String usuarioId) throws UsernameNotFoundException {
+    Usuario usuario = usuarioRepository.findByUsuarioId(Integer.valueOf(usuarioId))
+        .orElseThrow(() -> new UsernameNotFoundException("User Not Found with usuarioId: " + usuarioId));
     List<Permissao> permissoes = permissaoRepository.findAllByUsuarioId(usuario.getUsuarioId());
 
     return UserDetailsImpl.build(usuario, permissoes);

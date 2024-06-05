@@ -52,18 +52,11 @@ public class AuthController {
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
         String login = loginRequest.getLogin();
-        if (!usuarioRepository.existsByEmail(login))
-            try {
-                Integer matricula = Integer.parseInt(login);
-                login = usuarioRepository.findByMatriculaAndDominio(matricula, loginRequest.getDominio()).get().getEmail();
-            } catch (NumberFormatException nfe) {
-                throw new UsernameNotFoundException("User Not Found with email/matricula or is not active: " + login);
-            } catch (NoSuchElementException e) {
-                throw new UsernameNotFoundException("User Not Found with email/matricula or is not active: " + login);
-            }
+
+        String usuarioId = (usuarioRepository.findUsuarioIdByLoginAndDominio(login, loginRequest.getDominio()).orElse(-1)).toString();
 
         Authentication authentication = authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(login, loginRequest.getSenha()));
+        new UsernamePasswordAuthenticationToken(usuarioId, loginRequest.getSenha()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication);

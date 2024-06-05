@@ -32,8 +32,9 @@ import lombok.ToString;
 
 @Entity
 @Table(uniqueConstraints = {
-    @UniqueConstraint(columnNames = { "empresa_id", "matricula" })
-    })
+    @UniqueConstraint(columnNames = { "empresa_id", "matricula" }),
+    @UniqueConstraint(columnNames = { "empresa_id", "email" })
+})
 @Getter @Setter @NoArgsConstructor @ToString @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Usuario {
 

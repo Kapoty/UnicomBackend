@@ -71,4 +71,8 @@ public class Empresa {
     @NotNull
     private String googledriveFolderId;
 
+    @NotBlank
+    @Length(max = 6)
+    private String themePrimaryColor;
+
 }

@@ -263,7 +263,7 @@ public class UsuarioController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         if (patchUsuarioRequest.getEmail() != null) {
-            Integer usuarioIdByEmail = usuarioRepository.getUsuarioIdByEmail(patchUsuarioRequest.getEmail().get());
+            Integer usuarioIdByEmail = usuarioRepository.getUsuarioIdByEmailAndEmpresaId(patchUsuarioRequest.getEmail().get(), usuarioFilho.getEmpresaId());
             if (usuarioIdByEmail == null || usuarioIdByEmail== usuarioFilho.getUsuarioId())
             usuarioFilho.setEmail(patchUsuarioRequest.getEmail().get());
             else throw new UsuarioEmailDuplicateException();
@@ -338,7 +338,7 @@ public class UsuarioController {
         Usuario usuario = modelMapper.map(postUsuarioRequest, Usuario.class);
 
         usuario.setEmpresaId(userDetails.getEmpresaId());
-        if (usuarioRepository.getUsuarioIdByEmail(postUsuarioRequest.getEmail()) != null)
+        if (usuarioRepository.getUsuarioIdByEmailAndEmpresaId(postUsuarioRequest.getEmail(), usuario.getEmpresaId()) != null)
             throw new UsuarioEmailDuplicateException();
         usuario.setSenha(encoder.encode(postUsuarioRequest.getSenha()));
         if (usuarioRepository.getUsuarioIdByMatriculaAndEmpresaId(postUsuarioRequest.getMatricula(), usuario.getEmpresaId()) != null)
