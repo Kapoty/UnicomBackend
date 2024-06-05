@@ -97,7 +97,7 @@ public class GoogleDriveService {
 		FileList result = getInstance().files().list()
 				.setQ(query)
 				.setPageSize(1000)
-				.setFields("nextPageToken, files(id, name, trashed)")
+				.setFields("nextPageToken, files(id, name, trashed, thumbnailLink)")
 				.execute();
 		return result.getFiles();
 	}
