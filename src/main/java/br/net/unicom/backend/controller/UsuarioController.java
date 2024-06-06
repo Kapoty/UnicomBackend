@@ -255,6 +255,8 @@ public class UsuarioController {
     @Transactional
     public ResponseEntity<Void> patchUsuarioByUsuarioId(@Valid @PathVariable Integer usuarioId, @Valid @RequestBody UsuarioPatchRequest patchUsuarioRequest) throws UsuarioEmailDuplicateException, UsuarioMatriculaDuplicateException {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        logger.info(patchUsuarioRequest.toString());
         
         Usuario usuarioPai = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
         Usuario usuarioFilho = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
@@ -264,8 +266,8 @@ public class UsuarioController {
 
         if (patchUsuarioRequest.getEmail() != null) {
             Integer usuarioIdByEmail = usuarioRepository.getUsuarioIdByEmailAndEmpresaId(patchUsuarioRequest.getEmail().get(), usuarioFilho.getEmpresaId());
-            if (usuarioIdByEmail == null || usuarioIdByEmail== usuarioFilho.getUsuarioId())
-            usuarioFilho.setEmail(patchUsuarioRequest.getEmail().get());
+            if (usuarioIdByEmail == null || usuarioIdByEmail.equals(usuarioFilho.getUsuarioId()))
+                usuarioFilho.setEmail(patchUsuarioRequest.getEmail().get());
             else throw new UsuarioEmailDuplicateException();
         }
         if (patchUsuarioRequest.getSenha() != null)
@@ -281,7 +283,7 @@ public class UsuarioController {
                 usuarioFilho.setMatricula(null);
             else {
                 Integer usuarioIdByMatriculaAndEmpresaId = usuarioRepository.getUsuarioIdByMatriculaAndEmpresaId(patchUsuarioRequest.getMatricula().get(), usuarioFilho.getEmpresaId());
-                if (usuarioIdByMatriculaAndEmpresaId == null || usuarioIdByMatriculaAndEmpresaId == usuarioFilho.getUsuarioId())
+                if (usuarioIdByMatriculaAndEmpresaId == null || usuarioIdByMatriculaAndEmpresaId.equals(usuarioFilho.getUsuarioId()))
                     usuarioFilho.setMatricula(patchUsuarioRequest.getMatricula().orElse(null));
                 else throw new UsuarioMatriculaDuplicateException();
             }

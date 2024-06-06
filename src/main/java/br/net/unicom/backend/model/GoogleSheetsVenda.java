@@ -56,6 +56,9 @@ public class GoogleSheetsVenda {
     @JsonProperty("Sistema")
     private String sistema;
 
+    @JsonProperty("Ordem")
+    private String ordem;
+
     @JsonProperty("Auditor")
     private String auditor;
 

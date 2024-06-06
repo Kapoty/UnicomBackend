@@ -10,6 +10,7 @@ import br.net.unicom.backend.model.enums.VendaBrscanEnum;
 import br.net.unicom.backend.model.enums.VendaFormaDePagamentoEnum;
 import br.net.unicom.backend.model.enums.VendaGeneroEnum;
 import br.net.unicom.backend.model.enums.VendaPorteEnum;
+import br.net.unicom.backend.model.enums.VendaReimputadoEnum;
 import br.net.unicom.backend.model.enums.VendaSuporteEnum;
 import br.net.unicom.backend.model.enums.VendaTipoPessoaEnum;
 import br.net.unicom.backend.model.enums.VendaTipoProdutoEnum;
@@ -225,6 +226,10 @@ public class VendaPatchRequest {
     private Integer sistemaId;
 
     @NotNull
+    @Length(max = 50)
+    private String ordem;
+
+    @NotNull
     @Length(max = 100)
     private String origem;
 
@@ -232,7 +237,7 @@ public class VendaPatchRequest {
     private LocalDateTime dataVenda;
 
     @NotNull
-    private Boolean reimputado;
+    private VendaReimputadoEnum reimputado;
 
     @NotNull
     private LocalDate safra;

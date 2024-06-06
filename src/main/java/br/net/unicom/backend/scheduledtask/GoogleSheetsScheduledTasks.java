@@ -112,9 +112,9 @@ public class GoogleSheetsScheduledTasks {
 
             mapper.using(ctx -> ((List<VendaProduto>) ctx.getSource()).size() > 0 ? ((List<VendaProduto>) ctx.getSource()).get(0).getOperadora() : "").map(Venda::getProdutoList, GoogleSheetsVenda::setOperadora);
 
-            mapper.using(ctx -> ((Venda) ctx.getSource()).getTipoPessoa() == VendaTipoPessoaEnum.CPF ? ((Venda) ctx.getSource()).getCpf() : ((Venda) ctx.getSource()).getCnpj()).map(src -> src, GoogleSheetsVenda::setCpf);
+            mapper.using(ctx -> ((Venda) ctx.getSource()).getTipoPessoa().equals(VendaTipoPessoaEnum.CPF) ? ((Venda) ctx.getSource()).getCpf() : ((Venda) ctx.getSource()).getCnpj()).map(src -> src, GoogleSheetsVenda::setCpf);
 
-            mapper.using(ctx -> ((Venda) ctx.getSource()).getTipoPessoa() == VendaTipoPessoaEnum.CPF ? ((Venda) ctx.getSource()).getNome() : ((Venda) ctx.getSource()).getRazaoSocial()).map(src -> src, GoogleSheetsVenda::setNome);
+            mapper.using(ctx -> ((Venda) ctx.getSource()).getTipoPessoa().equals(VendaTipoPessoaEnum.CPF) ? ((Venda) ctx.getSource()).getNome() : ((Venda) ctx.getSource()).getRazaoSocial()).map(src -> src, GoogleSheetsVenda::setNome);
 
             mapper.using(ctx -> ctx.getSource() != null ? ctx.getSource().toString() : "").map(Venda::getFormaDePagamento, GoogleSheetsVenda::setFormaDePagamento);
 
@@ -122,7 +122,7 @@ public class GoogleSheetsScheduledTasks {
 
             mapper.using(ctx -> ((Boolean) ctx.getSource()) ? "Sim" : "Não").map(Venda::getPrints, GoogleSheetsVenda::setPrints);
 
-            Converter<List<VendaFatura>, String> faturaListToSituacao = ctx -> ctx.getSource().stream().filter((fatura) -> fatura.getStatus() == VendaFaturaStatusEnum.EM_ABERTO).count() > 0 ? "Inadimplente" : "Adimplente";
+            Converter<List<VendaFatura>, String> faturaListToSituacao = ctx -> ctx.getSource().stream().filter((fatura) -> fatura.getStatus().equals(VendaFaturaStatusEnum.EM_ABERTO)).count() > 0 ? "Inadimplente" : "Adimplente";
 
             mapper.using(faturaListToSituacao).map(Venda::getFaturaList, GoogleSheetsVenda::setSituacao);
         });

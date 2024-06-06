@@ -15,6 +15,7 @@ import br.net.unicom.backend.model.enums.VendaBrscanEnum;
 import br.net.unicom.backend.model.enums.VendaFormaDePagamentoEnum;
 import br.net.unicom.backend.model.enums.VendaGeneroEnum;
 import br.net.unicom.backend.model.enums.VendaPorteEnum;
+import br.net.unicom.backend.model.enums.VendaReimputadoEnum;
 import br.net.unicom.backend.model.enums.VendaSuporteEnum;
 import br.net.unicom.backend.model.enums.VendaTipoPessoaEnum;
 import br.net.unicom.backend.model.enums.VendaTipoProdutoEnum;
@@ -289,6 +290,10 @@ public class Venda {
     @Column(name = "sistema_id")
     private Integer sistemaId;
 
+    @NotNull
+    @Length(max = 50)
+    private String ordem;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sistema_id", insertable = false, updatable = false)
     @JsonIgnore
@@ -303,7 +308,8 @@ public class Venda {
     private LocalDateTime dataVenda;
 
     @NotNull
-    private Boolean reimputado;
+    @Enumerated(EnumType.STRING)
+    private VendaReimputadoEnum reimputado;
 
     @NotNull
     LocalDate safra;

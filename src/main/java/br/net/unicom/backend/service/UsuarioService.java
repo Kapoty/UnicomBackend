@@ -102,8 +102,8 @@ public class UsuarioService {
     }
 
     public Boolean isUsuarioSupervisorOf(Usuario usuarioPai, Usuario usuarioFilho) {
-        return (usuarioFilho.getEquipe() != null && usuarioPai.getUsuarioId() == usuarioFilho.getEquipe().getSupervisorId()) ||
-                (usuarioFilho.getEquipe() != null && usuarioPai.getUsuarioId() == usuarioFilho.getEquipe().getGerenteId()) ||
+        return (usuarioFilho.getEquipe() != null && usuarioPai.getUsuarioId().equals(usuarioFilho.getEquipe().getSupervisorId())) ||
+                (usuarioFilho.getEquipe() != null && usuarioPai.getUsuarioId().equals(usuarioFilho.getEquipe().getGerenteId())) ||
                 (getPermissaoList(usuarioPai).contains("VER_TODAS_EQUIPES"));
     }
 

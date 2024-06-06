@@ -40,7 +40,7 @@ public class UsuarioPatchRequest {
 
     private Optional<@Length(min = 11, max = 11) String> whatsapp;
 
-    private Optional<@Past LocalDate> dataContratacao;
+    private Optional<LocalDate> dataContratacao;
 
     private Optional<Integer> cargoId;
 

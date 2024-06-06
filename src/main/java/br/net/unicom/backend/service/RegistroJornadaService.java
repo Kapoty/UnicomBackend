@@ -209,7 +209,7 @@ public class RegistroJornadaService {
 
         JornadaStatus novoStatus = jornadaStatusRepository.findByJornadaStatusIdAndEmpresaIdAndJornadaStatusGrupoId(jornadaStatusId, registroJornada.getUsuario().getEmpresaId(), registroJornada.getUsuario().getJornadaStatusGrupoId()).orElseThrow(JornadaStatusNaoEncontradoException::new);
 
-        if (novoStatus.getJornadaStatusId() == registroJornada.getStatusAtual().getJornadaStatusId())
+        if (novoStatus.getJornadaStatusId().equals(registroJornada.getStatusAtual().getJornadaStatusId()))
                 throw new JornadaStatusNaoPermitidoException("novo status não pode ser igual ao atual");
 
         if (!registroJornada.getStatusAtual().getJornadaStatus().getUsuarioPodeAtivar())
@@ -229,7 +229,7 @@ public class RegistroJornadaService {
 
         JornadaStatus novoStatus = jornadaStatusRepository.findByJornadaStatusIdAndEmpresaIdAndJornadaStatusGrupoId(jornadaStatusId, registroJornada.getUsuario().getEmpresaId(), registroJornada.getUsuario().getJornadaStatusGrupoId()).orElseThrow(JornadaStatusNaoEncontradoException::new);
 
-        if (novoStatus.getJornadaStatusId() == registroJornada.getStatusAtual().getJornadaStatusId())
+        if (novoStatus.getJornadaStatusId().equals(registroJornada.getStatusAtual().getJornadaStatusId()))
                 throw new JornadaStatusNaoPermitidoException("novo status não pode ser igual ao atual");
 
         if (!novoStatus.getSupervisorPodeAtivar())
@@ -285,9 +285,9 @@ public class RegistroJornadaService {
 
         if (registroJornada.getStatusAtual() == null)
             return -1;
-        if (registroJornada.getStatusAtual().getJornadaStatusId() == pontoConfiguracao.getStatusAusenteId())
+        if (registroJornada.getStatusAtual().getJornadaStatusId().equals(pontoConfiguracao.getStatusAusenteId()))
             return 0;
-        if (registroJornada.getStatusAtual().getJornadaStatusId() != pontoConfiguracao.getStatusRegularId())
+        if (!registroJornada.getStatusAtual().getJornadaStatusId().equals(pontoConfiguracao.getStatusRegularId()))
             return -1;
 
         Integer secondsSinceVistoPorUltimo = (int) usuarioService.getDurationSinceUsuarioVistoPorUltimo(registroJornada.getUsuario()).toSeconds();
@@ -364,7 +364,7 @@ public class RegistroJornadaService {
         Usuario usuario = registroJornada.getUsuario();
 
         usuarioService.ping(usuario);
-        if (registroJornada.getStatusAtual() != null && registroJornada.getStatusAtual().getJornadaStatusId() == pontoConfiguracao.getStatusAusenteId()) {
+        if (registroJornada.getStatusAtual() != null && registroJornada.getStatusAtual().getJornadaStatusId().equals(pontoConfiguracao.getStatusAusenteId())) {
             alterarStatus(registroJornada, pontoConfiguracao.getStatusRegular());
         }
     }
@@ -410,21 +410,21 @@ public class RegistroJornadaService {
                     return;
 
                 if (!isEmHoraExtra(registroJornada)) {
-                    if (registroJornada.getStatusAtual().getJornadaStatusId() == pontoConfiguracao.getStatusRegularId()) {
+                    if (registroJornada.getStatusAtual().getJornadaStatusId().equals(pontoConfiguracao.getStatusRegularId())) {
                         if (Duration.between(usuario.getVistoPorUltimo(), agora).toSeconds() > pontoConfiguracao.getIntervaloVerificacaoRegular()) {
                             alterarStatus(registroJornada, pontoConfiguracao.getStatusAusente());
                         }
-                    } else if (registroJornada.getStatusAtual().getJornadaStatusId() == pontoConfiguracao.getStatusAusenteId()) {
+                    } else if (registroJornada.getStatusAtual().getJornadaStatusId().equals(pontoConfiguracao.getStatusAusenteId())) {
                         if (Duration.between(usuario.getVistoPorUltimo(), agora).toSeconds() <= pontoConfiguracao.getIntervaloVerificacaoRegular()) {
                             alterarStatus(registroJornada, pontoConfiguracao.getStatusRegular());
                         }
                     }
                 } else {
-                    if (registroJornada.getStatusAtual().getJornadaStatusId() == pontoConfiguracao.getStatusRegularId()) {
+                    if (registroJornada.getStatusAtual().getJornadaStatusId().equals(pontoConfiguracao.getStatusRegularId())) {
                         if (Duration.between(usuario.getVistoPorUltimo(), agora).toSeconds() > pontoConfiguracao.getIntervaloVerificacaoHoraExtra()) {
                             alterarStatus(registroJornada, pontoConfiguracao.getStatusAusente());
                         }
-                    } else if (registroJornada.getStatusAtual().getJornadaStatusId() == pontoConfiguracao.getStatusAusenteId()) {
+                    } else if (registroJornada.getStatusAtual().getJornadaStatusId().equals(pontoConfiguracao.getStatusAusenteId())) {
                         if (Duration.between(usuario.getVistoPorUltimo(), agora).toSeconds() <= pontoConfiguracao.getIntervaloVerificacaoHoraExtra()) {
                             alterarStatus(registroJornada, pontoConfiguracao.getStatusRegular());
                         }
