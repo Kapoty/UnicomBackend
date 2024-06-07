@@ -34,6 +34,10 @@ public class VendaProdutoRequest {
     private Double valorTelefoneFixo;
 
     @NotNull
+    @Length(max = 8)
+    private String numeroTelefoneFixo;
+
+    @NotNull
     private VendaProdutoTipoDeLinhaEnum tipoDeLinha;
 
     @NotNull

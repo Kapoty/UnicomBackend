@@ -65,6 +65,10 @@ public class VendaProduto {
     private Double valorTelefoneFixo;
 
     @NotNull
+    @Length(max = 8)
+    private String numeroTelefoneFixo;
+
+    @NotNull
     @Enumerated(EnumType.STRING)
     private VendaProdutoTipoDeLinhaEnum tipoDeLinha;
 

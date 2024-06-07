@@ -106,6 +106,8 @@ public class GoogleSheetsScheduledTasks {
 
             mapper.using(ctx -> ((List<VendaProduto>) ctx.getSource()).size() > 0 ? ((List<VendaProduto>) ctx.getSource()).get(0).getValorTelefoneFixo().toString() : "").map(Venda::getProdutoList, GoogleSheetsVenda::setValorTelefoneFixo);
 
+            mapper.using(ctx -> ((List<VendaProduto>) ctx.getSource()).size() > 0 ? ((List<VendaProduto>) ctx.getSource()).get(0).getNumeroTelefoneFixo() : "").map(Venda::getProdutoList, GoogleSheetsVenda::setNumeroTelefoneFixo);
+
             mapper.using(ctx -> ((List<VendaProduto>) ctx.getSource()).size() > 0 ? ((List<VendaProduto>) ctx.getSource()).get(0).getTipoDeLinha().toString() : "").map(Venda::getProdutoList, GoogleSheetsVenda::setTipoDeLinha);
 
             mapper.using(ctx -> ((List<VendaProduto>) ctx.getSource()).size() > 0 ? ((List<VendaProduto>) ctx.getSource()).get(0).getDdd() : "").map(Venda::getProdutoList, GoogleSheetsVenda::setDdd);

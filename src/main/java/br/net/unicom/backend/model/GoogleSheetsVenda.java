@@ -107,6 +107,9 @@ public class GoogleSheetsVenda {
     @JsonProperty("Valor Telefone Fixo")
     private String valorTelefoneFixo;
 
+    @JsonProperty("Número Telefone Fixo")
+    private String numeroTelefoneFixo;
+
     @JsonProperty("Tipo de Linha")
     private String tipoDeLinha;
 

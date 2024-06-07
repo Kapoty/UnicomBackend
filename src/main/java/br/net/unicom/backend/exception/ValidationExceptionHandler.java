@@ -15,6 +15,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+
 import br.net.unicom.backend.model.exception.EquipeInvalidaException;
 import br.net.unicom.backend.model.exception.JornadaStatusNaoEncontradoException;
 import br.net.unicom.backend.model.exception.JornadaStatusNaoPermitidoException;
@@ -53,6 +56,19 @@ public class ValidationExceptionHandler {
         Map<String, String> errorMap = e.getConstraintViolations()
                 .stream()
                 .collect(Collectors.toMap(x -> ((ConstraintViolation<?>)x).getPropertyPath().toString().replace("Valid", ""), b -> b.getMessage(), (p, q) -> p, TreeMap::new));
+        response.put("errors", errorMap);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidFormatException.class)
+    public ResponseEntity<?> handle(InvalidFormatException e) {
+        Map<String, Object> response = new HashMap<>();
+        Map<String, String> errorMap = new HashMap<>();
+
+        String fieldName = e.getPath().stream().map((JsonMappingException.Reference r) -> (r.getIndex() != -1) ? "[%s]".formatted(r.getIndex()) : ".%s".formatted(r.getFieldName())).collect(Collectors.joining()).substring(1);
+
+        errorMap.put(fieldName, "formato inválido");
+
         response.put("errors", errorMap);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
