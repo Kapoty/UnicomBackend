@@ -155,7 +155,7 @@ public class GoogleSheetsScheduledTasks {
         return googleSheetsVenda;
     }
 
-    @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.MINUTES)
+    @Scheduled(fixedDelay = 5, timeUnit = TimeUnit.MINUTES)
     @Transactional
 	public void espelharVendas() {
 

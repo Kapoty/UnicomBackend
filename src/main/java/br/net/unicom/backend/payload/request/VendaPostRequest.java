@@ -225,7 +225,7 @@ public class VendaPostRequest {
     @Length(max = 50)
     private String ordem;
 
-    @NotNull
+    @NotBlank
     @Length(max = 100)
     private String origem;
 
@@ -246,7 +246,7 @@ public class VendaPostRequest {
 
     private LocalDateTime dataInstalacao;
 
-    @NotNull
+    @NotBlank
     @Length(max = 50)
     private String pdv;
 

@@ -38,6 +38,7 @@ import br.net.unicom.backend.model.FiltroVenda;
 import br.net.unicom.backend.model.Papel;
 import br.net.unicom.backend.model.Permissao;
 import br.net.unicom.backend.model.Usuario;
+import br.net.unicom.backend.model.VendaVisao;
 import br.net.unicom.backend.model.exception.EquipeInvalidaException;
 import br.net.unicom.backend.model.exception.PapelInvalidoException;
 import br.net.unicom.backend.model.exception.RegistroPontoUnauthorizedException;
@@ -55,6 +56,7 @@ import br.net.unicom.backend.repository.JornadaRepository;
 import br.net.unicom.backend.repository.PapelRepository;
 import br.net.unicom.backend.repository.PermissaoRepository;
 import br.net.unicom.backend.repository.UsuarioRepository;
+import br.net.unicom.backend.repository.VendaVisaoRepository;
 import br.net.unicom.backend.security.jwt.PontoJwtUtils;
 import br.net.unicom.backend.security.service.UserDetailsImpl;
 import br.net.unicom.backend.service.UploadService;
@@ -94,6 +96,9 @@ public class UsuarioController {
 
     @Autowired
     FiltroVendaRepository filtroVendaRepository;
+
+    @Autowired
+    VendaVisaoRepository vendaVisaoRepository;
 
     @Autowired
     UploadService uploadService;
@@ -244,10 +249,17 @@ public class UsuarioController {
     }
 
     @GetMapping("/me/filtro-venda")
-    public ResponseEntity<FiltroVenda> getFiltroVendaListByMe() {
+    public ResponseEntity<FiltroVenda> getFiltroVendaByMe() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         return ResponseEntity.of(filtroVendaRepository.findByUsuarioId(userDetails.getUsuarioId()));
+    }
+
+    @GetMapping("/me/venda-visao")
+    public ResponseEntity<List<VendaVisao>> getVendaVisaoListByMe() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return ResponseEntity.ok(vendaVisaoRepository.findAllByUsuarioId(userDetails.getUsuarioId()));
     }
 
     @PreAuthorize("hasAuthority('CADASTRAR_USUARIOS')")

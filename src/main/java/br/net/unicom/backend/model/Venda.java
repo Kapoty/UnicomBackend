@@ -300,7 +300,7 @@ public class Venda {
     @ToString.Exclude
     Sistema sistema;
 
-    @NotNull
+    @NotBlank
     @Length(max = 100)
     private String origem;
 
@@ -341,7 +341,7 @@ public class Venda {
 
     private LocalDateTime dataInstalacao;
 
-    @NotNull
+    @NotBlank
     @Length(max = 50)
     private String pdv;
 

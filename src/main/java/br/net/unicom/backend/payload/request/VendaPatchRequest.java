@@ -229,7 +229,7 @@ public class VendaPatchRequest {
     @Length(max = 50)
     private String ordem;
 
-    @NotNull
+    @NotBlank
     @Length(max = 100)
     private String origem;
 
@@ -255,7 +255,7 @@ public class VendaPatchRequest {
 
     private LocalDateTime dataInstalacao;
 
-    @NotNull
+    @NotBlank
     @Length(max = 50)
     private String pdv;
 
