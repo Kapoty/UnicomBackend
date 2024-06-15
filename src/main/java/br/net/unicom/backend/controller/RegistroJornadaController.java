@@ -268,6 +268,8 @@ public class RegistroJornadaController {
     public ResponseEntity<RegistroJornadaReportResponse> generateReportByUsuarioId(@PathVariable("usuarioId") Integer usuarioId, @Valid @RequestBody RegistroJornadaReportByUsuarioIdRequest registroJornadaReportByUsuarioIdRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException, JornadaStatusNaoEncontradoException, JornadaStatusNaoPermitidoException {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
+        PontoConfiguracao pontoConfiguracao = pontoConfiguracaoRepository.findByEmpresaId(userDetails.getEmpresaId()).orElseThrow(PontoConfiguracaoNaoEncontradoException::new);
+
         Usuario usuarioPai = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
         Usuario usuarioFilho = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
 
@@ -283,10 +285,16 @@ public class RegistroJornadaController {
 
         List<RegistroJornadaReportDayResponse> dayList = new ArrayList<>();
 
-        LocalDate startData = LocalDate.of(registroJornadaReportByUsuarioIdRequest.getAno(), registroJornadaReportByUsuarioIdRequest.getMes(), 1);
-        LocalDate endData = startData.plusDays(startData.getMonth().length(Year.of(startData.getYear()).isLeap()));
+        /*LocalDate startData = LocalDate.of(registroJornadaReportByUsuarioIdRequest.getAno(), registroJornadaReportByUsuarioIdRequest.getMes(), 1);
+        LocalDate endData = startData.plusDays(startData.getMonth().length(Year.of(startData.getYear()).isLeap()));*/
 
-        for (LocalDate data = startData; data.isBefore(endData); data = data.plusDays(1)) {
+        LocalDate startData = LocalDate.of(registroJornadaReportByUsuarioIdRequest.getAno(), registroJornadaReportByUsuarioIdRequest.getMes(), 1).minusMonths(1).plusDays(pontoConfiguracao.getDiaFechamentoFolha());
+        LocalDate endData = LocalDate.of(registroJornadaReportByUsuarioIdRequest.getAno(), registroJornadaReportByUsuarioIdRequest.getMes(), Math.min(pontoConfiguracao.getDiaFechamentoFolha(), startData.getMonth().length(Year.of(startData.getYear()).isLeap())));
+
+        if (startData.getMonth() == endData.getMonth())
+            startData = startData.withDayOfMonth(1);
+
+        for (LocalDate data = startData; data.isBefore(endData.plusDays(1)); data = data.plusDays(1)) {
             RegistroJornadaReportDayResponse registroJornadaReportDayResponse = new RegistroJornadaReportDayResponse();
             registroJornadaReportDayResponse.setData(data);
             RegistroJornada registroJornada = registroJornadaRepository.findByUsuarioIdAndData(usuarioId, data).orElse(null);

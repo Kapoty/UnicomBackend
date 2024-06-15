@@ -20,6 +20,8 @@ public class IframeCategoryResponse {
 
     private String icon;
 
+    private String iconFilename;
+
     private Boolean ativo;
 
     private Integer empresaId;

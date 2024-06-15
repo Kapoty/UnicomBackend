@@ -48,6 +48,9 @@ public class Iframe {
     @Length(max = 45)
     private String icon;
 
+    @Length(max = 50)
+    private String iconFilename;
+
     @NotNull
     private Boolean ativo;
 

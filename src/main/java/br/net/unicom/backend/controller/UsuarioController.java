@@ -3,6 +3,7 @@ package br.net.unicom.backend.controller;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -136,11 +137,15 @@ public class UsuarioController {
         if (!usuario.getFotoPerfil())
             return ResponseEntity.notFound().build();
         
-        Resource file = uploadService.load(usuarioService.getUsuarioFotoPerfilFilename(usuario));
-        return ResponseEntity.ok()
-                            .contentType(MediaType.IMAGE_JPEG)
-                            .cacheControl(CacheControl.maxAge(30, TimeUnit.DAYS))
-                            .body(file);
+        Optional<Resource> file = uploadService.load(usuarioService.getUsuarioFotoPerfilFilename(usuario));
+        if (file.isPresent()) {
+            return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_JPEG)
+                .cacheControl(CacheControl.maxAge(30, TimeUnit.DAYS))
+                .body(file.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PreAuthorize("hasAuthority('CADASTRAR_USUARIOS')")
@@ -210,6 +215,7 @@ public class UsuarioController {
             iframeCategory.getTitulo(),
             iframeCategory.getUri(),
             iframeCategory.getIcon(),
+            iframeCategory.getIconFilename(),
             iframeCategory.getAtivo(),
             iframeCategory.getEmpresaId(),
             iframeCategory.getIframeList().stream().filter((iframe) -> iframe.getAtivo()).collect(Collectors.toList())

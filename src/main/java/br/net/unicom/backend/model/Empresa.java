@@ -75,4 +75,7 @@ public class Empresa {
     @Length(max = 6)
     private String themePrimaryColor;
 
+    @Length(max = 50)
+    private String iconFilename;
+
 }

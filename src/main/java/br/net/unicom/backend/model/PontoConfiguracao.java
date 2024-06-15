@@ -49,6 +49,9 @@ public class PontoConfiguracao {
     @JoinColumn(name = "status_ausente_id", referencedColumnName = "jornada_status_id", insertable = false, updatable = false)
     private JornadaStatus statusAusente;
 
+    @NotNull
+    private Integer diaFechamentoFolha;
+
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
     @JoinColumn(name = "empresa_id")

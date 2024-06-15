@@ -1,19 +1,28 @@
 package br.net.unicom.backend.controller;
 
+import java.net.FileNameMap;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.MimeTypeUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -62,6 +71,7 @@ import br.net.unicom.backend.repository.VendaStatusRepository;
 import br.net.unicom.backend.security.service.UserDetailsImpl;
 import br.net.unicom.backend.service.EmpresaService;
 import br.net.unicom.backend.service.EquipeService;
+import br.net.unicom.backend.service.UploadService;
 import br.net.unicom.backend.service.UsuarioService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -146,6 +156,9 @@ public class EmpresaController {
 
     @Autowired
     VendaFaturaRepository vendaFaturaRepository;
+
+    @Autowired
+    UploadService uploadService;
 
     @Autowired
     ModelMapper modelMapper;
@@ -298,5 +311,21 @@ public class EmpresaController {
     public ResponseEntity<List<VendaFatura>> getVendaFaturaListByEmpresaMe(@RequestParam(defaultValue = "0") Integer offset, @Valid @RequestParam(defaultValue = "2000") @Min(1) @Max(2000) Integer limit) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(vendaFaturaRepository.findAllByEmpresaIdAndLimit(userDetails.getEmpresaId(), offset, limit));
+    }
+
+    @GetMapping("/me/upload/{filename}")
+    public ResponseEntity<Resource> getUploadFile(@Valid @PathVariable("filename") String filename) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Optional<Resource> file = uploadService.load("empresa/%d/%s".formatted(userDetails.getEmpresaId(), filename));
+        if (file.isPresent()) {
+            return ResponseEntity.ok()
+                            .contentType(MediaType.IMAGE_PNG)
+                            .cacheControl(CacheControl.maxAge(30, TimeUnit.DAYS))
+                            .body(file.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+        
     }
 }

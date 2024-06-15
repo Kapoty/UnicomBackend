@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -48,19 +49,19 @@ public class UploadService {
         }
     }
 
-    public Resource load(String filename) {
+    public Optional<Resource> load(String filename) {
         try {
             Path file = Paths.get(uploadPath)
                              .resolve(filename);
             Resource resource = new UrlResource(file.toUri());
 
             if (resource.exists() || resource.isReadable()) {
-                return resource;
+                return Optional.of(resource);
             } else {
-                throw new RuntimeException("Could not read the file!");
+                return Optional.empty();
             }
         } catch (MalformedURLException e) {
-            throw new RuntimeException("Error: " + e.getMessage());
+            return Optional.empty();
         }
     }
 
