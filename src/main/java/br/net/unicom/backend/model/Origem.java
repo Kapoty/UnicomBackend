@@ -20,11 +20,11 @@ import lombok.ToString;
 
 @Entity
 @Getter @Setter @NoArgsConstructor @ToString
-public class PontoDeVenda {
+public class Origem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer pontoDeVendaId;
+    private Integer origemId;
 
     @Column(name = "empresa_id", nullable = false)
     private Integer empresaId;
@@ -36,7 +36,7 @@ public class PontoDeVenda {
     Empresa empresa;
 
     @NotBlank
-    @Length(max = 50)
+    @Length(max = 100)
     private String nome;
 
 }

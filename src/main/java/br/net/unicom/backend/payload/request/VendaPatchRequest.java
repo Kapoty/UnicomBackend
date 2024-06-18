@@ -223,6 +223,7 @@ public class VendaPatchRequest {
     @Length(max = 50)
     private String custcode;
 
+    @NotNull
     private Integer sistemaId;
 
     @NotNull
@@ -272,6 +273,7 @@ public class VendaPatchRequest {
     @Length(max = 50)
     private String loginVendedor;
 
+    @NotNull
     private VendaFormaDePagamentoEnum formaDePagamento;
 
     @NotNull
