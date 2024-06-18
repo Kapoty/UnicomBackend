@@ -20,9 +20,11 @@ import br.net.unicom.backend.model.Jornada;
 import br.net.unicom.backend.model.RegistroJornada;
 import br.net.unicom.backend.model.RegistroJornadaCorrecao;
 import br.net.unicom.backend.model.Usuario;
+import br.net.unicom.backend.model.Venda;
 import br.net.unicom.backend.model.key.RegistroJornadaCorrecaoKey;
 import br.net.unicom.backend.payload.request.RegistroJornadaCorrecaoFindByUsuarioIdAndDataRequest;
 import br.net.unicom.backend.payload.request.RegistroJornadaCorrecaoPatchByUsuarioIdAndDataRequest;
+import br.net.unicom.backend.payload.request.VendaPatchRequest;
 import br.net.unicom.backend.repository.ContratoRepository;
 import br.net.unicom.backend.repository.JornadaRepository;
 import br.net.unicom.backend.repository.RegistroJornadaCorrecaoRepository;
@@ -65,8 +67,15 @@ public class RegistroJornadaCorrecaoController {
     @Autowired
     JornadaRepository jornadaRepository;
 
-    @Autowired
     ModelMapper modelMapper;
+
+    @Autowired
+    public void setModelMapper(ModelMapper modelMapper) {
+        this.modelMapper = modelMapper;
+        modelMapper.typeMap(RegistroJornadaCorrecaoPatchByUsuarioIdAndDataRequest.class, RegistroJornadaCorrecao.class).addMappings(mapper -> {
+            mapper.skip(RegistroJornadaCorrecao::setAprovada);
+        });
+    }
 
     @PostMapping("find-by-usuario-id-and-data")
     public ResponseEntity<RegistroJornadaCorrecao> findByUsuarioIdAndData(@Valid @RequestBody RegistroJornadaCorrecaoFindByUsuarioIdAndDataRequest registroJornadaCorrecaoFindByUsuarioIdAndDataRequest ) {
@@ -97,18 +106,7 @@ public class RegistroJornadaCorrecaoController {
         if (registroJornadaCorrecao.getAprovada() && !isGreaterThan)
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
-        registroJornadaCorrecao.setJornadaEntrada(registroJornadaCorrecaoPatchByUsuarioIdAndDataRequest.getJornadaEntrada());
-        registroJornadaCorrecao.setJornadaIntervaloInicio(registroJornadaCorrecaoPatchByUsuarioIdAndDataRequest.getJornadaIntervaloInicio());
-        registroJornadaCorrecao.setJornadaIntervaloFim(registroJornadaCorrecaoPatchByUsuarioIdAndDataRequest.getJornadaIntervaloFim());
-        registroJornadaCorrecao.setJornadaSaida(registroJornadaCorrecaoPatchByUsuarioIdAndDataRequest.getJornadaSaida());
-        registroJornadaCorrecao.setContratoId(registroJornadaCorrecaoPatchByUsuarioIdAndDataRequest.getContratoId());
-        registroJornadaCorrecao.setJustificativa(registroJornadaCorrecaoPatchByUsuarioIdAndDataRequest.getJustificativa());
-        registroJornadaCorrecao.setHorasTrabalhadas(registroJornadaCorrecaoPatchByUsuarioIdAndDataRequest.getHorasTrabalhadas());
-        registroJornadaCorrecao.setEntrada(registroJornadaCorrecaoPatchByUsuarioIdAndDataRequest.getEntrada());
-        registroJornadaCorrecao.setSaida(registroJornadaCorrecaoPatchByUsuarioIdAndDataRequest.getSaida());
-        registroJornadaCorrecao.setHoraExtraPermitida(registroJornadaCorrecaoPatchByUsuarioIdAndDataRequest.getHoraExtraPermitida());
-        registroJornadaCorrecao.setObservacao(registroJornadaCorrecaoPatchByUsuarioIdAndDataRequest.getObservacao());
-        registroJornadaCorrecao.setAjusteHoraExtra(registroJornadaCorrecaoPatchByUsuarioIdAndDataRequest.getAjusteHoraExtra());
+        modelMapper.map(registroJornadaCorrecaoPatchByUsuarioIdAndDataRequest, registroJornadaCorrecao);
 
         if (isGreaterThan)
             registroJornadaCorrecao.setAprovada(registroJornadaCorrecaoPatchByUsuarioIdAndDataRequest.getAprovada());
@@ -160,10 +158,10 @@ public class RegistroJornadaCorrecaoController {
                 registroJornadaCorrecao.setJornadaIntervaloFim(jornada.getIntervaloFim());
                 registroJornadaCorrecao.setJornadaSaida(jornada.getSaida());
             } else {
-                registroJornadaCorrecao.setJornadaEntrada(LocalTime.of(1, 0));
-                registroJornadaCorrecao.setJornadaIntervaloInicio(LocalTime.of(2, 0));
-                registroJornadaCorrecao.setJornadaIntervaloFim(LocalTime.of(3, 0));
-                registroJornadaCorrecao.setJornadaSaida(LocalTime.of(4, 0));
+                registroJornadaCorrecao.setJornadaEntrada(null);
+                registroJornadaCorrecao.setJornadaIntervaloInicio(null);
+                registroJornadaCorrecao.setJornadaIntervaloFim(null);
+                registroJornadaCorrecao.setJornadaSaida(null);
             }
 
             if (usuarioFilho.getContrato() != null) {

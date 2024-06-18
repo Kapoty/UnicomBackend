@@ -52,16 +52,12 @@ public class RegistroJornadaCorrecao {
     @ToString.Exclude
     private Contrato contrato;
 
-    @NotNull
     private LocalTime jornadaEntrada;
 
-    @NotNull
     private LocalTime jornadaIntervaloInicio;
 
-    @NotNull
     private LocalTime jornadaIntervaloFim;
 
-    @NotNull
     private LocalTime jornadaSaida;
 
     @NotNull

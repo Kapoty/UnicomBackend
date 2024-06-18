@@ -22,25 +22,26 @@ public class RegistroJornadaCorrecaoPatchByUsuarioIdAndDataRequest {
     @NotNull
     private LocalDate data;
 
-    @NotNull
     private LocalTime jornadaEntrada;
 
-    @NotNull
     private LocalTime jornadaIntervaloInicio;
 
-    @NotNull
     private LocalTime jornadaIntervaloFim;
 
-    @NotNull
     private LocalTime jornadaSaida;
 
     @AssertTrue(message = "os horários devem ser sucessivos")
     private boolean isJornadaOrderValid() {
+        if (jornadaEntrada == null &&
+        jornadaIntervaloInicio == null &&
+        jornadaIntervaloFim == null &&
+        jornadaSaida == null)
+            return true;
         if (jornadaEntrada == null ||
         jornadaIntervaloInicio == null ||
         jornadaIntervaloFim == null ||
         jornadaSaida == null)
-            return true;
+            return false;
         if (jornadaEntrada.compareTo(jornadaIntervaloInicio) >= 0)
             return false;
         if (jornadaIntervaloInicio.compareTo(jornadaIntervaloFim) >= 0)
