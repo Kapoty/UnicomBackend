@@ -112,6 +112,8 @@ public class RegistroJornadaService {
             registroJornada.setHoraExtraPermitida(false);
             registroJornadaRepository.save(registroJornada);
 
+            logger.info("RegistroJornada do usuarioId %d criado com sucesso!".formatted(usuario.getUsuarioId()));
+
         } else {
             throw new UsuarioSemJornadaException();
         }
@@ -449,6 +451,19 @@ public class RegistroJornadaService {
             }
         });
 
+    }
+
+    public void criarRegistroDeUsuariosAtivos() {
+        List<Integer> usuarioIdList = usuarioRepository.findAllUsuarioIdByAtivoTrue();
+
+        for (Integer usuarioId : usuarioIdList) {
+            try {
+                this.getRegistroJornadaByUsuarioIdHoje(usuarioId);
+            } catch (Exception e) {
+
+            }
+        }
+        
     }
 
 }

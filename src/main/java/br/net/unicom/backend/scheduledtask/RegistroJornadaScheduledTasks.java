@@ -23,4 +23,10 @@ public class RegistroJornadaScheduledTasks {
         registroJornadaService.gerenciarUsuarios();
     }
 
+    @Scheduled(fixedRate = 8, timeUnit = TimeUnit.HOURS)
+	public void criarRegistroDeUsuariosAtivos() {
+        logger.info("Criando registro de usuarios ativos...");
+        registroJornadaService.criarRegistroDeUsuariosAtivos();
+    }
+
 }

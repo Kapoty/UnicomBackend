@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -43,6 +44,7 @@ import br.net.unicom.backend.model.VendaAtualizacao;
 import br.net.unicom.backend.model.VendaFatura;
 import br.net.unicom.backend.model.VendaProduto;
 import br.net.unicom.backend.model.VendaProdutoPortabilidade;
+import br.net.unicom.backend.model.exception.FieldInvalidException;
 import br.net.unicom.backend.model.projection.VendaAtoresProjection;
 import br.net.unicom.backend.payload.request.VendaFaturaRequest;
 import br.net.unicom.backend.payload.request.VendaListRequest;
@@ -161,8 +163,7 @@ public class VendaController {
         // Filtrar vendas por permissão dos atores
 
         if (!userDetails.hasAuthority("VER_TODAS_VENDAS")) {
-            Set<Integer> usuarioIdList = usuarioService.getUsuarioListLessThanUsuario(usuario).stream().map(u -> u.getUsuarioId()).collect(Collectors.toSet());
-            usuarioIdList.add(usuario.getUsuarioId());
+            Set<Integer> usuarioIdList = usuarioService.getUsuarioListLessThanUsuario(usuario, true).stream().map(u -> u.getUsuarioId()).collect(Collectors.toSet());
 
             vendaAtoresList.removeIf(vendaAtor -> {
                 if (vendaAtor.getVendedorId() == null)
@@ -350,7 +351,7 @@ public class VendaController {
     @PreAuthorize("hasAuthority('CADASTRAR_VENDAS')")
     @PostMapping("/")
     @Transactional
-    public ResponseEntity<Venda> postVenda(@Valid @RequestBody VendaPostRequest vendaPostRequest) {
+    public ResponseEntity<Venda> postVenda(@Valid @RequestBody VendaPostRequest vendaPostRequest) throws FieldInvalidException {
         
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
@@ -367,10 +368,47 @@ public class VendaController {
         venda.setEmpresaId(userDetails.getEmpresaId());
 
         // definir vendedor/supervisor/auditor
+        // alterar vendedor/supervisor/auditor/cadastrador se houver permissao
 
+        /*
         venda.setVendedorId(usuario.getUsuarioId());
-        if (usuario.getEquipe() != null)
-            venda.setSupervisorId(usuario.getEquipe().getSupervisorId());
+            if (usuario.getEquipe() != null)
+                venda.setSupervisorId(usuario.getEquipe().getSupervisorId());
+        */
+
+        if (vendaPostRequest.getVendedorId() != null) {
+            Usuario usuarioFilho = usuarioRepository.findByUsuarioId(vendaPostRequest.getVendedorId()).get();
+
+            if (!usuarioFilho.equals(usuario) && !userDetails.hasAuthority("ALTERAR_VENDEDOR") && !usuarioService.isUsuarioGreaterThan(usuario, usuarioFilho))
+                throw new FieldInvalidException("vendedorId", "vendedor inválido");
+
+            venda.setVendedorId(vendaPostRequest.getVendedorId());
+            venda.setVendedor(usuarioFilho);
+
+            if (vendaPostRequest.getSupervisorId() == null) {
+                if (venda.getVendedor().getEquipe() != null)
+                    venda.setSupervisorId(venda.getVendedor().getEquipe().getSupervisorId());
+                else
+                    venda.setSupervisorId(venda.getVendedorId());
+            }
+        }
+
+        venda.setVendedorExterno(vendaPostRequest.getVendedorExterno());
+
+        if (userDetails.hasAuthority("ALTERAR_VENDEDOR")) {
+
+            if (vendaPostRequest.getSupervisorId() != null)
+                venda.setSupervisorId(vendaPostRequest.getSupervisorId());
+
+            venda.setSupervisorExterno(vendaPostRequest.getSupervisorExterno());
+        }
+        
+        if (userDetails.hasAuthority("ALTERAR_AUDITOR")) {
+            venda.setAuditorId(vendaPostRequest.getAuditorId());
+            venda.setCadastradorId(vendaPostRequest.getCadastradorId());
+            venda.setAuditorExterno(vendaPostRequest.getAuditorExterno());
+            venda.setCadastradorExterno(vendaPostRequest.getCadastradorExterno());
+        }
 
         // definir dataCadastro dataVenda dataStatus statusId
 

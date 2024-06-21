@@ -11,6 +11,11 @@ import br.net.unicom.backend.model.Usuario;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
+    List<Usuario> findAllByAtivoTrue();
+
+    @Query(value = "SELECT usuario_id FROM Usuario WHERE ativo = true", nativeQuery = true)
+    List<Integer> findAllUsuarioIdByAtivoTrue();
+
     Optional<Usuario> findByUsuarioId(Integer usuarioId);
 
     Optional<Usuario> findByUsuarioIdAndEmpresaId(Integer usuarioId, Integer empresaId);

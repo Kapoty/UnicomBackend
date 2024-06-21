@@ -40,6 +40,14 @@ public class ModelMapperConfiguration {
         });
 
         modelMapper.typeMap(VendaPostRequest.class, Venda.class).addMappings(mapper -> {
+            mapper.skip(Venda::setVendedorId);
+            mapper.skip(Venda::setSupervisorId);
+            mapper.skip(Venda::setAuditorId);
+            mapper.skip(Venda::setCadastradorId);
+            mapper.skip(Venda::setVendedorExterno);
+            mapper.skip(Venda::setSupervisorExterno);
+            mapper.skip(Venda::setAuditorExterno);
+            mapper.skip(Venda::setCadastradorExterno);
             mapper.skip(Venda::setProdutoList);
             mapper.skip(Venda::setFaturaList);
         });

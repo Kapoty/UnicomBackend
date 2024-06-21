@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 
 import br.net.unicom.backend.model.exception.EquipeInvalidaException;
+import br.net.unicom.backend.model.exception.FieldInvalidException;
 import br.net.unicom.backend.model.exception.JornadaStatusNaoEncontradoException;
 import br.net.unicom.backend.model.exception.JornadaStatusNaoPermitidoException;
 import br.net.unicom.backend.model.exception.PapelInvalidoException;
@@ -196,6 +197,15 @@ public class ValidationExceptionHandler {
         Map<String, Object> response = new HashMap<>();
         Map<String, String> errorMap = new HashMap<>();
         errorMap.put("equipe", "equipe inválida");
+        response.put("errors", errorMap);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(FieldInvalidException.class)
+    public ResponseEntity<?> handleFieldInvalidException(FieldInvalidException e) {
+        Map<String, Object> response = new HashMap<>();
+        Map<String, String> errorMap = new HashMap<>();
+        errorMap.put(e.getField(), e.getError());
         response.put("errors", errorMap);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }

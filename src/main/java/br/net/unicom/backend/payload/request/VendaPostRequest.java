@@ -17,7 +17,9 @@ import br.net.unicom.backend.model.enums.VendaTipoProdutoEnum;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,6 +31,10 @@ public class VendaPostRequest {
     @NotNull
     @Length(max = 200)
     private String relato;
+
+    private Integer vendedorId;
+
+    private Integer supervisorId;
 
     @NotNull
     private VendaTipoPessoaEnum tipoPessoa;
@@ -240,6 +246,10 @@ public class VendaPostRequest {
 
     private LocalDateTime dataAtivacao;
 
+    private Integer auditorId;
+
+    private Integer cadastradorId;
+
     @NotNull
     private Boolean prints;
 
@@ -286,6 +296,23 @@ public class VendaPostRequest {
     @Length(max = 200)
     private String observacao;
 
+    @NotNull
+    @Length(max = 100)
+    private String vendedorExterno;
+
+    @NotNull
+    @Length(max = 100)
+    private String supervisorExterno;
+
+    @NotNull
+    @Length(max = 100)
+    private String auditorExterno;
+
+    @NotNull
+    @Length(max = 100)
+    private String cadastradorExterno;
+
+    @NotEmpty
     private List<@Valid VendaProdutoRequest> produtoList;
 
     private List<@Valid VendaFaturaRequest> faturaList;

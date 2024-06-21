@@ -186,13 +186,10 @@ public class EmpresaController {
             UsuarioPBIResponse usuarioPBIResponse = modelMapper.map(usuario, UsuarioPBIResponse.class);
 
             String usuariosAbaixo = 
-                usuarioService.getUsuarioListLessThanUsuario(usuario)
+                usuarioService.getUsuarioListLessThanUsuario(usuario, true)
                 .stream()
                 .map(u -> "[" + u.getUsuarioId() + "]")
                 .collect(Collectors.joining());
-
-            if (usuariosAbaixo.indexOf("[" + usuario.getUsuarioId() + "]") < 0)
-                usuariosAbaixo += "[" + usuario.getUsuarioId() + "]";
 
             usuarioPBIResponse.setUsuariosAbaixo(usuariosAbaixo);
 

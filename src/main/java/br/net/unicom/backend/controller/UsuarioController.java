@@ -234,11 +234,11 @@ public class UsuarioController {
 
     @GetMapping("/me/usuario-list")
     @JsonView(Usuario.ExpandedView.class)
-    public ResponseEntity<List<Usuario>> getUsuarioListLessThanMe() {
+    public ResponseEntity<List<Usuario>> getUsuarioListLessThanMe(@RequestParam(value = "include-me", defaultValue = "false") Boolean includeMe) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
 
-        return ResponseEntity.ok(usuarioService.getUsuarioListLessThanUsuario(usuario));
+        return ResponseEntity.ok(usuarioService.getUsuarioListLessThanUsuario(usuario, includeMe));
     }
 
     @GetMapping("/me/papel-list")

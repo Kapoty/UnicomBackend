@@ -73,15 +73,15 @@ public class UsuarioService {
         return true;
     }
 
-    public List<Usuario> getUsuarioListLessThanUsuario(Usuario usuario) {
+    public List<Usuario> getUsuarioListLessThanUsuario(Usuario usuario, Boolean includeMe) {
         List<Papel> papelFilhoList = getPapelFilhoList(usuario);
         List<Equipe> minhaEquipeList = getMinhaEquipeListByUsuario(usuario);
 
         List<Usuario> usuarioLessThanList = usuarioRepository.findAllByEmpresaId(usuario.getEmpresaId());
 
-        usuarioLessThanList.removeIf(u -> !papelFilhoList.contains(u.getPapel()));
+        usuarioLessThanList.removeIf(u -> !(includeMe && u.equals(usuario)) && !papelFilhoList.contains(u.getPapel()));
 
-        usuarioLessThanList.removeIf(u -> u.getEquipe() != null && !minhaEquipeList.contains(u.getEquipe()));
+        usuarioLessThanList.removeIf(u -> !(includeMe && u.equals(usuario)) && u.getEquipe() != null && !minhaEquipeList.contains(u.getEquipe()));
 
         return usuarioLessThanList;
     }
