@@ -48,6 +48,7 @@ import br.net.unicom.backend.model.exception.UsuarioMatriculaDuplicateException;
 import br.net.unicom.backend.payload.request.UsuarioPatchRequest;
 import br.net.unicom.backend.payload.request.UsuarioPingRequest;
 import br.net.unicom.backend.payload.request.UsuarioPostRequest;
+import br.net.unicom.backend.payload.request.UsuarioUpdateEquipeRequest;
 import br.net.unicom.backend.payload.response.IframeCategoryResponse;
 import br.net.unicom.backend.payload.response.UsuarioMeResponse;
 import br.net.unicom.backend.repository.EquipeRepository;
@@ -389,6 +390,34 @@ public class UsuarioController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(userDetails.getId()).get();
         usuarioService.ping(usuario);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasAuthority('CADASTRAR_USUARIOS')")
+    @PostMapping("/{usuarioId}/update-equipe")
+    @Transactional
+    public ResponseEntity<Void> updateEquipeByUsuarioId(@Valid @PathVariable Integer usuarioId, @Valid @RequestBody UsuarioUpdateEquipeRequest usuarioUpdateEquipeRequest) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        
+        Usuario usuarioPai = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioFilho = usuarioRepository.findByUsuarioId(usuarioId).orElseThrow(NoSuchElementException::new);
+
+        if (!usuarioService.isUsuarioGreaterThan(usuarioPai, usuarioFilho))
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        if (usuarioUpdateEquipeRequest.getEquipeId()== null)
+            usuarioFilho.setEquipeId(null);
+        else {
+            Equipe equipe = equipeRepository.findByEquipeId(usuarioUpdateEquipeRequest.getEquipeId()).get();
+            
+            if (usuarioService.getMinhaEquipeListByUsuario(usuarioPai).contains(equipe))
+                usuarioFilho.setEquipeId(usuarioUpdateEquipeRequest.getEquipeId());
+            else
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        usuarioRepository.saveAndFlush(usuarioFilho);
+
         return ResponseEntity.noContent().build();
     }
 }

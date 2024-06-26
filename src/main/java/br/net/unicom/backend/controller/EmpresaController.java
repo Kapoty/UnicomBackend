@@ -1,5 +1,9 @@
 package br.net.unicom.backend.controller;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.annotation.JsonView;
 
 import br.net.unicom.backend.model.Adicional;
+import br.net.unicom.backend.model.Banco;
 import br.net.unicom.backend.model.Cargo;
 import br.net.unicom.backend.model.Contrato;
 import br.net.unicom.backend.model.Departamento;
@@ -46,6 +51,7 @@ import br.net.unicom.backend.model.VendaStatus;
 import br.net.unicom.backend.payload.response.EquipeResponse;
 import br.net.unicom.backend.payload.response.UsuarioPBIResponse;
 import br.net.unicom.backend.repository.AdicionalRepository;
+import br.net.unicom.backend.repository.BancoRepository;
 import br.net.unicom.backend.repository.CargoRepository;
 import br.net.unicom.backend.repository.ContratoRepository;
 import br.net.unicom.backend.repository.DepartamentoRepository;
@@ -145,6 +151,9 @@ public class EmpresaController {
 
     @Autowired
     OrigemRepository origemRepository;
+
+    @Autowired
+    BancoRepository bancoRepository;
 
     @Autowired
     AdicionalRepository adicionalRepository;
@@ -281,6 +290,12 @@ public class EmpresaController {
         return ResponseEntity.ok(origemRepository.findAllByEmpresaId(userDetails.getEmpresaId()));
     }
 
+    @GetMapping("/me/banco")
+    public ResponseEntity<List<Banco>> getBancoListByEmpresaMe() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(bancoRepository.findAllByEmpresaId(userDetails.getEmpresaId()));
+    }
+
     @GetMapping("/me/adicional")
     public ResponseEntity<List<Adicional>> getAdicionalListByEmpresaMe() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -322,9 +337,20 @@ public class EmpresaController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Optional<Resource> file = uploadService.load("empresa/%d/%s".formatted(userDetails.getEmpresaId(), filename));
+
         if (file.isPresent()) {
+
+            String contentType = "";
+
+            try {
+                Path path = Paths.get(file.get().getURI());
+                contentType = Files.probeContentType(path);
+            } catch (IOException e) {
+
+            }
+
             return ResponseEntity.ok()
-                            .contentType(MediaType.IMAGE_PNG)
+                            .contentType(MediaType.valueOf(contentType))
                             .cacheControl(CacheControl.maxAge(30, TimeUnit.DAYS))
                             .body(file.get());
         } else {

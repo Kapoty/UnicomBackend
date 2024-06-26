@@ -16,4 +16,8 @@ public class EquipePatchRequest {
     @NotBlank
     private String nome;
 
+    private String icon;
+
+    private String iconFilename;
+
 }

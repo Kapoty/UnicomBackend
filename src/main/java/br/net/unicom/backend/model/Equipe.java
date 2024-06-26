@@ -75,4 +75,10 @@ public class Equipe {
     @JsonIgnore
     private List<Usuario> usuarioList;
 
+    @Length(max = 45)
+    private String icon;
+
+    @Length(max = 50)
+    private String iconFilename;
+
 }

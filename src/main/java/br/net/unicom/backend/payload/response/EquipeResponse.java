@@ -23,4 +23,8 @@ public class EquipeResponse {
 
     private UsuarioPublicResponse gerente;
 
+    private String icon;
+
+    private String iconFilename;
+
 }

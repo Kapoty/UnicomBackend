@@ -16,4 +16,8 @@ public class EquipePostRequest {
     @NotBlank
     private String nome;
 
+    private String icon;
+
+    private String iconFilename;
+
 }

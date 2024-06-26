@@ -2,7 +2,6 @@ package br.net.unicom.backend.payload.response;
 
 import java.util.List;
 
-import br.net.unicom.backend.model.Usuario;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,5 +24,9 @@ public class MinhaEquipeResponse {
     private UsuarioPublicResponse gerente;
 
     private List<UsuarioPublicResponse> usuarioList;
+
+    private String icon;
+
+    private String iconFilename;
 
 }
