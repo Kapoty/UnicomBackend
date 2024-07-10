@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.net.unicom.backend.model.Equipe;
+import br.net.unicom.backend.model.Usuario;
 import br.net.unicom.backend.payload.response.MinhaEquipeResponse;
 import br.net.unicom.backend.payload.response.UsuarioPublicResponse;
 import br.net.unicom.backend.repository.EquipeRepository;
@@ -51,16 +52,19 @@ public class MinhaEquipeController {
     @GetMapping("{equipeId}")
     public ResponseEntity<MinhaEquipeResponse> getMinhaEquipeByEquipeId(@Valid @PathVariable("equipeId") Integer equipeId) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Usuario usuario = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).get();
+
         Optional<Equipe> equipe = equipeRepository.findByEquipeId(equipeId);
         if (equipe.isEmpty())
             return ResponseEntity.notFound().build();
-        if (!equipe.get().getSupervisorId().equals(userDetails.getId()) && !equipe.get().getGerenteId().equals(userDetails.getId()) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
+        if (!(userDetails.hasAuthority("VER_TODAS_EQUIPES") || (equipe.get().getSupervisor() != null && equipe.get().getSupervisor().equals(usuario)) || (equipe.get().getGerente() != null && equipe.get().getGerente().equals(usuario))) )
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         MinhaEquipeResponse minhaEquipeResponse = modelMapper.map(equipe.get(), MinhaEquipeResponse.class);
         minhaEquipeResponse.setUsuarioList(
             usuarioRepository.findAllByEquipeId(equipeId)
             .stream()
-            .map(usuario -> modelMapper.map(usuario, UsuarioPublicResponse.class))
+            .map(u -> modelMapper.map(u, UsuarioPublicResponse.class))
             .collect(Collectors.toList())
             );
         return ResponseEntity.ok(minhaEquipeResponse);
