@@ -54,7 +54,7 @@ public class MinhaEquipeController {
         Optional<Equipe> equipe = equipeRepository.findByEquipeId(equipeId);
         if (equipe.isEmpty())
             return ResponseEntity.notFound().build();
-        if (equipe.get().getSupervisorId() != userDetails.getId() && equipe.get().getGerenteId() != userDetails.getId() && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
+        if (!equipe.get().getSupervisorId().equals(userDetails.getId()) && !equipe.get().getGerenteId().equals(userDetails.getId()) && !userDetails.hasAuthority("VER_TODAS_EQUIPES"))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         MinhaEquipeResponse minhaEquipeResponse = modelMapper.map(equipe.get(), MinhaEquipeResponse.class);
         minhaEquipeResponse.setUsuarioList(
