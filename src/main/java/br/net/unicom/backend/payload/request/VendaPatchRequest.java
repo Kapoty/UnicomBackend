@@ -12,10 +12,12 @@ import br.net.unicom.backend.model.enums.VendaGeneroEnum;
 import br.net.unicom.backend.model.enums.VendaPorteEnum;
 import br.net.unicom.backend.model.enums.VendaReimputadoEnum;
 import br.net.unicom.backend.model.enums.VendaSuporteEnum;
+import br.net.unicom.backend.model.enums.VendaTipoDeContaEnum;
 import br.net.unicom.backend.model.enums.VendaTipoPessoaEnum;
 import br.net.unicom.backend.model.enums.VendaTipoProdutoEnum;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -62,7 +64,7 @@ public class VendaPatchRequest {
     @Length(max = 200)
     private String nome;
 
-    @AssertTrue(message = "deve ser vazio")
+    @AssertTrue(message = "não deve ser vazio")
     private boolean isNomeValid() {
         if (this.tipoPessoa == null || this.tipoPessoa.equals(VendaTipoPessoaEnum.CNPJ))
             return true;
@@ -84,6 +86,15 @@ public class VendaPatchRequest {
 
     private VendaGeneroEnum genero;
 
+    @AssertTrue(message = "não pode ser vazio")
+    private boolean isGeneroValid() {
+        if (this.tipoPessoa == null || this.tipoPessoa.equals(VendaTipoPessoaEnum.CNPJ))
+            return true;
+        if (this.genero == null)
+            return false;
+        return true;
+    }
+
     @NotNull
     @Length(max = 20)
     private String rg;
@@ -101,11 +112,38 @@ public class VendaPatchRequest {
     @Length(max = 50)
     private String rgOrgaoEmissor;
 
+    @AssertTrue(message = "não pode ser vazio")
+    private boolean isRgOrgaoEmissorValid() {
+        if (this.tipoPessoa == null || this.tipoPessoa.equals(VendaTipoPessoaEnum.CNPJ))
+            return true;
+        if (this.rgOrgaoEmissor.isBlank())
+            return false;
+        return true;
+    }
+
     private LocalDate rgDataEmissao;
+    
+    @AssertTrue(message = "não pode ser nula")
+    private boolean isRgDataEmissaoValid() {
+        if (this.tipoPessoa == null || this.tipoPessoa.equals(VendaTipoPessoaEnum.CNPJ))
+            return true;
+        if (this.rgDataEmissao == null)
+            return false;
+        return true;
+    }
 
     @NotNull
     @Length(max = 200)
     private String nomeDaMae;
+    
+    @AssertTrue(message = "não pode ser vazio")
+    private boolean isNomeDaMaeValid() {
+        if (this.tipoPessoa == null || this.tipoPessoa.equals(VendaTipoPessoaEnum.CNPJ))
+            return true;
+        if (this.nomeDaMae.isBlank())
+            return false;
+        return true;
+    }
 
     @NotBlank
     @Length(max = 200)
@@ -116,7 +154,7 @@ public class VendaPatchRequest {
     private String contato1;
 
     @NotNull
-    @Length(max = 11)
+    @Length(min= 11, max = 11)
     private String contato2;
 
     @NotNull
@@ -124,6 +162,7 @@ public class VendaPatchRequest {
     private String contato3;
 
     @NotNull
+    @Email
     @Length(max = 200)
     private String email;
 
@@ -292,6 +331,8 @@ public class VendaPatchRequest {
     @NotNull
     @Length(max = 50)
     private String banco;
+
+    private VendaTipoDeContaEnum tipoDeConta;
 
     @NotNull
     @Length(max = 200)

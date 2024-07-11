@@ -17,6 +17,7 @@ import br.net.unicom.backend.model.enums.VendaGeneroEnum;
 import br.net.unicom.backend.model.enums.VendaPorteEnum;
 import br.net.unicom.backend.model.enums.VendaReimputadoEnum;
 import br.net.unicom.backend.model.enums.VendaSuporteEnum;
+import br.net.unicom.backend.model.enums.VendaTipoDeContaEnum;
 import br.net.unicom.backend.model.enums.VendaTipoPessoaEnum;
 import br.net.unicom.backend.model.enums.VendaTipoProdutoEnum;
 import jakarta.persistence.CascadeType;
@@ -377,6 +378,9 @@ public class Venda {
     @NotNull
     @Length(max = 50)
     private String banco;
+
+    @Enumerated(EnumType.STRING)
+    private VendaTipoDeContaEnum tipoDeConta;
 
     @NotNull
     @Length(max = 200)

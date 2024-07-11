@@ -44,6 +44,9 @@ import br.net.unicom.backend.model.VendaAtualizacao;
 import br.net.unicom.backend.model.VendaFatura;
 import br.net.unicom.backend.model.VendaProduto;
 import br.net.unicom.backend.model.VendaProdutoPortabilidade;
+import br.net.unicom.backend.model.enums.VendaBrscanEnum;
+import br.net.unicom.backend.model.enums.VendaReimputadoEnum;
+import br.net.unicom.backend.model.enums.VendaSuporteEnum;
 import br.net.unicom.backend.model.exception.FieldInvalidException;
 import br.net.unicom.backend.model.projection.VendaAtoresProjection;
 import br.net.unicom.backend.payload.request.VendaFaturaRequest;
@@ -235,6 +238,20 @@ public class VendaController {
 
         modelMapper.map(vendaPatchRequest, venda);
 
+        // mapear atributos com permissao ALTERAR_AUDITOR
+
+        if (userDetails.hasAuthority("ALTERAR_AUDITOR")) {
+            venda.setOs(vendaPatchRequest.getOs());
+            venda.setCustcode(vendaPatchRequest.getCustcode());
+            venda.setOrdem(vendaPatchRequest.getOrdem());
+            venda.setReimputado(vendaPatchRequest.getReimputado());
+            venda.setDataInstalacao(vendaPatchRequest.getDataInstalacao());
+            venda.setVendaOriginal(vendaPatchRequest.getVendaOriginal());
+            venda.setBrscan(vendaPatchRequest.getBrscan());
+            venda.setSuporte(vendaPatchRequest.getSuporte());
+            venda.setLoginVendedor(vendaPatchRequest.getLoginVendedor());
+        }
+
         // atualizar dataStatus e criar atualizacao
 
         LocalDateTime dataStatus = LocalDateTime.now();
@@ -362,6 +379,30 @@ public class VendaController {
         // mapear atributos
 
         Venda venda = modelMapper.map(vendaPostRequest, Venda.class);
+
+        // mapear atributos com permissao ALTERAR_AUDITOR
+
+        if (userDetails.hasAuthority("ALTERAR_AUDITOR")) {
+            venda.setOs(vendaPostRequest.getOs());
+            venda.setCustcode(vendaPostRequest.getCustcode());
+            venda.setOrdem(vendaPostRequest.getOrdem());
+            venda.setReimputado(vendaPostRequest.getReimputado());
+            venda.setDataInstalacao(vendaPostRequest.getDataInstalacao());
+            venda.setVendaOriginal(vendaPostRequest.getVendaOriginal());
+            venda.setBrscan(vendaPostRequest.getBrscan());
+            venda.setSuporte(vendaPostRequest.getSuporte());
+            venda.setLoginVendedor(vendaPostRequest.getLoginVendedor());
+        } else {
+            venda.setOs("");
+            venda.setCustcode("");
+            venda.setOrdem("");
+            venda.setReimputado(VendaReimputadoEnum.NAO);
+            venda.setDataInstalacao(null);
+            venda.setVendaOriginal(true);
+            venda.setBrscan(VendaBrscanEnum.NAO);
+            venda.setSuporte(VendaSuporteEnum.NAO);
+            venda.setLoginVendedor("");
+        }
 
         // definir empresAId
 

@@ -33,6 +33,16 @@ public class ModelMapperConfiguration {
             mapper.skip(Venda::setCadastradorExterno);
             mapper.skip(Venda::setProdutoList);
             mapper.skip(Venda::setFaturaList);
+
+            mapper.skip(Venda::setOs);
+            mapper.skip(Venda::setCustcode);
+            mapper.skip(Venda::setOrdem);
+            mapper.skip(Venda::setReimputado);
+            mapper.skip(Venda::setDataInstalacao);
+            mapper.skip(Venda::setVendaOriginal);
+            mapper.skip(Venda::setBrscan);
+            mapper.skip(Venda::setSuporte);
+            mapper.skip(Venda::setLoginVendedor);
         });
 
         modelMapper.typeMap(VendaProdutoRequest.class, VendaProduto.class).addMappings(mapper -> {
@@ -50,6 +60,16 @@ public class ModelMapperConfiguration {
             mapper.skip(Venda::setCadastradorExterno);
             mapper.skip(Venda::setProdutoList);
             mapper.skip(Venda::setFaturaList);
+
+            mapper.skip(Venda::setOs);
+            mapper.skip(Venda::setCustcode);
+            mapper.skip(Venda::setOrdem);
+            mapper.skip(Venda::setReimputado);
+            mapper.skip(Venda::setDataInstalacao);
+            mapper.skip(Venda::setVendaOriginal);
+            mapper.skip(Venda::setBrscan);
+            mapper.skip(Venda::setSuporte);
+            mapper.skip(Venda::setLoginVendedor);
         });
 
         modelMapper.typeMap(VendaListRequest.class, FiltroVenda.class).addMappings(mapper -> {
