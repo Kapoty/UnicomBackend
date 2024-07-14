@@ -23,8 +23,8 @@ public class VendaService {
 
     public Boolean usuarioPodeVerVenda(Usuario usuario, Usuario vendedor, Usuario supervisor) {
 
-        if (vendedor == null)
-            return true;
+        //if (vendedor == null)
+        //    return true;
 
         if (usuario.equals(vendedor))
             return true;

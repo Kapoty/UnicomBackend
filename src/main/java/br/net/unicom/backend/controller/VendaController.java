@@ -141,9 +141,15 @@ public class VendaController {
         timeElapsed = Duration.between(start, finish).toMillis();
         logger.info("1: " + String.valueOf(timeElapsed));
 
-        // Carregar atores da venda
+        // Carregar atores da venda ja filtradas
 
-        List<VendaAtoresProjection> vendaAtoresList = vendaRepository.findAllByEmpresaIdAndFilters(
+        Boolean verTodasVendas = userDetails.hasAuthority("VER_TODAS_VENDAS");
+        List<Integer> usuarioIdList = new ArrayList<>();
+
+        if (!verTodasVendas)
+            usuarioIdList = usuarioService.getUsuarioListLessThanUsuario(usuario, true).stream().map(u -> u.getUsuarioId()).collect(Collectors.toList());
+
+        List<VendaAtoresProjection> vendaAtoresList = vendaRepository.findAllByEmpresaIdAndFiltersAndUsuarioIdList(
             userDetails.getEmpresaId(),
             vendaListRequest.getTipoProduto() != null ? vendaListRequest.getTipoProduto().toString() : null,
             vendaListRequest.getPdv().toLowerCase(),
@@ -156,7 +162,9 @@ public class VendaController {
             vendaListRequest.getCpf().toLowerCase(),
             vendaListRequest.getNome().toLowerCase(),
             vendaListRequest.getOffset(),
-            vendaListRequest.getLimit()
+            vendaListRequest.getLimit(),
+            verTodasVendas,
+            usuarioIdList
         );
 
         finish = Instant.now();
@@ -165,12 +173,12 @@ public class VendaController {
 
         // Filtrar vendas por permissão dos atores
 
-        if (!userDetails.hasAuthority("VER_TODAS_VENDAS")) {
+        /*if (!userDetails.hasAuthority("VER_TODAS_VENDAS")) {
             Set<Integer> usuarioIdList = usuarioService.getUsuarioListLessThanUsuario(usuario, true).stream().map(u -> u.getUsuarioId()).collect(Collectors.toSet());
 
             vendaAtoresList.removeIf(vendaAtor -> {
-                if (vendaAtor.getVendedorId() == null)
-                    return false;
+                //if (vendaAtor.getVendedorId() == null)
+                //    return false;
                 if (usuarioIdList.contains(vendaAtor.getVendedorId()) || usuarioIdList.contains(vendaAtor.getSupervisorId()))
                     return false;
                 return true;
@@ -179,7 +187,7 @@ public class VendaController {
 
         finish = Instant.now();
         timeElapsed = Duration.between(start, finish).toMillis();
-        logger.info("3: " + String.valueOf(timeElapsed));
+        logger.info("3: " + String.valueOf(timeElapsed));*/
 
         // Carregar vendas
 
