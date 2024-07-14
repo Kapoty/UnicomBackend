@@ -27,10 +27,12 @@ public class ModelMapperConfiguration {
             mapper.skip(Venda::setSupervisorId);
             mapper.skip(Venda::setAuditorId);
             mapper.skip(Venda::setCadastradorId);
+            mapper.skip(Venda::setAgenteBiometriaId);
             mapper.skip(Venda::setVendedorExterno);
             mapper.skip(Venda::setSupervisorExterno);
             mapper.skip(Venda::setAuditorExterno);
             mapper.skip(Venda::setCadastradorExterno);
+            mapper.skip(Venda::setAgenteBiometriaExterno);
             mapper.skip(Venda::setProdutoList);
             mapper.skip(Venda::setFaturaList);
 
@@ -54,10 +56,12 @@ public class ModelMapperConfiguration {
             mapper.skip(Venda::setSupervisorId);
             mapper.skip(Venda::setAuditorId);
             mapper.skip(Venda::setCadastradorId);
+            mapper.skip(Venda::setAgenteBiometriaId);
             mapper.skip(Venda::setVendedorExterno);
             mapper.skip(Venda::setSupervisorExterno);
             mapper.skip(Venda::setAuditorExterno);
             mapper.skip(Venda::setCadastradorExterno);
+            mapper.skip(Venda::setAgenteBiometriaExterno);
             mapper.skip(Venda::setProdutoList);
             mapper.skip(Venda::setFaturaList);
 

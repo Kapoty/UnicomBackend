@@ -300,6 +300,8 @@ public class VendaPostRequest {
 
     private Integer cadastradorId;
 
+    private Integer agenteBiometriaId;
+
     @NotNull
     private Boolean prints;
 
@@ -362,6 +364,10 @@ public class VendaPostRequest {
     @NotNull
     @Length(max = 100)
     private String cadastradorExterno;
+
+    @NotNull
+    @Length(max = 100)
+    private String agenteBiometriaExterno;
 
     @NotEmpty
     private List<@Valid VendaProdutoRequest> produtoList;

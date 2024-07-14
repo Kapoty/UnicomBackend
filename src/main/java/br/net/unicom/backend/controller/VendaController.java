@@ -341,8 +341,10 @@ public class VendaController {
         if (userDetails.hasAuthority("ALTERAR_AUDITOR")) {
             venda.setAuditorId(vendaPatchRequest.getAuditorId());
             venda.setCadastradorId(vendaPatchRequest.getCadastradorId());
+            venda.setAgenteBiometriaId(vendaPatchRequest.getAgenteBiometriaId());
             venda.setAuditorExterno(vendaPatchRequest.getAuditorExterno());
             venda.setCadastradorExterno(vendaPatchRequest.getCadastradorExterno());
+            venda.setAgenteBiometriaExterno(vendaPatchRequest.getAgenteBiometriaExterno());
         }
 
         vendaRepository.saveAndFlush(venda);
@@ -451,8 +453,10 @@ public class VendaController {
         if (userDetails.hasAuthority("ALTERAR_AUDITOR")) {
             venda.setAuditorId(vendaPostRequest.getAuditorId());
             venda.setCadastradorId(vendaPostRequest.getCadastradorId());
+            venda.setAgenteBiometriaId(vendaPostRequest.getAgenteBiometriaId());
             venda.setAuditorExterno(vendaPostRequest.getAuditorExterno());
             venda.setCadastradorExterno(vendaPostRequest.getCadastradorExterno());
+            venda.setAgenteBiometriaExterno(vendaPostRequest.getAgenteBiometriaExterno());
         }
 
         // definir dataCadastro dataVenda dataStatus statusId

@@ -335,6 +335,15 @@ public class Venda {
     @ToString.Exclude
     Usuario cadastrador;
 
+    @Column(name = "agente_biometria_id")
+    private Integer agenteBiometriaId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "agente_biometria_id", insertable = false, updatable = false)
+    @JsonIgnore
+    @ToString.Exclude
+    Usuario agenteBiometria;
+
     @NotNull
     private Boolean prints;
 
@@ -400,6 +409,10 @@ public class Venda {
     @NotNull
     @Length(max = 100)
     private String cadastradorExterno = "";
+
+    @NotNull
+    @Length(max = 100)
+    private String agenteBiometriaExterno = "";
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "venda", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("vendaProdutoId.produtoId")
