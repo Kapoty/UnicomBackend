@@ -173,12 +173,12 @@ public class Venda {
     @Length(max = 200)
     private String nomeContato;
 
-    @NotBlank
-    @Length(min= 11, max = 11)
+    @NotNull
+    @Length(min= 10, max = 11)
     private String contato1;
 
     @NotNull
-    @Length(max = 11)
+    @Length(min= 10, max = 11)
     private String contato2;
 
     @NotNull
@@ -349,7 +349,6 @@ public class Venda {
     @NotNull
     private Boolean vendaOriginal;
 
-    @NotNull
     @Enumerated(EnumType.STRING)
     private VendaBrscanEnum brscan;
 

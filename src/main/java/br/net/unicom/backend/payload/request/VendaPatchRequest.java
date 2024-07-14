@@ -150,18 +150,18 @@ public class VendaPatchRequest {
     private String nomeContato;
 
     @NotNull
-    @Length(min= 11, max = 11)
+    @Length(min= 10, max = 11)
     private String contato1;
 
     @NotNull
-    @Length(min= 11, max = 11)
+    @Length(min= 10, max = 11)
     private String contato2;
 
     @NotNull
     @Length(max = 11)
     private String contato3;
 
-    @NotNull
+    @NotBlank
     @Email
     @Length(max = 200)
     private String email;
@@ -197,6 +197,15 @@ public class VendaPatchRequest {
     private LocalDate dataConstituicao;
 
     private LocalDate dataEmissao;
+
+    @AssertTrue(message = "não pode ser nula")
+    private boolean isDataEmissaoValid() {
+        if (this.tipoPessoa == null || this.tipoPessoa.equals(VendaTipoPessoaEnum.CPF))
+            return true;
+        if (this.dataEmissao == null)
+            return false;
+        return true;
+    }
 
     @NotNull
     @Length(max = 200)
@@ -304,7 +313,6 @@ public class VendaPatchRequest {
     @NotNull
     private Boolean vendaOriginal;
 
-    @NotNull
     private VendaBrscanEnum brscan;
 
     @NotNull

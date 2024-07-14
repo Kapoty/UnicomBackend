@@ -173,7 +173,7 @@ public class GoogleSheetsVenda {
     @JsonProperty("Venda Original")
     private String vendaOriginal;
 
-    @JsonProperty("BrScan")
+    @JsonProperty("Biometria")
     private String brscan;
 
     @JsonProperty("Suporte")

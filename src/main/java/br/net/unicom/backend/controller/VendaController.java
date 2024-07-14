@@ -307,23 +307,27 @@ public class VendaController {
 
         // criar faturas
 
-        List<VendaFatura> faturaList = new ArrayList<>();
+        if (userDetails.hasAuthority("ALTERAR_AUDITOR")) {
 
-        for (int faturaId = 1; faturaId <= vendaPatchRequest.getFaturaList().size(); faturaId++) {
-            VendaFaturaRequest faturaRequest = vendaPatchRequest.getFaturaList().get(faturaId - 1);
+            List<VendaFatura> faturaList = new ArrayList<>();
 
-            VendaFatura fatura;
-            if (venda.getFaturaList().size() >= faturaId)
-                fatura = venda.getFaturaList().get(faturaId - 1);
-            else
-                fatura = new VendaFatura(venda, faturaId);
+            for (int faturaId = 1; faturaId <= vendaPatchRequest.getFaturaList().size(); faturaId++) {
+                VendaFaturaRequest faturaRequest = vendaPatchRequest.getFaturaList().get(faturaId - 1);
 
-            modelMapper.map(faturaRequest, fatura);
-            
-            faturaList.add(fatura);
+                VendaFatura fatura;
+                if (venda.getFaturaList().size() >= faturaId)
+                    fatura = venda.getFaturaList().get(faturaId - 1);
+                else
+                    fatura = new VendaFatura(venda, faturaId);
+
+                modelMapper.map(faturaRequest, fatura);
+                
+                faturaList.add(fatura);
+            }
+
+            venda.setFaturaList(faturaList);
+
         }
-
-        venda.setFaturaList(faturaList);
 
         // alterar vendedor/supervisor/auditor/cadastrador se houver permissao
 
@@ -399,7 +403,7 @@ public class VendaController {
             venda.setReimputado(VendaReimputadoEnum.NAO);
             venda.setDataInstalacao(null);
             venda.setVendaOriginal(true);
-            venda.setBrscan(VendaBrscanEnum.NAO);
+            venda.setBrscan(null);
             venda.setSuporte(VendaSuporteEnum.NAO);
             venda.setLoginVendedor("");
         }
@@ -508,19 +512,23 @@ public class VendaController {
 
         // criar faturas
 
-        List<VendaFatura> faturaList = new ArrayList<>();
+        if (userDetails.hasAuthority("ALTERAR_AUDITOR")) {
 
-        for (int faturaId = 1; faturaId <= vendaPostRequest.getFaturaList().size(); faturaId++) {
-            VendaFaturaRequest faturaRequest = vendaPostRequest.getFaturaList().get(faturaId - 1);
+            List<VendaFatura> faturaList = new ArrayList<>();
 
-            VendaFatura fatura = new VendaFatura(venda, faturaId);
+            for (int faturaId = 1; faturaId <= vendaPostRequest.getFaturaList().size(); faturaId++) {
+                VendaFaturaRequest faturaRequest = vendaPostRequest.getFaturaList().get(faturaId - 1);
 
-            modelMapper.map(faturaRequest, fatura);
-            
-            faturaList.add(fatura);
+                VendaFatura fatura = new VendaFatura(venda, faturaId);
+
+                modelMapper.map(faturaRequest, fatura);
+                
+                faturaList.add(fatura);
+            }
+
+            venda.setFaturaList(faturaList);
+        
         }
-
-        venda.setFaturaList(faturaList);
 
         // salvar venda novamente
 
