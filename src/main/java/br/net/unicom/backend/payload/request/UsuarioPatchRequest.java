@@ -34,7 +34,7 @@ public class UsuarioPatchRequest {
 
     private Optional<LocalDate> dataNascimento;
 
-    private Optional<@Length(min = 11, max = 11) String> cpf;
+    private Optional<@NotBlank @Length(min = 11, max = 11) String> cpf;
 
     private Optional<@Length(min = 11, max = 11) String> telefoneCelular;
 

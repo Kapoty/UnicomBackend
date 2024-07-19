@@ -78,6 +78,7 @@ public class Usuario {
     private LocalDate dataNascimento;
 
     @Length(min = 11, max = 11)
+    @NotBlank
     private String cpf;
 
     @Length(min = 11, max = 11)
