@@ -264,6 +264,42 @@ public class RegistroJornadaController {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
+    @PreAuthorize("hasAuthority('REGISTRAR_JORNADA')")
+    @GetMapping("/me/dia-fechamento-folha")
+    public ResponseEntity<Integer> getDiaFechamentoFolha() throws PontoConfiguracaoNaoEncontradoException {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        PontoConfiguracao pontoConfiguracao = pontoConfiguracaoRepository.findByEmpresaId(userDetails.getEmpresaId()).orElseThrow(PontoConfiguracaoNaoEncontradoException::new);
+
+        return ResponseEntity.ok(pontoConfiguracao.getDiaFechamentoFolha());
+    }
+
+    @GetMapping("/{usuarioId}/numero-correcoes-nao-aprovadas")
+    public ResponseEntity<Integer> getNumeroCorrecoesNaoAprovadas(@PathVariable("usuarioId") String usuarioId) throws PontoConfiguracaoNaoEncontradoException {
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Usuario usuarioPai = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).orElseThrow(NoSuchElementException::new);
+        Usuario usuarioFilho = usuarioRepository.findByUsuarioId(usuarioService.parseUsuarioIdString(userDetails, usuarioId)).orElseThrow(NoSuchElementException::new);
+
+        if (!usuarioPai.equals(usuarioFilho) && !usuarioService.isUsuarioGreaterThan(usuarioPai, usuarioFilho))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        PontoConfiguracao pontoConfiguracao = pontoConfiguracaoRepository.findByEmpresaId(usuarioFilho.getEmpresaId()).orElseThrow(PontoConfiguracaoNaoEncontradoException::new);
+
+        LocalDate hoje = LocalDate.now();
+
+        LocalDate startData = LocalDate.of(hoje.getYear(), hoje.getMonthValue(), 1).minusMonths(1).plusDays(pontoConfiguracao.getDiaFechamentoFolha());
+        LocalDate endData = LocalDate.of(hoje.getYear(), hoje.getMonthValue(), Math.min(pontoConfiguracao.getDiaFechamentoFolha(), startData.getMonth().length(Year.of(startData.getYear()).isLeap())));
+
+        if (startData.getMonth() == endData.getMonth())
+            startData = startData.withDayOfMonth(1);
+
+        Integer numeroCorrecoesNaoAprovadas = registroJornadaCorrecaoRepository.getNumeroCorrecoesNaoAprovadas(usuarioFilho.getUsuarioId(), startData, endData);
+
+        return ResponseEntity.ok(numeroCorrecoesNaoAprovadas);
+    }
+
     @PostMapping("/{usuarioId}/report")
     public ResponseEntity<RegistroJornadaReportResponse> generateReportByUsuarioId(@PathVariable("usuarioId") Integer usuarioId, @Valid @RequestBody RegistroJornadaReportByUsuarioIdRequest registroJornadaReportByUsuarioIdRequest) throws UsuarioSemContratoException, UsuarioSemJornadaException, UsuarioNaoRegistraPontoHojeException, PontoConfiguracaoNaoEncontradoException, RegistroPontoUnauthorizedException, JornadaStatusNaoEncontradoException, JornadaStatusNaoPermitidoException {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -284,9 +320,6 @@ public class RegistroJornadaController {
         registroJornadaReportResponse.setUsuario(modelMapper.map(usuarioFilho, RegistroJornadaReportUsuarioResponse.class));
 
         List<RegistroJornadaReportDayResponse> dayList = new ArrayList<>();
-
-        /*LocalDate startData = LocalDate.of(registroJornadaReportByUsuarioIdRequest.getAno(), registroJornadaReportByUsuarioIdRequest.getMes(), 1);
-        LocalDate endData = startData.plusDays(startData.getMonth().length(Year.of(startData.getYear()).isLeap()));*/
 
         LocalDate startData = LocalDate.of(registroJornadaReportByUsuarioIdRequest.getAno(), registroJornadaReportByUsuarioIdRequest.getMes(), 1).minusMonths(1).plusDays(pontoConfiguracao.getDiaFechamentoFolha());
         LocalDate endData = LocalDate.of(registroJornadaReportByUsuarioIdRequest.getAno(), registroJornadaReportByUsuarioIdRequest.getMes(), Math.min(pontoConfiguracao.getDiaFechamentoFolha(), startData.getMonth().length(Year.of(startData.getYear()).isLeap())));
