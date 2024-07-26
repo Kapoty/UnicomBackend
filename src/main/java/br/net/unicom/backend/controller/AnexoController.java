@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,9 +24,16 @@ import org.springframework.web.multipart.MultipartFile;
 import com.google.api.services.drive.model.File;
 
 import br.net.unicom.backend.model.Empresa;
+import br.net.unicom.backend.model.Usuario;
+import br.net.unicom.backend.model.Venda;
+import br.net.unicom.backend.model.VendaStatus;
+import br.net.unicom.backend.model.enums.VendaStatusCategoriaEnum;
 import br.net.unicom.backend.repository.EmpresaRepository;
+import br.net.unicom.backend.repository.UsuarioRepository;
+import br.net.unicom.backend.repository.VendaRepository;
 import br.net.unicom.backend.security.service.UserDetailsImpl;
 import br.net.unicom.backend.service.AnexoService;
+import br.net.unicom.backend.service.VendaService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
@@ -45,21 +53,50 @@ public class AnexoController {
     
     @Autowired
     EmpresaRepository empresaRepository;
+
+    @Autowired
+    VendaRepository vendaRepository;
+
+    @Autowired
+    VendaService vendaService;
+
+    @Autowired
+    UsuarioRepository usuarioRepository;
     
     @PreAuthorize("hasAuthority('CADASTRAR_VENDAS')")
     @GetMapping("/venda/{vendaId}")
-    public List<File> listAllByVendaId(@Valid @PathVariable("vendaId") Integer vendaId) throws Exception {
+    public ResponseEntity<List<File>> listAllByVendaId(@Valid @PathVariable("vendaId") Integer vendaId) throws Exception {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Empresa empresa = empresaRepository.findByEmpresaId(userDetails.getEmpresaId()).orElseThrow(NoSuchElementException::new);
+        Usuario usuario = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).get();
+        Empresa empresa = empresaRepository.findByEmpresaId(userDetails.getEmpresaId()).get();
+        Venda venda = vendaRepository.findByVendaId(vendaId).get();
 
-        return anexoService.listAllFilesByVendaId(empresa, vendaId, userDetails.hasAuthority("VER_LIXEIRA"));
+        // verificar se o usuário tem permissão para alterar a venda
+
+        // pode ver a venda
+        if (!userDetails.hasAuthority("VER_TODAS_VENDAS") && !vendaService.usuarioPodeVerVenda(usuario , venda))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        return ResponseEntity.ok(anexoService.listAllFilesByVendaId(empresa, vendaId, userDetails.hasAuthority("VER_LIXEIRA")));
     }
     
     @PreAuthorize("hasAuthority('CADASTRAR_VENDAS')")
     @PostMapping("/venda/{vendaId}/upload")
     public ResponseEntity<String> uploadByVendaId(@Valid @PathVariable("vendaId") Integer vendaId, @RequestParam("file") MultipartFile file) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Empresa empresa = empresaRepository.findByEmpresaId(userDetails.getEmpresaId()).orElseThrow(NoSuchElementException::new);
+        Usuario usuario = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).get();
+        Empresa empresa = empresaRepository.findByEmpresaId(userDetails.getEmpresaId()).get();
+        Venda venda = vendaRepository.findByVendaId(vendaId).get();
+
+        // verificar se o usuário tem permissão para alterar a venda
+
+        // pode ver a venda
+        if (!userDetails.hasAuthority("VER_TODAS_VENDAS") && !vendaService.usuarioPodeVerVenda(usuario , venda))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        // pode alterar venda com status em pos_venda
+        if (!userDetails.hasAuthority("ALTERAR_AUDITOR") && venda.getStatus().getCategoria().equals(VendaStatusCategoriaEnum.POS_VENDA))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         
         String fileId = anexoService.uploadByVendaId(empresa, vendaId, file);
 
@@ -75,24 +112,69 @@ public class AnexoController {
     }
 
     @PreAuthorize("hasAuthority('CADASTRAR_VENDAS')")
-    @PostMapping("/trash/{fileId}")
-    public ResponseEntity<Void> trashByFileId(@Valid @PathVariable("fileId") String fileId) throws Exception {
+    @PostMapping("/venda/{vendaId}/trash/{fileId}")
+    public ResponseEntity<Void> trashByFileId(@Valid @PathVariable("vendaId") Integer vendaId, @Valid @PathVariable("fileId") String fileId) throws Exception {
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Usuario usuario = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).get();
+        Venda venda = vendaRepository.findByVendaId(vendaId).get();
+
+        // verificar se o usuário tem permissão para alterar a venda
+
+        // pode ver a venda
+        if (!userDetails.hasAuthority("VER_TODAS_VENDAS") && !vendaService.usuarioPodeVerVenda(usuario , venda))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        // pode alterar venda com status em pos_venda
+        if (!userDetails.hasAuthority("ALTERAR_AUDITOR") && venda.getStatus().getCategoria().equals(VendaStatusCategoriaEnum.POS_VENDA))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
         anexoService.trashByFileId(fileId);
         
         return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasAuthority('CADASTRAR_VENDAS') && hasAuthority('VER_LIXEIRA')")
-    @PostMapping("/untrash/{fileId}")
-    public ResponseEntity<Void> untrashByFileId(@Valid @PathVariable("fileId") String fileId) throws Exception {
+    @PostMapping("/venda/{vendaId}/untrash/{fileId}")
+    public ResponseEntity<Void> untrashByFileId(@Valid @PathVariable("vendaId") Integer vendaId, @Valid @PathVariable("fileId") String fileId) throws Exception {
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Usuario usuario = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).get();
+        Venda venda = vendaRepository.findByVendaId(vendaId).get();
+
+        // verificar se o usuário tem permissão para alterar a venda
+
+        // pode ver a venda
+        if (!userDetails.hasAuthority("VER_TODAS_VENDAS") && !vendaService.usuarioPodeVerVenda(usuario , venda))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        // pode alterar venda com status em pos_venda
+        if (!userDetails.hasAuthority("ALTERAR_AUDITOR") && venda.getStatus().getCategoria().equals(VendaStatusCategoriaEnum.POS_VENDA))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
         anexoService.untrashByFileId(fileId);
         
         return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasAuthority('CADASTRAR_VENDAS') && hasAuthority('VER_LIXEIRA')")
-    @DeleteMapping("/delete/{fileId}")
-    public ResponseEntity<Void> deleteByFileId(@Valid @PathVariable("fileId") String fileId) throws Exception {
+    @DeleteMapping("/venda/{vendaId}/delete/{fileId}")
+    public ResponseEntity<Void> deleteByFileId(@Valid @PathVariable("vendaId") Integer vendaId, @Valid @PathVariable("fileId") String fileId) throws Exception {
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Usuario usuario = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).get();
+        Venda venda = vendaRepository.findByVendaId(vendaId).get();
+
+        // verificar se o usuário tem permissão para alterar a venda
+
+        // pode ver a venda
+        if (!userDetails.hasAuthority("VER_TODAS_VENDAS") && !vendaService.usuarioPodeVerVenda(usuario , venda))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        // pode alterar venda com status em pos_venda
+        if (!userDetails.hasAuthority("ALTERAR_AUDITOR") && venda.getStatus().getCategoria().equals(VendaStatusCategoriaEnum.POS_VENDA))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
         anexoService.deleteByFileId(fileId);
         
         return ResponseEntity.noContent().build();

@@ -8,17 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.hibernate.Hibernate;
-import org.hibernate.Session;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,8 +30,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.net.unicom.backend.model.FiltroVenda;
@@ -44,8 +39,9 @@ import br.net.unicom.backend.model.VendaAtualizacao;
 import br.net.unicom.backend.model.VendaFatura;
 import br.net.unicom.backend.model.VendaProduto;
 import br.net.unicom.backend.model.VendaProdutoPortabilidade;
-import br.net.unicom.backend.model.enums.VendaBrscanEnum;
+import br.net.unicom.backend.model.VendaStatus;
 import br.net.unicom.backend.model.enums.VendaReimputadoEnum;
+import br.net.unicom.backend.model.enums.VendaStatusCategoriaEnum;
 import br.net.unicom.backend.model.enums.VendaSuporteEnum;
 import br.net.unicom.backend.model.exception.FieldInvalidException;
 import br.net.unicom.backend.model.projection.VendaAtoresProjection;
@@ -59,6 +55,7 @@ import br.net.unicom.backend.repository.FiltroVendaRepository;
 import br.net.unicom.backend.repository.UsuarioRepository;
 import br.net.unicom.backend.repository.VendaProdutoRepository;
 import br.net.unicom.backend.repository.VendaRepository;
+import br.net.unicom.backend.repository.VendaStatusRepository;
 import br.net.unicom.backend.security.service.UserDetailsImpl;
 import br.net.unicom.backend.service.JsonService;
 import br.net.unicom.backend.service.UsuarioService;
@@ -89,6 +86,9 @@ public class VendaController {
 
     @Autowired
     FiltroVendaRepository filtroVendaRepository;
+
+    @Autowired
+    VendaStatusRepository vendaStatusRepository;
 
     @Autowired
     VendaService vendaService;
@@ -242,6 +242,18 @@ public class VendaController {
         /*JsonNode node = objectMapper.valueToTree(venda);
         HashMap<String, String> before = jsonService.flatten(node, "");*/
 
+        // verificar se o usuário tem permissão para alterar a venda
+
+        // pode ver a venda
+        if (!userDetails.hasAuthority("VER_TODAS_VENDAS") && !vendaService.usuarioPodeVerVenda(usuario , venda))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        VendaStatus novoStatus = vendaStatusRepository.findByVendaStatusId(vendaPatchRequest.getStatusId()).get();
+
+        // pode alterar venda com status em pos_venda
+        if (!userDetails.hasAuthority("ALTERAR_AUDITOR") && (venda.getStatus().getCategoria().equals(VendaStatusCategoriaEnum.POS_VENDA) || novoStatus.getCategoria().equals(VendaStatusCategoriaEnum.POS_VENDA)))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
         // mapear atributos
 
         modelMapper.map(vendaPatchRequest, venda);
@@ -389,6 +401,14 @@ public class VendaController {
         Usuario usuario = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).get();
 
         LocalDateTime agora = LocalDateTime.now();
+
+        // verificar se o usuário tem permissão para alterar a venda
+
+        VendaStatus novoStatus = vendaStatusRepository.findByVendaStatusId(vendaPostRequest.getStatusId()).get();
+
+        // pode alterar venda com status em pos_venda
+        if (!userDetails.hasAuthority("ALTERAR_AUDITOR") && novoStatus.getCategoria().equals(VendaStatusCategoriaEnum.POS_VENDA))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         // mapear atributos
 
