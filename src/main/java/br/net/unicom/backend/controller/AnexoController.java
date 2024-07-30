@@ -2,8 +2,8 @@ package br.net.unicom.backend.controller;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,7 +26,7 @@ import com.google.api.services.drive.model.File;
 import br.net.unicom.backend.model.Empresa;
 import br.net.unicom.backend.model.Usuario;
 import br.net.unicom.backend.model.Venda;
-import br.net.unicom.backend.model.VendaStatus;
+import br.net.unicom.backend.model.VendaAtualizacao;
 import br.net.unicom.backend.model.enums.VendaStatusCategoriaEnum;
 import br.net.unicom.backend.repository.EmpresaRepository;
 import br.net.unicom.backend.repository.UsuarioRepository;
@@ -35,6 +35,7 @@ import br.net.unicom.backend.security.service.UserDetailsImpl;
 import br.net.unicom.backend.service.AnexoService;
 import br.net.unicom.backend.service.VendaService;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
 
@@ -82,7 +83,8 @@ public class AnexoController {
     
     @PreAuthorize("hasAuthority('CADASTRAR_VENDAS')")
     @PostMapping("/venda/{vendaId}/upload")
-    public ResponseEntity<String> uploadByVendaId(@Valid @PathVariable("vendaId") Integer vendaId, @RequestParam("file") MultipartFile file) {
+    @Transactional
+    public ResponseEntity<File> uploadByVendaId(@Valid @PathVariable("vendaId") Integer vendaId, @RequestParam("file") MultipartFile file) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Usuario usuario = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).get();
         Empresa empresa = empresaRepository.findByEmpresaId(userDetails.getEmpresaId()).get();
@@ -98,12 +100,16 @@ public class AnexoController {
         if (!userDetails.hasAuthority("ALTERAR_AUDITOR") && venda.getStatus().getCategoria().equals(VendaStatusCategoriaEnum.POS_VENDA))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         
-        String fileId = anexoService.uploadByVendaId(empresa, vendaId, file);
+        File newFile = anexoService.uploadByVendaId(empresa, vendaId, file);
 
-        if(fileId == null) 
+        if(newFile == null) 
             return ResponseEntity.internalServerError().build();
+
+        // atualizar dataStatus e criar atualizacao
+
+        vendaService.novaAtualizacao(usuario, venda, "Anexo adicionado: " + file.getOriginalFilename());
         
-        return ResponseEntity.ok(fileId);
+        return ResponseEntity.ok(newFile);
     }
 
     @GetMapping("/download/{fileId}")
@@ -129,8 +135,12 @@ public class AnexoController {
         if (!userDetails.hasAuthority("ALTERAR_AUDITOR") && venda.getStatus().getCategoria().equals(VendaStatusCategoriaEnum.POS_VENDA))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
-        anexoService.trashByFileId(fileId);
+        File file = anexoService.trashByFileId(fileId);
         
+        // atualizar dataStatus e criar atualizacao
+
+        vendaService.novaAtualizacao(usuario, venda, "Anexo excluído: " + file.getName());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -152,7 +162,11 @@ public class AnexoController {
         if (!userDetails.hasAuthority("ALTERAR_AUDITOR") && venda.getStatus().getCategoria().equals(VendaStatusCategoriaEnum.POS_VENDA))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
-        anexoService.untrashByFileId(fileId);
+        File file = anexoService.untrashByFileId(fileId);
+
+         // atualizar dataStatus e criar atualizacao
+
+         vendaService.novaAtualizacao(usuario, venda, "Anexo restaurado: " + file.getName());
         
         return ResponseEntity.noContent().build();
     }
@@ -175,7 +189,11 @@ public class AnexoController {
         if (!userDetails.hasAuthority("ALTERAR_AUDITOR") && venda.getStatus().getCategoria().equals(VendaStatusCategoriaEnum.POS_VENDA))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
-        anexoService.deleteByFileId(fileId);
+        File file = anexoService.deleteByFileId(fileId);
+
+         // atualizar dataStatus e criar atualizacao
+
+         vendaService.novaAtualizacao(usuario, venda, "Anexo excluído definitivamente: " + file.getName());
         
         return ResponseEntity.noContent().build();
     }

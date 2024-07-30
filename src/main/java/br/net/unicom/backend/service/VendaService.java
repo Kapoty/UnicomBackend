@@ -1,13 +1,20 @@
 package br.net.unicom.backend.service;
 
+import java.time.LocalDateTime;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import br.net.unicom.backend.model.Usuario;
 import br.net.unicom.backend.model.Venda;
+import br.net.unicom.backend.model.VendaAtualizacao;
+import br.net.unicom.backend.model.enums.VendaReimputadoEnum;
 import br.net.unicom.backend.model.projection.VendaAtoresProjection;
 import br.net.unicom.backend.repository.UsuarioRepository;
+import br.net.unicom.backend.repository.VendaRepository;
+import jakarta.transaction.TransactionScoped;
+import jakarta.transaction.Transactional;
 
 @Service
 public class VendaService {
@@ -20,6 +27,9 @@ public class VendaService {
 
     @Autowired
     UsuarioRepository usuarioRepository;
+
+    @Autowired
+    VendaRepository vendaRepository;
 
     public Boolean usuarioPodeVerVenda(Usuario usuario, Usuario vendedor, Usuario supervisor) {
 
@@ -51,6 +61,26 @@ public class VendaService {
         Usuario supervisor = usuarioRepository.findByUsuarioId(vendaAtoresProjection.getSupervisorId()).orElse(null);
 
         return this.usuarioPodeVerVenda(usuario, vendedor, supervisor);
+    }
+
+    @Transactional
+    public void novaAtualizacao(Usuario usuario, Venda venda, String relato) {
+
+        LocalDateTime dataStatus = LocalDateTime.now();
+
+        venda.setDataStatus(dataStatus);
+
+        VendaAtualizacao atualizacao = new VendaAtualizacao();
+        atualizacao.setVendaId(venda.getVendaId());
+        atualizacao.setStatusId(venda.getStatusId());
+        atualizacao.setUsuarioId(usuario.getUsuarioId());
+        atualizacao.setData(dataStatus);
+        atualizacao.setRelato(relato);
+
+        venda.getAtualizacaoList().add(atualizacao);
+
+        vendaRepository.saveAndFlush(venda);
+
     }
 
 }

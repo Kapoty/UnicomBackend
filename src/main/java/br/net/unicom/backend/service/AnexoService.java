@@ -35,7 +35,7 @@ public class AnexoService {
         return googleDriveService.listFolderContent(folderId, includeTrashed);
     }
 
-    public String uploadByVendaId(Empresa empresa, Integer vendaId, MultipartFile file) {
+    public File uploadByVendaId(Empresa empresa, Integer vendaId, MultipartFile file) {
         return googleDriveService.uploadFile(file, empresa.getGoogledriveFolderId(), "venda/" + vendaId.toString());
     }
 
@@ -44,16 +44,16 @@ public class AnexoService {
         response.sendRedirect(googleDriveService.getWebViewLink(fileId));
     }
 
-    public void trashByFileId(String fileId) throws Exception {
-        googleDriveService.trashFile(fileId);
+    public File trashByFileId(String fileId) throws Exception {
+        return googleDriveService.trashFile(fileId);
     }
 
-    public void untrashByFileId(String fileId) throws Exception {
-        googleDriveService.untrashFile(fileId);
+    public File untrashByFileId(String fileId) throws Exception {
+        return googleDriveService.untrashFile(fileId);
     }
 
-    public void deleteByFileId(String fileId) throws Exception {
-        googleDriveService.deleteFile(fileId);
+    public File deleteByFileId(String fileId) throws Exception {
+        return googleDriveService.deleteFile(fileId);
     }
 
 }

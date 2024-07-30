@@ -126,23 +126,25 @@ public class GoogleDriveService {
 		getInstance().files().get(fileId).executeMediaAndDownloadTo(response.getOutputStream());
 	}
 
-	public void trashFile(String fileId) throws Exception {
+	public File trashFile(String fileId) throws Exception {
 		File newContent = new File();
 		newContent.setTrashed(true);
-		getInstance().files().update(fileId, newContent).setSupportsAllDrives(true).execute();
+		return getInstance().files().update(fileId, newContent).setSupportsAllDrives(true).setFields("name").execute();
 	}
 
-	public void untrashFile(String fileId) throws Exception {
+	public File untrashFile(String fileId) throws Exception {
 		File newContent = new File();
 		newContent.setTrashed(false);
-		getInstance().files().update(fileId, newContent).setSupportsAllDrives(true).execute();
+		return getInstance().files().update(fileId, newContent).setSupportsAllDrives(true).setFields("name").execute();
 	}
 
-	public void deleteFile(String fileId) throws Exception {
+	public File deleteFile(String fileId) throws Exception {
+		File file = getInstance().files().get(fileId).setSupportsAllDrives(true).setFields("name").execute();
 		getInstance().files().delete(fileId).setSupportsAllDrives(true).execute();
+		return file;
 	}
 
-	public String uploadFile(MultipartFile file, String parentId, String filePath) {
+	public File uploadFile(MultipartFile file, String parentId, String filePath) {
 		try {
 			String folderId = getFolderId(parentId, filePath);
 			if (null != file) {
@@ -156,7 +158,7 @@ public class GoogleDriveService {
 								new ByteArrayInputStream(file.getBytes()))
 						)
 						.setFields("id").execute();
-				return uploadFile.getId();
+				return uploadFile;
 			}
 		} catch (Exception e) {
 			logger.error("Error: ", e);
