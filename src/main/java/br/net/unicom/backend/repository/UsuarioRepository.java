@@ -30,7 +30,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     @Query(value = "SELECT usuario_id FROM Usuario WHERE email = :email and empresa_id = :empresaId", nativeQuery = true)
     Integer getUsuarioIdByEmailAndEmpresaId(@Param("email") String email, @Param("empresaId") Integer empresaId);
 
-    @Query(value = "SELECT usuario_id FROM Usuario WHERE (usuario.matricula = :login OR usuario.email = :login) and usuario.empresa_id = (SELECT empresa_id FROM Dominio WHERE dominio.dominio = :dominio) and usuario.ativo = true", nativeQuery = true)
+    @Query(value = "SELECT usuario_id FROM Usuario WHERE (CONCAT(usuario.matricula, '') = :login OR usuario.email = :login) and usuario.empresa_id = (SELECT empresa_id FROM Dominio WHERE dominio.dominio = :dominio) and usuario.ativo = true", nativeQuery = true)
     Optional<Integer> findUsuarioIdByLoginAndDominio(String login, String dominio);
 
 }

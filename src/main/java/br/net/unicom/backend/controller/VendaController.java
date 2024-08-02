@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -171,24 +172,6 @@ public class VendaController {
         timeElapsed = Duration.between(start, finish).toMillis();
         logger.info("2: " + String.valueOf(timeElapsed));
 
-        // Filtrar vendas por permissão dos atores
-
-        /*if (!userDetails.hasAuthority("VER_TODAS_VENDAS")) {
-            Set<Integer> usuarioIdList = usuarioService.getUsuarioListLessThanUsuario(usuario, true).stream().map(u -> u.getUsuarioId()).collect(Collectors.toSet());
-
-            vendaAtoresList.removeIf(vendaAtor -> {
-                //if (vendaAtor.getVendedorId() == null)
-                //    return false;
-                if (usuarioIdList.contains(vendaAtor.getVendedorId()) || usuarioIdList.contains(vendaAtor.getSupervisorId()))
-                    return false;
-                return true;
-            } );
-        }
-
-        finish = Instant.now();
-        timeElapsed = Duration.between(start, finish).toMillis();
-        logger.info("3: " + String.valueOf(timeElapsed));*/
-
         // Carregar vendas
 
         List<Integer> vendaIdList = vendaAtoresList.stream().map(vendaAtores -> vendaAtores.getVendaId()).collect(Collectors.toList());
@@ -237,11 +220,6 @@ public class VendaController {
 
         Venda venda = vendaRepository.findByVendaIdAndEmpresaId(vendaId, userDetails.getEmpresaId()).orElseThrow(NoSuchElementException::new);
 
-        // jackson
-
-        /*JsonNode node = objectMapper.valueToTree(venda);
-        HashMap<String, String> before = jsonService.flatten(node, "");*/
-
         // verificar se o usuário tem permissão para alterar a venda
 
         // pode ver a venda
@@ -253,6 +231,10 @@ public class VendaController {
         // pode alterar venda com status em pos_venda
         if (!userDetails.hasAuthority("ALTERAR_AUDITOR") && (venda.getStatus().getCategoria().equals(VendaStatusCategoriaEnum.POS_VENDA) || novoStatus.getCategoria().equals(VendaStatusCategoriaEnum.POS_VENDA)))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        
+        // jackson
+        
+        HashMap<String, String> before = jsonService.flatten(venda, Venda.WithProdutoAndFaturaListView.class);
 
         // mapear atributos
 
@@ -271,21 +253,6 @@ public class VendaController {
             venda.setSuporte(vendaPatchRequest.getSuporte());
             venda.setLoginVendedor(vendaPatchRequest.getLoginVendedor());
         }
-
-        // atualizar dataStatus e criar atualizacao
-
-        LocalDateTime dataStatus = LocalDateTime.now();
-
-        venda.setDataStatus(dataStatus);
-
-        VendaAtualizacao atualizacao = new VendaAtualizacao();
-        atualizacao.setVendaId(venda.getVendaId());
-        atualizacao.setStatusId(vendaPatchRequest.getStatusId());
-        atualizacao.setUsuarioId(usuario.getUsuarioId());
-        atualizacao.setData(dataStatus);
-        atualizacao.setRelato(vendaPatchRequest.getRelato());
-
-        venda.getAtualizacaoList().add(atualizacao);
 
         // criar produtos e portabilidades
 
@@ -371,22 +338,11 @@ public class VendaController {
 
         // jackson
 
-        /*node = objectMapper.valueToTree(venda);
-        HashMap<String, String> after = jsonService.flatten(node, "");
+        HashMap<String, String> after = jsonService.flatten(venda, Venda.WithProdutoAndFaturaListView.class);
 
-        HashMap<String, String> difference = new HashMap<>();
+        String difference = jsonService.difference(before, after);
 
-        for (String key : before.keySet()) {
-            if (!after.containsKey(key) || !after.get(key).equals(before.get(key)))
-                difference.put(key, after.get(key));
-        }
-
-        for (String key : after.keySet()) {
-            if (!before.containsKey(key))
-                difference.put(key, after.get(key));
-        }
-
-        logger.info(difference.toString());*/
+        vendaService.novaAtualizacao(usuario, venda, vendaPatchRequest.getRelato(), difference);
 
         return ResponseEntity.noContent().build();
     }
@@ -445,12 +401,6 @@ public class VendaController {
         // definir vendedor/supervisor/auditor
         // alterar vendedor/supervisor/auditor/cadastrador se houver permissao
 
-        /*
-        venda.setVendedorId(usuario.getUsuarioId());
-            if (usuario.getEquipe() != null)
-                venda.setSupervisorId(usuario.getEquipe().getSupervisorId());
-        */
-
         if (vendaPostRequest.getVendedorId() != null) {
             Usuario usuarioFilho = usuarioRepository.findByUsuarioId(vendaPostRequest.getVendedorId()).get();
 
@@ -489,28 +439,17 @@ public class VendaController {
 
         // definir dataCadastro dataVenda dataStatus statusId
 
+        venda.setDataStatus(agora);
+
         venda.setDataCadastro(agora);
 
         venda.setDataVenda(Optional.ofNullable(vendaPostRequest.getDataVenda()).orElse(agora));
-
-        venda.setDataStatus(agora);
 
         // salvar venda para obter vendaId
 
         //logger.info(venda.toString());
 
         vendaRepository.saveAndFlush(venda);
-
-        // criar atualizacao
-
-        VendaAtualizacao atualizacao = new VendaAtualizacao();
-        atualizacao.setVendaId(venda.getVendaId());
-        atualizacao.setStatusId(vendaPostRequest.getStatusId());
-        atualizacao.setUsuarioId(usuario.getUsuarioId());
-        atualizacao.setData(agora);
-        atualizacao.setRelato(vendaPostRequest.getRelato());
-
-        venda.getAtualizacaoList().add(atualizacao);
 
         // criar produtos e portabilidades
 
@@ -565,6 +504,8 @@ public class VendaController {
         // salvar venda novamente
 
         vendaRepository.saveAndFlush(venda);
+
+        vendaService.novaAtualizacao(usuario, venda, vendaPostRequest.getRelato());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(venda);
     }

@@ -62,9 +62,16 @@ public class VendaService {
 
         return this.usuarioPodeVerVenda(usuario, vendedor, supervisor);
     }
-
+    
     @Transactional
     public void novaAtualizacao(Usuario usuario, Venda venda, String relato) {
+
+        novaAtualizacao(usuario, venda, relato, null);
+
+    }
+
+    @Transactional
+    public void novaAtualizacao(Usuario usuario, Venda venda, String relato, String detalhes) {
 
         LocalDateTime dataStatus = LocalDateTime.now();
 
@@ -76,11 +83,14 @@ public class VendaService {
         atualizacao.setUsuarioId(usuario.getUsuarioId());
         atualizacao.setData(dataStatus);
         atualizacao.setRelato(relato);
+        atualizacao.setDetalhes(detalhes);
 
         venda.getAtualizacaoList().add(atualizacao);
 
         vendaRepository.saveAndFlush(venda);
 
     }
+
+    
 
 }

@@ -63,4 +63,6 @@ public class VendaAtualizacao {
     @Length(max = 200)
     private String relato;
 
+    private String detalhes;
+
 }
