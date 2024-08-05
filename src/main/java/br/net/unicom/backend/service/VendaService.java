@@ -42,11 +42,11 @@ public class VendaService {
         if (usuario.equals(supervisor))
             return true;
 
-        if (vendedor != null && usuarioService.isUsuarioGreaterThan(usuario, vendedor))
+        /*if (vendedor != null && usuarioService.isUsuarioGreaterThan(usuario, vendedor))
             return true;
 
         if (supervisor != null && usuarioService.isUsuarioGreaterThan(usuario, supervisor))
-            return true;
+            return true;*/
 
         return false;
     }

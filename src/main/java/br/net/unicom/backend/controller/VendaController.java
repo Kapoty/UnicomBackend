@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -148,7 +149,8 @@ public class VendaController {
         List<Integer> usuarioIdList = new ArrayList<>();
 
         if (!verTodasVendas)
-            usuarioIdList = usuarioService.getUsuarioListLessThanUsuario(usuario, true).stream().map(u -> u.getUsuarioId()).collect(Collectors.toList());
+            //usuarioIdList = usuarioService.getUsuarioListLessThanUsuario(usuario, true).stream().map(u -> u.getUsuarioId()).collect(Collectors.toList());
+            usuarioIdList = Collections.singletonList(usuario.getUsuarioId());
 
         List<VendaAtoresProjection> vendaAtoresList = vendaRepository.findAllByEmpresaIdAndFiltersAndUsuarioIdList(
             userDetails.getEmpresaId(),
