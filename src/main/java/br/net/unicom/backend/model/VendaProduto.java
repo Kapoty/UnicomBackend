@@ -61,6 +61,10 @@ public class VendaProduto {
     private Double valor;
 
     @NotNull
+    @Min(1)
+    private Double valorAcordado;
+
+    @NotNull
     private Boolean telefoneFixo;
 
     @NotNull

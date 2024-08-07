@@ -2,7 +2,6 @@ package br.net.unicom.backend.model;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import br.net.unicom.backend.model.enums.VendaBrscanEnum;
 import br.net.unicom.backend.model.enums.VendaFormaDePagamentoEnum;
 import br.net.unicom.backend.model.enums.VendaGeneroEnum;
+import br.net.unicom.backend.model.enums.VendaInfracoEnum;
 import br.net.unicom.backend.model.enums.VendaPorteEnum;
 import br.net.unicom.backend.model.enums.VendaReimputadoEnum;
 import br.net.unicom.backend.model.enums.VendaSuporteEnum;
@@ -305,6 +305,9 @@ public class Venda {
     @Length(max = 100)
     private String origem;
 
+    @Enumerated(EnumType.STRING)
+    private VendaInfracoEnum infraco;
+
     @NotNull
     private LocalDateTime dataVenda;
 
@@ -344,6 +347,15 @@ public class Venda {
     @ToString.Exclude
     Usuario agenteBiometria;
 
+    @Column(name = "agente_suporte_id")
+    private Integer agenteSuporteId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "agente_suporte_id", insertable = false, updatable = false)
+    @JsonIgnore
+    @ToString.Exclude
+    Usuario agenteSuporte;
+
     @NotNull
     private Boolean prints;
 
@@ -361,13 +373,16 @@ public class Venda {
     @Enumerated(EnumType.STRING)
     private VendaBrscanEnum brscan;
 
-    @NotNull
     @Enumerated(EnumType.STRING)
     private VendaSuporteEnum suporte;
 
     @NotNull
     @Length(max = 50)
     private String loginVendedor;
+
+    @NotNull
+    @Length(max = 50)
+    private String operadora;
 
     @Enumerated(EnumType.STRING)
     private VendaFormaDePagamentoEnum formaDePagamento;
@@ -413,6 +428,10 @@ public class Venda {
     @NotNull
     @Length(max = 100)
     private String agenteBiometriaExterno = "";
+
+    @NotNull
+    @Length(max = 100)
+    private String agenteSuporteExterno = "";
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "venda", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("vendaProdutoId.produtoId")

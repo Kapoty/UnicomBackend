@@ -9,12 +9,15 @@ import org.hibernate.validator.constraints.Length;
 import br.net.unicom.backend.model.enums.VendaBrscanEnum;
 import br.net.unicom.backend.model.enums.VendaFormaDePagamentoEnum;
 import br.net.unicom.backend.model.enums.VendaGeneroEnum;
+import br.net.unicom.backend.model.enums.VendaInfracoEnum;
 import br.net.unicom.backend.model.enums.VendaPorteEnum;
 import br.net.unicom.backend.model.enums.VendaReimputadoEnum;
 import br.net.unicom.backend.model.enums.VendaSuporteEnum;
 import br.net.unicom.backend.model.enums.VendaTipoDeContaEnum;
 import br.net.unicom.backend.model.enums.VendaTipoPessoaEnum;
 import br.net.unicom.backend.model.enums.VendaTipoProdutoEnum;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
@@ -284,6 +287,9 @@ public class VendaPatchRequest {
     @Length(max = 100)
     private String origem;
 
+    @Enumerated(EnumType.STRING)
+    private VendaInfracoEnum infraco;
+
     @NotNull
     private LocalDateTime dataVenda;
 
@@ -301,6 +307,8 @@ public class VendaPatchRequest {
 
     private Integer agenteBiometriaId;
 
+    private Integer agenteSuporteId;
+
     @NotNull
     private Boolean prints;
 
@@ -317,12 +325,15 @@ public class VendaPatchRequest {
 
     private VendaBrscanEnum brscan;
 
-    @NotNull
     private VendaSuporteEnum suporte;
 
     @NotNull
     @Length(max = 50)
     private String loginVendedor;
+
+    @NotNull
+    @Length(max = 50)
+    private String operadora;
 
     @NotNull
     private VendaFormaDePagamentoEnum formaDePagamento;
@@ -367,6 +378,10 @@ public class VendaPatchRequest {
     @NotNull
     @Length(max = 100)
     private String agenteBiometriaExterno;
+
+    @NotNull
+    @Length(max = 100)
+    private String agenteSuporteExterno;
 
     @NotEmpty
     private List<@Valid VendaProdutoRequest> produtoList;

@@ -9,6 +9,7 @@ import org.hibernate.validator.constraints.Length;
 import br.net.unicom.backend.model.enums.VendaBrscanEnum;
 import br.net.unicom.backend.model.enums.VendaFormaDePagamentoEnum;
 import br.net.unicom.backend.model.enums.VendaGeneroEnum;
+import br.net.unicom.backend.model.enums.VendaInfracoEnum;
 import br.net.unicom.backend.model.enums.VendaPorteEnum;
 import br.net.unicom.backend.model.enums.VendaReimputadoEnum;
 import br.net.unicom.backend.model.enums.VendaSuporteEnum;
@@ -286,6 +287,9 @@ public class VendaPostRequest {
     @Length(max = 100)
     private String origem;
 
+    @Enumerated(EnumType.STRING)
+    private VendaInfracoEnum infraco;
+
     private LocalDateTime dataVenda;
 
     @NotNull
@@ -301,6 +305,8 @@ public class VendaPostRequest {
     private Integer cadastradorId;
 
     private Integer agenteBiometriaId;
+
+    private Integer agenteSuporteId;
 
     @NotNull
     private Boolean prints;
@@ -318,12 +324,15 @@ public class VendaPostRequest {
 
     private VendaBrscanEnum brscan;
 
-    @NotNull
     private VendaSuporteEnum suporte;
 
     @NotNull
     @Length(max = 50)
     private String loginVendedor;
+
+    @NotNull
+    @Length(max = 50)
+    private String operadora;
 
     @NotNull
     private VendaFormaDePagamentoEnum formaDePagamento;
@@ -368,6 +377,10 @@ public class VendaPostRequest {
     @NotNull
     @Length(max = 100)
     private String agenteBiometriaExterno;
+
+    @NotNull
+    @Length(max = 100)
+    private String agenteSuporteExterno;
 
     @NotEmpty
     private List<@Valid VendaProdutoRequest> produtoList;
