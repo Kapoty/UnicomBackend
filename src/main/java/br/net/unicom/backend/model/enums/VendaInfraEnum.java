@@ -1,5 +1,5 @@
 package br.net.unicom.backend.model.enums;
 
-public enum VendaInfracoEnum {
+public enum VendaInfraEnum {
     VTAL, IHS
 }

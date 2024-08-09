@@ -126,7 +126,7 @@ public class JornadaController {
         Jornada jornada = new Jornada();
         jornada.setUsuarioId(jornadaPostRequest.getUsuarioId());
         jornada.setEmpresaId(userDetails.getEmpresaId());
-        jornada.setNome("Sem Nome");
+        jornada.setNome("Padrão");
         jornada.setPrioridade(jornadaPostRequest.getUsuarioId() == null ? 10 : 1);
 
         jornadaRepository.save(jornada);

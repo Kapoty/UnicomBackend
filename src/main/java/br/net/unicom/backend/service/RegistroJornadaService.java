@@ -376,13 +376,13 @@ public class RegistroJornadaService {
             PontoConfiguracao pontoConfiguracao = pontoConfiguracaoRepository.findByEmpresaId(registroJornada.getUsuario().getEmpresaId()).orElseThrow(PontoConfiguracaoNaoEncontradoException::new);
             Usuario usuario = registroJornada.getUsuario();
 
-            if (registroJornada.getStatusAtual() == null) {
+            /*if (registroJornada.getStatusAtual() == null) {
                 if (isInRegularTime(registroJornada) &&
                     canUsuarioLogar(registroJornada) &&
                     Duration.between(usuario.getVistoPorUltimo(), LocalDateTime.now()).toSeconds() < 60) {
                         logar(registroJornada);
                     }
-            } else {
+            } else { */
                 if (LocalTime.now().isAfter(LocalTime.of(23, 55))) {
                     deslogar(registroJornada);
                 } else {
@@ -396,7 +396,7 @@ public class RegistroJornadaService {
                             deslogar(registroJornada);
                     }
                 }
-            }
+            //}
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }

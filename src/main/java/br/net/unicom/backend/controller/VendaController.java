@@ -37,11 +37,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import br.net.unicom.backend.model.FiltroVenda;
 import br.net.unicom.backend.model.Usuario;
 import br.net.unicom.backend.model.Venda;
-import br.net.unicom.backend.model.VendaAtualizacao;
 import br.net.unicom.backend.model.VendaFatura;
 import br.net.unicom.backend.model.VendaProduto;
 import br.net.unicom.backend.model.VendaProdutoPortabilidade;
 import br.net.unicom.backend.model.VendaStatus;
+import br.net.unicom.backend.model.VendaSuporte;
 import br.net.unicom.backend.model.enums.VendaReimputadoEnum;
 import br.net.unicom.backend.model.enums.VendaStatusCategoriaEnum;
 import br.net.unicom.backend.model.enums.VendaSuporteEnum;
@@ -53,6 +53,7 @@ import br.net.unicom.backend.payload.request.VendaPatchRequest;
 import br.net.unicom.backend.payload.request.VendaPostRequest;
 import br.net.unicom.backend.payload.request.VendaProdutoPortabilidadeRequest;
 import br.net.unicom.backend.payload.request.VendaProdutoRequest;
+import br.net.unicom.backend.payload.request.VendaSuporteRequest;
 import br.net.unicom.backend.repository.FiltroVendaRepository;
 import br.net.unicom.backend.repository.UsuarioRepository;
 import br.net.unicom.backend.repository.VendaProdutoRepository;
@@ -318,6 +319,30 @@ public class VendaController {
 
         }
 
+        // criar suportes
+
+        if (userDetails.hasAuthority("ALTERAR_AUDITOR")) {
+
+            List<VendaSuporte> suporteList = new ArrayList<>();
+
+            for (int suporteId = 1; suporteId <= vendaPatchRequest.getSuporteList().size(); suporteId++) {
+                VendaSuporteRequest suporteRequest = vendaPatchRequest.getSuporteList().get(suporteId - 1);
+
+                VendaSuporte suporte;
+                if (venda.getSuporteList().size() >= suporteId)
+                    suporte = venda.getSuporteList().get(suporteId - 1);
+                else
+                    suporte = new VendaSuporte(venda, suporteId);
+
+                modelMapper.map(suporteRequest, suporte);
+                
+                suporteList.add(suporte);
+            }
+
+            venda.setSuporteList(suporteList);
+
+        }
+
         // alterar vendedor/supervisor/auditor/cadastrador se houver permissao
 
         if (userDetails.hasAuthority("ALTERAR_VENDEDOR")) {
@@ -394,7 +419,7 @@ public class VendaController {
             venda.setDataInstalacao(null);
             venda.setVendaOriginal(true);
             venda.setBrscan(null);
-            venda.setSuporte(VendaSuporteEnum.NAO);
+            venda.setSuporte(null);
             venda.setLoginVendedor("");
         }
 
@@ -504,6 +529,26 @@ public class VendaController {
             }
 
             venda.setFaturaList(faturaList);
+        
+        }
+
+        // criar suportes
+
+        if (userDetails.hasAuthority("ALTERAR_AUDITOR")) {
+
+            List<VendaSuporte> suporteList = new ArrayList<>();
+
+            for (int suporteId = 1; suporteId <= vendaPostRequest.getSuporteList().size(); suporteId++) {
+                VendaSuporteRequest suporteRequest = vendaPostRequest.getSuporteList().get(suporteId - 1);
+
+                VendaSuporte suporte = new VendaSuporte(venda, suporteId);
+
+                modelMapper.map(suporteRequest, suporte);
+                
+                suporteList.add(suporte);
+            }
+
+            venda.setSuporteList(suporteList);
         
         }
 

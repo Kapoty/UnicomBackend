@@ -37,6 +37,7 @@ public class ModelMapperConfiguration {
             mapper.skip(Venda::setAgenteSuporteExterno);
             mapper.skip(Venda::setProdutoList);
             mapper.skip(Venda::setFaturaList);
+            mapper.skip(Venda::setSuporteList);
 
             mapper.skip(Venda::setOs);
             mapper.skip(Venda::setCustcode);
@@ -68,6 +69,7 @@ public class ModelMapperConfiguration {
             mapper.skip(Venda::setAgenteSuporteExterno);
             mapper.skip(Venda::setProdutoList);
             mapper.skip(Venda::setFaturaList);
+            mapper.skip(Venda::setSuporteList);
 
             mapper.skip(Venda::setOs);
             mapper.skip(Venda::setCustcode);

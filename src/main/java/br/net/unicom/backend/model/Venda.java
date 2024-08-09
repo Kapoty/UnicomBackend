@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import br.net.unicom.backend.model.enums.VendaBrscanEnum;
 import br.net.unicom.backend.model.enums.VendaFormaDePagamentoEnum;
 import br.net.unicom.backend.model.enums.VendaGeneroEnum;
-import br.net.unicom.backend.model.enums.VendaInfracoEnum;
+import br.net.unicom.backend.model.enums.VendaInfraEnum;
 import br.net.unicom.backend.model.enums.VendaPorteEnum;
 import br.net.unicom.backend.model.enums.VendaReimputadoEnum;
 import br.net.unicom.backend.model.enums.VendaSuporteEnum;
@@ -48,9 +48,10 @@ public class Venda {
     public interface DefaultView {};
     public interface WithProdutoListView {};
     public interface WithFaturaListView {};
+    public interface WithSuporteListView {};
     public interface WithAtualizacaoListView {};
     public interface WithProdutoAndFaturaListView extends WithProdutoListView, WithFaturaListView{};
-    public interface WithAllListView extends WithProdutoListView, WithFaturaListView, WithAtualizacaoListView{};
+    public interface WithAllListView extends WithProdutoListView, WithFaturaListView, WithSuporteListView, WithAtualizacaoListView{};
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -185,6 +186,10 @@ public class Venda {
     @Length(max = 11)
     private String contato3;
 
+    private LocalDateTime dataPreferenciaInstalacao1;
+
+    private LocalDateTime dataPreferenciaInstalacao2;
+
     @NotNull
     @Length(max = 200)
     private String email;
@@ -306,7 +311,7 @@ public class Venda {
     private String origem;
 
     @Enumerated(EnumType.STRING)
-    private VendaInfracoEnum infraco;
+    private VendaInfraEnum infra;
 
     @NotNull
     private LocalDateTime dataVenda;
@@ -406,7 +411,7 @@ public class Venda {
     private VendaTipoDeContaEnum tipoDeConta;
 
     @NotNull
-    @Length(max = 200)
+    @Length(max = 500)
     private String observacao;
 
     @NotNull
@@ -444,6 +449,11 @@ public class Venda {
     private List<VendaFatura> faturaList = null;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "venda", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("vendaSuporteId.suporteId")
+    @JsonView(WithSuporteListView.class)
+    private List<VendaSuporte> suporteList = null;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "venda", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("vendaAtualizacaoId")
     @JsonView(WithAtualizacaoListView.class)
     private List<VendaAtualizacao> atualizacaoList = null;
@@ -475,6 +485,21 @@ public class Venda {
         } else {
             this.faturaList.clear();
             this.faturaList.addAll(faturaList);
+        }
+    }
+
+    public List<VendaSuporte> getSuportList() {
+        if (this.suporteList == null)
+            this.suporteList = new ArrayList<>();
+        return this.suporteList;
+    }
+
+    public void setSuporteList(List<VendaSuporte> suporteList) {
+        if (this.suporteList == null) {
+            this.suporteList = suporteList;
+        } else {
+            this.suporteList.clear();
+            this.suporteList.addAll(suporteList);
         }
     }
 

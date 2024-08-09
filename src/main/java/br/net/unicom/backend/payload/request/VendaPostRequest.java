@@ -9,7 +9,7 @@ import org.hibernate.validator.constraints.Length;
 import br.net.unicom.backend.model.enums.VendaBrscanEnum;
 import br.net.unicom.backend.model.enums.VendaFormaDePagamentoEnum;
 import br.net.unicom.backend.model.enums.VendaGeneroEnum;
-import br.net.unicom.backend.model.enums.VendaInfracoEnum;
+import br.net.unicom.backend.model.enums.VendaInfraEnum;
 import br.net.unicom.backend.model.enums.VendaPorteEnum;
 import br.net.unicom.backend.model.enums.VendaReimputadoEnum;
 import br.net.unicom.backend.model.enums.VendaSuporteEnum;
@@ -24,7 +24,6 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -34,7 +33,7 @@ import lombok.ToString;
 public class VendaPostRequest {
 
     @NotNull
-    @Length(max = 200)
+    @Length(max = 500)
     private String relato;
 
     private Integer vendedorId;
@@ -164,6 +163,12 @@ public class VendaPostRequest {
     @Length(max = 11)
     private String contato3;
 
+    @NotNull
+    private LocalDateTime dataPreferenciaInstalacao1;
+
+    @NotNull
+    private LocalDateTime dataPreferenciaInstalacao2;
+
     @NotBlank
     @Email
     @Length(max = 200)
@@ -288,7 +293,16 @@ public class VendaPostRequest {
     private String origem;
 
     @Enumerated(EnumType.STRING)
-    private VendaInfracoEnum infraco;
+    private VendaInfraEnum infra;
+
+    @AssertTrue(message = "inválido")
+    private boolean isInfraValid() {
+        if (this.tipoProduto == null || this.tipoProduto.equals(VendaTipoProdutoEnum.MOVEL))
+            return true;
+        if (this.infra == null)
+            return false;
+        return true;
+    }
 
     private LocalDateTime dataVenda;
 
@@ -334,6 +348,15 @@ public class VendaPostRequest {
     @Length(max = 50)
     private String operadora;
 
+    @AssertTrue(message = "não pode ser vazio")
+    private boolean isOperadoraValid() {
+        if (this.tipoProduto == null || this.tipoProduto.equals(VendaTipoProdutoEnum.MOVEL))
+            return true;
+        if (this.operadora.isBlank())
+            return false;
+        return true;
+    }
+
     @NotNull
     private VendaFormaDePagamentoEnum formaDePagamento;
 
@@ -355,7 +378,7 @@ public class VendaPostRequest {
     private VendaTipoDeContaEnum tipoDeConta;
 
     @NotNull
-    @Length(max = 200)
+    @Length(max = 500)
     private String observacao;
 
     @NotNull
@@ -386,5 +409,7 @@ public class VendaPostRequest {
     private List<@Valid VendaProdutoRequest> produtoList;
 
     private List<@Valid VendaFaturaRequest> faturaList;
+
+    private List<@Valid VendaSuporteRequest> suporteList;
 
 }

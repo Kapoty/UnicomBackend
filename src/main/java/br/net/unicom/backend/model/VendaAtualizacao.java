@@ -60,7 +60,7 @@ public class VendaAtualizacao {
     private LocalDateTime data;
 
     @NotNull
-    @Length(max = 200)
+    @Length(max = 500)
     private String relato;
 
     private String detalhes;
