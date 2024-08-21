@@ -253,6 +253,17 @@ public class Venda {
         return true;
     }
 
+    private LocalDate dataNascimentoRepresentanteLegal;
+
+    @AssertTrue(message = "não pode ser nula")
+    private boolean isDataNascimentoRepresentanteLegalValid() {
+        if (this.tipoPessoa == null || this.tipoPessoa.equals(VendaTipoPessoaEnum.CPF))
+            return true;
+        if (this.dataNascimentoRepresentanteLegal == null)
+            return false;
+        return true;
+    }
+
     @NotNull
     @Length(min = 8, max = 8)
     private String cep;
@@ -296,15 +307,15 @@ public class Venda {
     @Column(name = "sistema_id")
     private Integer sistemaId;
 
-    @NotNull
-    @Length(max = 50)
-    private String ordem;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sistema_id", insertable = false, updatable = false)
     @JsonIgnore
     @ToString.Exclude
     Sistema sistema;
+
+    @NotNull
+    @Length(max = 50)
+    private String ordem;
 
     @NotBlank
     @Length(max = 100)
@@ -388,6 +399,15 @@ public class Venda {
     @NotNull
     @Length(max = 50)
     private String operadora;
+
+    @Column(name = "viabilidade_id")
+    private Integer viabilidadeId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "viabilidade_id", insertable = false, updatable = false)
+    @JsonIgnore
+    @ToString.Exclude
+    Viabilidade viabilidade;
 
     @Enumerated(EnumType.STRING)
     private VendaFormaDePagamentoEnum formaDePagamento;

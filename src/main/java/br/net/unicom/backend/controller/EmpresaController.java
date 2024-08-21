@@ -48,6 +48,7 @@ import br.net.unicom.backend.model.VendaFatura;
 import br.net.unicom.backend.model.VendaProduto;
 import br.net.unicom.backend.model.VendaProdutoPortabilidade;
 import br.net.unicom.backend.model.VendaStatus;
+import br.net.unicom.backend.model.Viabilidade;
 import br.net.unicom.backend.payload.response.EquipeResponse;
 import br.net.unicom.backend.payload.response.UsuarioPBIResponse;
 import br.net.unicom.backend.repository.AdicionalRepository;
@@ -72,6 +73,7 @@ import br.net.unicom.backend.repository.VendaProdutoPortabilidadeRepository;
 import br.net.unicom.backend.repository.VendaProdutoRepository;
 import br.net.unicom.backend.repository.VendaRepository;
 import br.net.unicom.backend.repository.VendaStatusRepository;
+import br.net.unicom.backend.repository.ViabilidadeRepository;
 import br.net.unicom.backend.security.service.UserDetailsImpl;
 import br.net.unicom.backend.service.EmpresaService;
 import br.net.unicom.backend.service.EquipeService;
@@ -157,6 +159,9 @@ public class EmpresaController {
 
     @Autowired
     AdicionalRepository adicionalRepository;
+
+    @Autowired
+    ViabilidadeRepository viabilidadeRepository;
 
     @Autowired
     VendaProdutoRepository vendaProdutoRepository;
@@ -300,6 +305,12 @@ public class EmpresaController {
     public ResponseEntity<List<Adicional>> getAdicionalListByEmpresaMe() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(adicionalRepository.findAllByEmpresaId(userDetails.getEmpresaId()));
+    }
+
+    @GetMapping("/me/viabilidade")
+    public ResponseEntity<List<Viabilidade>> getViabilidadeListByEmpresaMe() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(viabilidadeRepository.findAllByEmpresaId(userDetails.getEmpresaId()));
     }
 
     @PreAuthorize("hasAuthority('VER_TODAS_VENDAS')")

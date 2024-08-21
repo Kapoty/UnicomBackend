@@ -241,6 +241,17 @@ public class VendaPatchRequest {
         return true;
     }
 
+    private LocalDate dataNascimentoRepresentanteLegal;
+
+    @AssertTrue(message = "não pode ser nula")
+    private boolean isDataNascimentoRepresentanteLegalValid() {
+        if (this.tipoPessoa == null || this.tipoPessoa.equals(VendaTipoPessoaEnum.CPF))
+            return true;
+        if (this.dataNascimentoRepresentanteLegal == null)
+            return false;
+        return true;
+    }
+
     @NotNull
     @Length(min = 8, max = 8)
     private String cep;
@@ -354,6 +365,17 @@ public class VendaPatchRequest {
         if (this.tipoProduto == null || this.tipoProduto.equals(VendaTipoProdutoEnum.MOVEL))
             return true;
         if (this.operadora.isBlank())
+            return false;
+        return true;
+    }
+
+    private Integer viabilidadeId;
+
+    @AssertTrue(message = "não pode ser vazio")
+    private boolean isViabilidadeIdValid() {
+        if (this.tipoProduto == null || this.tipoProduto.equals(VendaTipoProdutoEnum.MOVEL))
+            return true;
+        if (this.viabilidadeId == null)
             return false;
         return true;
     }

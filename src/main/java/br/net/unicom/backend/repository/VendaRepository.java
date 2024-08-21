@@ -18,6 +18,9 @@ public interface VendaRepository extends JpaRepository<Venda, Long> {
 
     Optional<Venda> findByVendaId(Integer vendaId);
 
+    @Query(value = "SELECT * FROM venda WHERE ((os != '' AND os = :os) OR (custcode != '' AND custcode = :custcode) OR (ordem != '' AND ordem = :ordem)) AND empresa_id = :empresaId LIMIT 1", nativeQuery = true)
+    Optional<Venda> findByOsOrCustcodeOrOrdemAndEmpresaId(String os, String custcode, String ordem, Integer empresaId);
+
     Optional<Venda> findByVendaIdAndEmpresaId(Integer vendaId, Integer empresaId);
 
     List<Venda> findAllByEmpresaId(Integer empresaId);

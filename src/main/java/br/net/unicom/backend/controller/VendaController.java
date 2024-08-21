@@ -44,11 +44,12 @@ import br.net.unicom.backend.model.VendaStatus;
 import br.net.unicom.backend.model.VendaSuporte;
 import br.net.unicom.backend.model.enums.VendaReimputadoEnum;
 import br.net.unicom.backend.model.enums.VendaStatusCategoriaEnum;
-import br.net.unicom.backend.model.enums.VendaSuporteEnum;
 import br.net.unicom.backend.model.exception.FieldInvalidException;
 import br.net.unicom.backend.model.projection.VendaAtoresProjection;
 import br.net.unicom.backend.payload.request.VendaFaturaRequest;
+import br.net.unicom.backend.payload.request.VendaFindByOsOrCustcodeOrOrdemRequest;
 import br.net.unicom.backend.payload.request.VendaListRequest;
+import br.net.unicom.backend.payload.request.VendaPatchFaturaListRequest;
 import br.net.unicom.backend.payload.request.VendaPatchRequest;
 import br.net.unicom.backend.payload.request.VendaPostRequest;
 import br.net.unicom.backend.payload.request.VendaProdutoPortabilidadeRequest;
@@ -210,6 +211,79 @@ public class VendaController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         return ResponseEntity.ok(venda);
+    }
+
+    @PreAuthorize("hasAuthority('CADASTRAR_VENDAS')")
+    @PostMapping("/find-by-os-or-custcode-or-ordem")
+    public ResponseEntity<Venda> findByOsOrCustCodeOrOrdem(@Valid @RequestBody VendaFindByOsOrCustcodeOrOrdemRequest vendaFindByOsOrCustcodeOrOrdemRequest) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Usuario usuario = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).get();
+
+        Venda venda = vendaRepository.findByOsOrCustcodeOrOrdemAndEmpresaId(vendaFindByOsOrCustcodeOrOrdemRequest.getOs(),
+            vendaFindByOsOrCustcodeOrOrdemRequest.getCustcode(),
+            vendaFindByOsOrCustcodeOrOrdemRequest.getOrdem(),
+            userDetails.getEmpresaId()).get();
+
+        if (!userDetails.hasAuthority("VER_TODAS_VENDAS") && !vendaService.usuarioPodeVerVenda(usuario , venda))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        return ResponseEntity.ok(venda);
+    }
+
+    @PreAuthorize("hasAuthority('CADASTRAR_VENDAS') && hasAuthority('ALTERAR_AUDITOR') && hasAuthority('AUTOMACOES')")
+    @PatchMapping("/{vendaId}/faturaList")
+    @Transactional
+    public ResponseEntity<Void> patchFaturaListByVendaId(@Valid @PathVariable("vendaId") Integer vendaId, @Valid @RequestBody VendaPatchFaturaListRequest vendaPatchFaturaListRequest) {
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Usuario usuario = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).get();
+
+        Venda venda = vendaRepository.findByVendaIdAndEmpresaId(vendaId, userDetails.getEmpresaId()).orElseThrow(NoSuchElementException::new);
+
+        // verificar se o usuário tem permissão para alterar a venda
+
+        // pode ver a venda
+        if (!userDetails.hasAuthority("VER_TODAS_VENDAS") && !vendaService.usuarioPodeVerVenda(usuario , venda))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        
+        // jackson
+        
+        HashMap<String, String> before = jsonService.flatten(venda, Venda.WithProdutoAndFaturaListView.class);
+    
+        // criar faturas
+
+        List<VendaFatura> faturaList = new ArrayList<>();
+
+        for (int faturaId = 1; faturaId <= vendaPatchFaturaListRequest.getFaturaList().size(); faturaId++) {
+            VendaFaturaRequest faturaRequest = vendaPatchFaturaListRequest.getFaturaList().get(faturaId - 1);
+
+            VendaFatura fatura;
+            if (venda.getFaturaList().size() >= faturaId)
+                fatura = venda.getFaturaList().get(faturaId - 1);
+            else
+                fatura = new VendaFatura(venda, faturaId);
+
+            modelMapper.map(faturaRequest, fatura);
+            
+            faturaList.add(fatura);
+        }
+
+        venda.setFaturaList(faturaList);
+
+        vendaRepository.saveAndFlush(venda);
+
+        // jackson
+
+        HashMap<String, String> after = jsonService.flatten(venda, Venda.WithProdutoAndFaturaListView.class);
+
+        String difference = jsonService.difference(before, after);
+
+        vendaService.novaAtualizacao(usuario, venda, vendaPatchFaturaListRequest.getRelato() + " (automação)", difference);
+
+        return ResponseEntity.noContent().build();
+
     }
 
     @PreAuthorize("hasAuthority('CADASTRAR_VENDAS')")
