@@ -4,6 +4,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,6 +39,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import br.net.unicom.backend.model.FiltroVenda;
 import br.net.unicom.backend.model.Usuario;
 import br.net.unicom.backend.model.Venda;
+import br.net.unicom.backend.model.VendaAtualizacao;
 import br.net.unicom.backend.model.VendaFatura;
 import br.net.unicom.backend.model.VendaProduto;
 import br.net.unicom.backend.model.VendaProdutoPortabilidade;
@@ -46,6 +49,7 @@ import br.net.unicom.backend.model.enums.VendaReimputadoEnum;
 import br.net.unicom.backend.model.enums.VendaStatusCategoriaEnum;
 import br.net.unicom.backend.model.exception.FieldInvalidException;
 import br.net.unicom.backend.model.projection.VendaAtoresProjection;
+import br.net.unicom.backend.payload.request.VendaAtualizacaoListRequest;
 import br.net.unicom.backend.payload.request.VendaFaturaRequest;
 import br.net.unicom.backend.payload.request.VendaFindByOsOrCustcodeOrOrdemRequest;
 import br.net.unicom.backend.payload.request.VendaListRequest;
@@ -57,6 +61,7 @@ import br.net.unicom.backend.payload.request.VendaProdutoRequest;
 import br.net.unicom.backend.payload.request.VendaSuporteRequest;
 import br.net.unicom.backend.repository.FiltroVendaRepository;
 import br.net.unicom.backend.repository.UsuarioRepository;
+import br.net.unicom.backend.repository.VendaAtualizacaoRepository;
 import br.net.unicom.backend.repository.VendaProdutoRepository;
 import br.net.unicom.backend.repository.VendaRepository;
 import br.net.unicom.backend.repository.VendaStatusRepository;
@@ -81,6 +86,9 @@ public class VendaController {
 
     @Autowired
     VendaRepository vendaRepository;
+
+    @Autowired
+    VendaAtualizacaoRepository vendaAtualizacaoRepository;
 
     @Autowired
     UsuarioRepository usuarioRepository;
@@ -633,5 +641,41 @@ public class VendaController {
         vendaService.novaAtualizacao(usuario, venda, vendaPostRequest.getRelato());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(venda);
+    }
+
+    @PreAuthorize("hasAuthority('CADASTRAR_VENDAS')")
+    @PostMapping("/venda-atualizacao-list")
+    public ResponseEntity<List<VendaAtualizacao>> getVendaAtualizacaoList(@Valid @RequestBody VendaAtualizacaoListRequest vendaAtualizacaoListRequest) {
+
+        logger.info(vendaAtualizacaoListRequest.toString());
+
+        Instant start = Instant.now();
+        Instant finish;
+        long timeElapsed;
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Usuario usuario = usuarioRepository.findByUsuarioId(userDetails.getUsuarioId()).get();
+
+        // Carregar atores da venda ja filtradas
+
+        Boolean verTodasVendas = userDetails.hasAuthority("VER_TODAS_VENDAS");
+        List<Integer> usuarioIdList = new ArrayList<>();
+
+        if (!verTodasVendas)
+            usuarioIdList = Collections.singletonList(usuario.getUsuarioId());
+
+        LocalDateTime dataInicio = LocalDateTime.now().minus(24, ChronoUnit.HOURS);
+
+        if (vendaAtualizacaoListRequest.getDataInicio() != null && vendaAtualizacaoListRequest.getDataInicio().isAfter(dataInicio))
+            dataInicio = vendaAtualizacaoListRequest.getDataInicio();
+
+        List<VendaAtualizacao> vendaAtualizacaoList = vendaAtualizacaoRepository.findAllByEmpresaIdAndFiltersAndUsuarioIdList(usuario.getEmpresaId(), dataInicio, verTodasVendas, usuarioIdList);
+
+        finish = Instant.now();
+        timeElapsed = Duration.between(start, finish).toMillis();
+        logger.info("1: " + String.valueOf(timeElapsed));
+        
+        return ResponseEntity.ok(vendaAtualizacaoList);
     }
 }
