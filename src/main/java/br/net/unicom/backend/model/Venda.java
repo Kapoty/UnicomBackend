@@ -15,7 +15,6 @@ import br.net.unicom.backend.model.enums.VendaFormaDePagamentoEnum;
 import br.net.unicom.backend.model.enums.VendaGeneroEnum;
 import br.net.unicom.backend.model.enums.VendaInfraEnum;
 import br.net.unicom.backend.model.enums.VendaPorteEnum;
-import br.net.unicom.backend.model.enums.VendaReimputadoEnum;
 import br.net.unicom.backend.model.enums.VendaSuporteEnum;
 import br.net.unicom.backend.model.enums.VendaTipoDeContaEnum;
 import br.net.unicom.backend.model.enums.VendaTipoPessoaEnum;
@@ -328,10 +327,6 @@ public class Venda {
     private LocalDateTime dataVenda;
 
     @NotNull
-    @Enumerated(EnumType.STRING)
-    private VendaReimputadoEnum reimputado;
-
-    @NotNull
     LocalDate safra;
 
     private LocalDateTime dataAtivacao;
@@ -382,6 +377,12 @@ public class Venda {
     @NotBlank
     @Length(max = 50)
     private String pdv;
+
+    @NotNull
+    private Boolean reimpute;
+
+    @NotNull
+    private Boolean anulada;
 
     @NotNull
     private Boolean vendaOriginal;

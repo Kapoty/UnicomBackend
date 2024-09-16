@@ -9,11 +9,9 @@ import org.springframework.stereotype.Service;
 import br.net.unicom.backend.model.Usuario;
 import br.net.unicom.backend.model.Venda;
 import br.net.unicom.backend.model.VendaAtualizacao;
-import br.net.unicom.backend.model.enums.VendaReimputadoEnum;
 import br.net.unicom.backend.model.projection.VendaAtoresProjection;
 import br.net.unicom.backend.repository.UsuarioRepository;
 import br.net.unicom.backend.repository.VendaRepository;
-import jakarta.transaction.TransactionScoped;
 import jakarta.transaction.Transactional;
 
 @Service

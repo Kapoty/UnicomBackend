@@ -42,7 +42,8 @@ public class ModelMapperConfiguration {
             mapper.skip(Venda::setOs);
             mapper.skip(Venda::setCustcode);
             mapper.skip(Venda::setOrdem);
-            mapper.skip(Venda::setReimputado);
+            mapper.skip(Venda::setReimpute);
+            mapper.skip(Venda::setAnulada);
             mapper.skip(Venda::setDataInstalacao);
             mapper.skip(Venda::setVendaOriginal);
             mapper.skip(Venda::setBrscan);
@@ -74,7 +75,8 @@ public class ModelMapperConfiguration {
             mapper.skip(Venda::setOs);
             mapper.skip(Venda::setCustcode);
             mapper.skip(Venda::setOrdem);
-            mapper.skip(Venda::setReimputado);
+            mapper.skip(Venda::setReimpute);
+            mapper.skip(Venda::setAnulada);
             mapper.skip(Venda::setDataInstalacao);
             mapper.skip(Venda::setVendaOriginal);
             mapper.skip(Venda::setBrscan);
