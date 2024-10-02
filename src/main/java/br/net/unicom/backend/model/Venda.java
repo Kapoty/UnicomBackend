@@ -252,6 +252,10 @@ public class Venda {
         return true;
     }
 
+    @NotNull
+    @Length(max = 20)
+    private String rgRepresentanteLegal;
+
     private LocalDate dataNascimentoRepresentanteLegal;
 
     @AssertTrue(message = "não pode ser nula")

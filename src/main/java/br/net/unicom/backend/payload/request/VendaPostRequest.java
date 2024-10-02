@@ -162,11 +162,27 @@ public class VendaPostRequest {
     @Length(max = 11)
     private String contato3;
 
-    @NotNull
     private LocalDateTime dataPreferenciaInstalacao1;
 
-    @NotNull
+    @AssertTrue(message = "inválido")
+    private boolean isDataPreferenciaInstalacao1Valid() {
+        if (this.tipoProduto == null || this.tipoProduto.equals(VendaTipoProdutoEnum.MOVEL))
+            return true;
+        if (this.dataPreferenciaInstalacao1 == null)
+            return false;
+        return true;
+    }
+
     private LocalDateTime dataPreferenciaInstalacao2;
+
+    @AssertTrue(message = "inválido")
+    private boolean isDataPreferenciaInstalacao2Valid() {
+        if (this.tipoProduto == null || this.tipoProduto.equals(VendaTipoProdutoEnum.MOVEL))
+            return true;
+        if (this.dataPreferenciaInstalacao2 == null)
+            return false;
+        return true;
+    }
 
     @NotBlank
     @Email
@@ -236,6 +252,19 @@ public class VendaPostRequest {
         if (this.tipoPessoa == null || this.tipoPessoa.equals(VendaTipoPessoaEnum.CPF))
             return true;
         if (this.cpfRepresentanteLegal.length() != 11)
+            return false;
+        return true;
+    }
+
+    @NotNull
+    @Length(max = 20)
+    private String rgRepresentanteLegal;
+
+    @AssertTrue(message = "inválido")
+    private boolean isRgRepresentanteLegalValid() {
+        if (this.tipoPessoa == null || this.tipoPessoa.equals(VendaTipoPessoaEnum.CPF))
+            return true;
+        if (this.rgRepresentanteLegal.isBlank())
             return false;
         return true;
     }

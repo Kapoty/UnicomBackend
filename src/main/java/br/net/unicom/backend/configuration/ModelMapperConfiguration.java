@@ -49,6 +49,8 @@ public class ModelMapperConfiguration {
             mapper.skip(Venda::setBrscan);
             mapper.skip(Venda::setSuporte);
             mapper.skip(Venda::setLoginVendedor);
+            mapper.skip(Venda::setDataVenda);
+            mapper.skip(Venda::setDataAgendamento);
         });
 
         modelMapper.typeMap(VendaProdutoRequest.class, VendaProduto.class).addMappings(mapper -> {
@@ -82,6 +84,8 @@ public class ModelMapperConfiguration {
             mapper.skip(Venda::setBrscan);
             mapper.skip(Venda::setSuporte);
             mapper.skip(Venda::setLoginVendedor);
+            mapper.skip(Venda::setDataVenda);
+            mapper.skip(Venda::setDataAgendamento);
         });
 
         modelMapper.typeMap(VendaListRequest.class, FiltroVenda.class).addMappings(mapper -> {

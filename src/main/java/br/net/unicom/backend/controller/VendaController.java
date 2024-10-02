@@ -442,6 +442,8 @@ public class VendaController {
             venda.setCadastradorExterno(vendaPatchRequest.getCadastradorExterno());
             venda.setAgenteBiometriaExterno(vendaPatchRequest.getAgenteBiometriaExterno());
             venda.setAgenteSuporteExterno(vendaPatchRequest.getAgenteSuporteExterno());
+            venda.setDataVenda(vendaPatchRequest.getDataVenda());
+            venda.setDataAgendamento(vendaPatchRequest.getDataAgendamento());
         }
 
         vendaRepository.saveAndFlush(venda);
@@ -493,6 +495,7 @@ public class VendaController {
             venda.setBrscan(vendaPostRequest.getBrscan());
             venda.setSuporte(vendaPostRequest.getSuporte());
             venda.setLoginVendedor(vendaPostRequest.getLoginVendedor());
+            venda.setDataAgendamento(vendaPostRequest.getDataAgendamento());
         } else {
             venda.setOs("");
             venda.setCustcode("");
@@ -557,7 +560,11 @@ public class VendaController {
 
         venda.setDataCadastro(agora);
 
-        venda.setDataVenda(Optional.ofNullable(vendaPostRequest.getDataVenda()).orElse(agora));
+        if (userDetails.hasAuthority("ALTERAR_AUDITOR")) {
+            venda.setDataVenda(Optional.ofNullable(vendaPostRequest.getDataVenda()).orElse(agora));
+        } else {
+            venda.setDataVenda(agora);
+        }
 
         // salvar venda para obter vendaId
 
