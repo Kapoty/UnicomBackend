@@ -13,6 +13,8 @@ public interface AdicionalRepository extends JpaRepository<Adicional, Long> {
     
     Optional<Adicional> findByAdicionalId(Integer adicionalId);
 
+    Optional<Adicional> findByAdicionalIdAndEmpresaId(Integer adicionalId, Integer empresaId);
+
     List<Adicional> findAllByEmpresaId(Integer empresaId);
 
 }

@@ -16,6 +16,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -46,6 +47,7 @@ public class VendaStatus {
     @Length(max = 45)
     private String icon;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     private VendaStatusCategoriaEnum categoria;
 

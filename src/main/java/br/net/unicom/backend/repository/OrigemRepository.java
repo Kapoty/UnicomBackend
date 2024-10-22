@@ -13,6 +13,8 @@ public interface OrigemRepository extends JpaRepository<Origem, Long> {
     
     Optional<Origem> findByOrigemId(Integer origemid);
 
+    Optional<Origem> findByOrigemIdAndEmpresaId(Integer origemId, Integer empresaId);
+
     List<Origem> findAllByEmpresaId(Integer empresaId);
 
 }

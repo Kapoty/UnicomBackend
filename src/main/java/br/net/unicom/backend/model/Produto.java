@@ -43,6 +43,7 @@ public class Produto {
     @Length(max = 100)
     private String nome;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     private VendaTipoProdutoEnum tipo;
 

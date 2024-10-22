@@ -13,6 +13,8 @@ public interface SistemaRepository extends JpaRepository<Sistema, Long> {
     
     Optional<Sistema> findBySistemaId(Integer sistemaId);
 
+    Optional<Sistema> findBySistemaIdAndEmpresaId(Integer sistemaId, Integer empresaId);
+
     List<Sistema> findAllByEmpresaId(Integer empresaId);
 
 }

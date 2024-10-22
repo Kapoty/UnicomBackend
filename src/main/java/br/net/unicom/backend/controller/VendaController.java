@@ -655,7 +655,7 @@ public class VendaController {
     @PostMapping("/venda-atualizacao-list")
     public ResponseEntity<List<VendaAtualizacao>> getVendaAtualizacaoList(@Valid @RequestBody VendaAtualizacaoListRequest vendaAtualizacaoListRequest) {
 
-        logger.info(vendaAtualizacaoListRequest.toString());
+        //logger.info(vendaAtualizacaoListRequest.toString());
 
         Instant start = Instant.now();
         Instant finish;
@@ -682,7 +682,7 @@ public class VendaController {
 
         finish = Instant.now();
         timeElapsed = Duration.between(start, finish).toMillis();
-        logger.info("1: " + String.valueOf(timeElapsed));
+        //logger.info("1: " + String.valueOf(timeElapsed));
         
         return ResponseEntity.ok(vendaAtualizacaoList);
     }

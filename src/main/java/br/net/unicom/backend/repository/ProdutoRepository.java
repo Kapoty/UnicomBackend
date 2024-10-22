@@ -13,6 +13,8 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long> {
     
     Optional<Produto> findByProdutoId(Integer produtoId);
 
+    Optional<Produto> findByProdutoIdAndEmpresaId(Integer produtoId, Integer empresaId);
+
     List<Produto> findAllByEmpresaId(Integer empresaId);
 
 }

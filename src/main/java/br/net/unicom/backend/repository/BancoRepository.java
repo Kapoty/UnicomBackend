@@ -13,6 +13,8 @@ public interface BancoRepository extends JpaRepository<Banco, Long> {
     
     Optional<Banco> findByBancoId(Integer bancoId);
 
+    Optional<Banco> findByBancoIdAndEmpresaId(Integer bancoId, Integer empresaId);
+
     List<Banco> findAllByEmpresaId(Integer empresaId);
 
 }

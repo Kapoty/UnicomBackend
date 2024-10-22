@@ -13,6 +13,8 @@ public interface VendaStatusRepository extends JpaRepository<VendaStatus, Long> 
     
     Optional<VendaStatus> findByVendaStatusId(Integer vendaStatusId);
 
+    Optional<VendaStatus> findByVendaStatusIdAndEmpresaId(Integer vendaStatusId, Integer empresaId);
+
     List<VendaStatus> findAllByEmpresaId(Integer empresaId);
 
 }

@@ -13,6 +13,8 @@ public interface PontoDeVendaRepository extends JpaRepository<PontoDeVenda, Long
     
     Optional<PontoDeVenda> findByPontoDeVendaId(Integer pontoDeVendaId);
 
+    Optional<PontoDeVenda> findByPontoDeVendaIdAndEmpresaId(Integer pontoDeVendaId, Integer empresaId);
+
     List<PontoDeVenda> findAllByEmpresaId(Integer empresaId);
 
 }
